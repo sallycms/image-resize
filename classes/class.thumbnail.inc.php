@@ -435,7 +435,7 @@ class Thumbnail
 			// c100w__c200h__20r__20t__filename.jpg
 			
 			// separate filename and parameters
-			preg_match('@((?:c?[0-9]{1,4}[whax]__)*(?:\-?[0-9]{1,4}[orltb]?__)*)(.*)@', $rex_resize, $params);
+			preg_match('@((?:c?[0-9]{1,4}[whaxc]__)*(?:\-?[0-9]{1,4}[orltb]?__)*)(.*)@', $rex_resize, $params);
 			if (!isset($params[1]) || !isset($params[2])) return false;
 
 			// get filename
@@ -461,8 +461,8 @@ class Thumbnail
 				// get value
 				$value = substr($param, 0, strlen($param)-1);
 
-				// set parameters for resizing
-				if (in_array($suffix, array('w', 'h', 'a', 'x'))) {
+				// set parameters for resizing (x and c just for backwards compatibility)
+				if (in_array($suffix, array('w', 'h', 'a', 'x', 'c'))) {
 					switch ($suffix) {
 						case 'w':
 							$suffix = 'width';
@@ -474,6 +474,7 @@ class Thumbnail
 							$suffix = 'auto';
 							break;
 						case 'x':
+						case 'c':
 							$suffix = 'width';
 							$crop = true;
 							break;
