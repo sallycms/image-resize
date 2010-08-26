@@ -19,30 +19,38 @@ class Thumbnail
 	const QUALITY   = 85;
 	const USECACHE  = true;
 
-	private $fileName;
-	private $isExternal;
-	private $imgsrc;
-	private $imgthumb;
-	private $filters;
-	private $origWidth;
-	private	$origHeight;
-	private $width;
-	private	$height;
-	private $quality;
-	private	$thumb_width;
-	private	$thumb_height;
-	private	$thumb_width_offset;
-	private	$thumb_height_offset;
-	private	$thumb_quality;
+	private $fileName = '';
+
+	private $isExternal = false;
+
+	private $imgsrc   = null;
+	private $imgthumb = null;
+	
+	private $filters = array();
+
+	private $origWidth    = 0;
+	private	$origHeight   = 0;
+	private $width        = 0;
+	private	$height       = 0;
+	private $widthOffset  = 0;
+	private $heightOffset = 0;
+	private $quality      = 100;
+	
+	private	$thumbWidth        = 0;
+	private	$thumbHeight       = 0;
+	private	$thumbWidthOffset  = 0;
+	private	$thumbHeightOffset = 0;
+	private	$thumbQuality      = self::QUALITY;
+
 	private $upscalingAllowed = false;
 
-	public function __construct($imgfile)
-	{
+
+	public function __construct($imgfile) {
+
 		global $REX;
 
 		$this->fileName   = $imgfile;
 		$this->isExternal = strpos($imgfile, 'http') === 0;
-		$this->filters    = array();
 
 		if (!$this->isExternal) {
 			$this->fileName = $REX['MEDIAFOLDER'].'/'.$this->fileName;
@@ -55,19 +63,13 @@ class Thumbnail
 			$this->sendError();
 		}
 
-		$this->origWidth           = imagesx($this->imgsrc);
-		$this->origHeight          = imagesy($this->imgsrc);
-		$this->width               = $this->origWidth;
-		$this->height              = $this->origHeight;
-		$this->quality             = 100;
-		$this->width_offset        = 0;
-		$this->height_offset       = 0;
-		$this->thumb_width_offset  = 0;
-		$this->thumb_height_offset = 0;
-		$this->thumb_quality       = self::QUALITY;
+		$this->origWidth  = imagesx($this->imgsrc);
+		$this->origHeight = imagesy($this->imgsrc);
+		$this->width      = $this->origWidth;
+		$this->height     = $this->origHeight;
 
 		if (isset($REX['ADDON']['image_resize']['jpg_quality'])) {
-			$this->thumb_quality = (int) $REX['ADDON']['image_resize']['jpg_quality'];
+			$this->thumbQuality = (int) $REX['ADDON']['image_resize']['jpg_quality'];
 		}
 		if (isset($REX['ADDON']['image_resize']['upscaling_allowed'])) {
 			$this->upscalingAllowed = (bool) $REX['ADDON']['image_resize']['upscaling_allowed'];
@@ -84,17 +86,17 @@ class Thumbnail
 		// Originalbild selbst sehr klein und wuerde via resize vergrößert
 		// => Das Originalbild ausliefern
 
-		if ($this->thumb_width > $this->width && $this->thumb_height > $this->height) {
+		if ($this->thumbWidth > $this->width && $this->thumbHeight > $this->height) {
 
-			$this->thumb_width  = $this->width;
-			$this->thumb_height = $this->height;
+			$this->thumbWidth  = $this->width;
+			$this->thumbHeight = $this->height;
 		}
 
 		if (function_exists('imagecreatetruecolor')) {
-			$this->imgthumb = @imagecreatetruecolor($this->thumb_width, $this->thumb_height);
+			$this->imgthumb = @imagecreatetruecolor($this->thumbWidth, $this->thumbHeight);
 		}
 		else {
-			$this->imgthumb = @imagecreate($this->thumb_width, $this->thumb_height);
+			$this->imgthumb = @imagecreate($this->thumbWidth, $this->thumbHeight);
 		}
 
 		if (!$this->imgthumb) {
@@ -107,12 +109,12 @@ class Thumbnail
 		imagecopyresampled(
 				$this->imgthumb,
 				$this->imgsrc,
-				$this->thumb_width_offset,
-				$this->thumb_height_offset,
-				$this->width_offset,
-				$this->height_offset,
-				$this->thumb_width,
-				$this->thumb_height,
+				$this->thumbWidthOffset,
+				$this->thumbHeightOffset,
+				$this->widthOffset,
+				$this->heightOffset,
+				$this->thumbWidth,
+				$this->thumbHeight,
 				$this->width,
 				$this->height
 		);
@@ -185,8 +187,8 @@ class Thumbnail
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
 		if (empty($this->filters)
-			&& $this->thumb_width >= $this->width && $this->thumb_height >= $this->height
-			&& $this->thumb_quality >= $this->quality) {
+			&& $this->thumbWidth >= $this->width && $this->thumbHeight >= $this->height
+			&& $this->thumbQuality >= $this->quality) {
 
 			return false;
 		}
@@ -210,7 +212,7 @@ class Thumbnail
 			$fileext = strtoupper($this->getFileExtension());
 
 			if ($fileext == 'JPG' || $fileext == 'JPEG') {
-				imageJPEG($this->imgthumb, $file, $this->thumb_quality);
+				imageJPEG($this->imgthumb, $file, $this->thumbQuality);
 			}
 			elseif ($fileext == 'PNG') {
 				imagePNG($this->imgthumb, $file);
@@ -285,19 +287,19 @@ class Thumbnail
 		  		$this->width = (int) round($resizeRatio * $this->origHeight);
 
 				// set width to crop width
-				$this->thumb_width = (int) $width['value'];
+				$this->thumbWidth = (int) $width['value'];
 
 				// right offset
 				if (isset($width['offset']['right']) && is_numeric($width['offset']['right'])) {
-					$this->width_offset = (int) ($this->origWidth - $this->width - ($this->origHeight / $this->thumb_height * $width['offset']['right']));
+					$this->widthOffset = (int) ($this->origWidth - $this->width - ($this->origHeight / $this->thumbHeight * $width['offset']['right']));
 				}
 				// left offset
 				elseif (isset($width['offset']['left']) && is_numeric($width['offset']['left'])) {
-					$this->width_offset = (int) $width['offset']['left'];
+					$this->widthOffset = (int) $width['offset']['left'];
 				}
 				// set offset to center image
 				else {
-					$this->width_offset = (int) (floor($this->origWidth - $this->width) / 2);
+					$this->widthOffset = (int) (floor($this->origWidth - $this->width) / 2);
 				}
 
 			}
@@ -321,19 +323,19 @@ class Thumbnail
 		  		$this->height = (int) round($this->origWidth / $resizeRatio);
 
 				// set height to crop height
-				$this->thumb_height = (int) $height['value'];
+				$this->thumbHeight = (int) $height['value'];
 
 				// bottom offset
 				if (isset($height['offset']['bottom']) && is_numeric($height['offset']['bottom'])) {
-					$this->height_offset = (int) ($this->origHeight - $this->height - ($this->origWidth / $this->thumb_width * $height['offset']['bottom']));
+					$this->heightOffset = (int) ($this->origHeight - $this->height - ($this->origWidth / $this->thumbWidth * $height['offset']['bottom']));
 				}
 				// top offset
 				elseif (isset($height['offset']['top']) && is_numeric($height['offset']['top'])) {
-					$this->height_offset = (int) $height['offset']['top'];
+					$this->heightOffset = (int) $height['offset']['top'];
 				}
 				// set offset to center image
 				else {
-					$this->height_offset = (int) (floor($this->origHeight - $this->height) / 2);
+					$this->heightOffset = (int) (floor($this->origHeight - $this->height) / 2);
 				}
 
 
@@ -359,8 +361,8 @@ class Thumbnail
 		if ($this->origHeight < $size['value'] && !$this->upscalingAllowed) {
 			$size['value'] = $this->origHeight;
 		}
-		$this->thumb_height = (int) $size['value'];
-		$this->thumb_width  = (int) round($this->origWidth / $this->origHeight * $this->thumb_height);
+		$this->thumbHeight = (int) $size['value'];
+		$this->thumbWidth  = (int) round($this->origWidth / $this->origHeight * $this->thumbHeight);
 	}
 
 	/**
@@ -377,8 +379,8 @@ class Thumbnail
 		if ($this->origWidth < $size['value'] && !$this->upscalingAllowed) {
 			$size['value'] = $this->origWidth;
 		}
-		$this->thumb_width  = (int) $size['value'];
-		$this->thumb_height = (int) ($this->origHeight / $this->origWidth * $this->thumb_width);
+		$this->thumbWidth  = (int) $size['value'];
+		$this->thumbHeight = (int) ($this->origHeight / $this->origWidth * $this->thumbWidth);
 	}
 
 	/**
