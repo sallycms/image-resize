@@ -82,10 +82,10 @@ if ($func == 'update') {
 						<div class="rex-form-row rex-form-element-v2">
 							<p class="rex-form-text">
 								<label><?= $I18N->msg('iresize_upscaling_allowed') ?></label>
-								<input type="radio" id="upscaling_allowed_yes" name="upscaling_allowed" value="1"<?= ($service->getProperty('image_resize', 'upscaling_allowed')) ? ' checked="checked"' : '' ?> />
-								<label for="upscaling_allowed_yes"><?= $I18N->msg('iresize_upscaling_allowed_yes') ?></label>
-								<input type="radio" id="upscaling_allowed_no" name="upscaling_allowed" value="0"<?= (!$service->getProperty('image_resize', 'upscaling_allowed')) ? ' checked="checked"' : '' ?> />
-								<label for="upscaling_allowed_no"><?= $I18N->msg('iresize_upscaling_allowed_no') ?></label>
+								<input type="radio" id="upscaling_allowed_yes" name="upscaling_allowed" value="1"<?= ($service->getProperty('image_resize', 'upscaling_allowed')) ? ' checked="checked"' : '' ?> style="width:auto;" />
+								<label for="upscaling_allowed_yes" style="display:inline; float:none; padding-right: 10px;"><?= $I18N->msg('iresize_upscaling_allowed_yes') ?></label>
+								<input type="radio" id="upscaling_allowed_no" name="upscaling_allowed" value="0"<?= (!$service->getProperty('image_resize', 'upscaling_allowed')) ? ' checked="checked"' : '' ?> style="width:auto;" />
+								<label for="upscaling_allowed_no" style="display:inline; float:none;"><?= $I18N->msg('iresize_upscaling_allowed_no') ?></label>
 							</p>
 						</div>
 
