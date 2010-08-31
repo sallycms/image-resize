@@ -14,7 +14,7 @@ iresize_config_not_writable: Configuration file "{0}" ist not writeable
 iresize_max_cache_files: Maximum allowed cache files / image
 iresize_max_filters: Maximum allowed filters per file
 iresize_max_resizekb: Maximum size of file to be resized
-iresize_max_resizepx: Maximum width in pixel
+iresize_max_resizepx: Maximum length from long side in pixel
 iresize_jpg_quality: JPG/JPEG quality
 
 iresize_upscaling_allowed: upscaling of small images allowed
