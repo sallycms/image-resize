@@ -81,12 +81,13 @@ class Thumbnail
 	 *
 	 * @return void
 	 */
-	private function resampleImage()
-	{
+	private function resampleImage() {
 		// Originalbild selbst sehr klein und wuerde via resize vergrößert
 		// => Das Originalbild ausliefern
 
-		if ($this->thumbWidth > $this->width && $this->thumbHeight > $this->height) {
+		if (!$this->upscalingAllowed
+			&& $this->thumbWidth >= $this->width
+			&& $this->thumbHeight >= $this->height) {
 
 			$this->thumbWidth  = $this->width;
 			$this->thumbHeight = $this->height;
@@ -289,6 +290,23 @@ class Thumbnail
 				// set width to crop width
 				$this->thumbWidth = (int) $width['value'];
 
+				// if original height is smaller than resize height
+				if ($this->origHeight < $height['value']) {
+					// and image get not upscaled in height
+					if ($this->thumbHeight < $height['value']) {
+						// and original width is larger than resize width
+						if ($this->origWidth >= $width['value']) {
+							// set crop window width to resize width
+							$this->width = $width['value'];
+						}
+						// else do not crop width
+						else {
+							$this->width = $this->origWidth;
+							$this->thumbWidth = $this->width;
+						}
+					}
+				}
+
 				// right offset
 				if (isset($width['offset']['right']) && is_numeric($width['offset']['right'])) {
 					$this->widthOffset = (int) ($this->origWidth - $this->width - ($this->origHeight / $this->thumbHeight * $width['offset']['right']));
@@ -325,6 +343,23 @@ class Thumbnail
 				// set height to crop height
 				$this->thumbHeight = (int) $height['value'];
 
+				// if original width is smaller than resize width
+				if ($this->origWidth < $width['value']) {
+					// and image get not upscaled in width
+					if ($this->thumbWidth < $width['value']) {
+						// and original height is larger than resize height
+						if ($this->origHeight >= $height['value']) {
+							// set crop window height to resize height
+							$this->height = $height['value'];
+						}
+						// else do not crop height
+						else {
+							$this->height = $this->origHeight;
+							$this->thumbHeight = $this->height;
+						}
+					}
+				}
+
 				// bottom offset
 				if (isset($height['offset']['bottom']) && is_numeric($height['offset']['bottom'])) {
 					$this->heightOffset = (int) ($this->origHeight - $this->height - ($this->origWidth / $this->thumbWidth * $height['offset']['bottom']));
@@ -337,7 +372,6 @@ class Thumbnail
 				else {
 					$this->heightOffset = (int) (floor($this->origHeight - $this->height) / 2);
 				}
-
 
 			}
 			// else resize into bounding box
