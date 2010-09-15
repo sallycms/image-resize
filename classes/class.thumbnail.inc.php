@@ -130,7 +130,7 @@ class Thumbnail
 	{
 		$service = sly_Service_Factory::getService('AddOn');
 		$folder  = $service->publicFolder('image_resize');
-		self::sendImage($folder.'/'.self::ERRORFILE);
+		self::sendImage($folder.'/'.self::ERRORFILE, true);
 	}
 
 	/**
@@ -541,7 +541,7 @@ class Thumbnail
 				}
 			}
 
-			if (empty($imageFile)){
+			if (empty($imageFile) || !file_exists($imageFile)) {
 				self::sendError();
 			}
 
@@ -631,15 +631,23 @@ class Thumbnail
 	 * @param timestamp $lastModified wann wurde das Bild zuletzt modifiziert?
 	 * @return void
 	 */
-	private static function sendImage($fileName)
+	private static function sendImage($fileName, $error = false)
 	{
 		while (ob_get_level()) ob_end_clean();
 
 		$etag = md5($fileName.filectime($fileName));
 
-		if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
-			if ($_SERVER['HTTP_IF_NONE_MATCH'] == $etag) {
+		if ($error) {
+			header('HTTP/1.0 404 Not Found');
+		}
+		else {
+			if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] == $etag) {
 				header('HTTP/1.0 304 Not Modified');
+				exit();
+			}
+			if (!is_readable($fileName)) {
+				trigger_error('The Image "'.$fileName.'" cannot be read.', E_USER_WARNING);
+				header('HTTP/1.0 404 Not Found');
 				exit();
 			}
 		}
