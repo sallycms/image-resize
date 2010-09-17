@@ -25,7 +25,7 @@ class Thumbnail
 
 	private $imgsrc   = null;
 	private $imgthumb = null;
-	
+
 	private $filters = array();
 
 	private $origWidth    = 0;
@@ -35,7 +35,7 @@ class Thumbnail
 	private $widthOffset  = 0;
 	private $heightOffset = 0;
 	private $quality      = 100;
-	
+
 	private	$thumbWidth        = 0;
 	private	$thumbHeight       = 0;
 	private	$thumbWidthOffset  = 0;
@@ -53,7 +53,10 @@ class Thumbnail
 		$this->isExternal = strpos($imgfile, 'http') === 0;
 
 		if (!$this->isExternal) {
-			$this->fileName = $REX['MEDIAFOLDER'].'/'.$this->fileName;
+			$this->fileName = $REX['MEDIAFOLDER'].DIRECTORY_SEPARATOR.$this->fileName;
+			if(!file_exists($this->fileName)) {
+				$this->sendError();
+			}
 		}
 
 		$data = file_get_contents($this->fileName);
@@ -263,7 +266,7 @@ class Thumbnail
 	 * @return void
 	 */
 	private function resizeBoth($width, $height) {
-		
+
 		if (!is_array($width) || !isset($width['value'])
 			|| !is_array($height) || !isset($height['value'])) {
 
@@ -277,10 +280,10 @@ class Thumbnail
 		if ($imgRatio > $resizeRatio) {
 			// if image should be cropped
 			if (isset($width['crop']) && $width['crop']) {
-				
+
 				// resize height
 				$this->resizeHeight($height);
-				
+
 
 				// crop width
 
@@ -469,7 +472,7 @@ class Thumbnail
 		if (!self::USECACHE || !file_exists($cachefile)) {
 
 			// c100w__c200h__20r__20t__filename.jpg
-			
+
 			// separate filename and parameters
 			preg_match('@((?:c?[0-9]{1,4}[whaxc]__)*(?:\-?[0-9]{1,4}[orltb]?__)*)(.*)@', $rex_resize, $params);
 			if (!isset($params[1]) || !isset($params[2])) return false;
@@ -541,7 +544,7 @@ class Thumbnail
 				}
 			}
 
-			if (empty($imageFile) || !file_exists($imageFile)) {
+			if (empty($imageFile)) {
 				self::sendError();
 			}
 
@@ -585,7 +588,7 @@ class Thumbnail
 
 		return $c;
 	}
-	
+
 	/**
 	 * @return int
 	 */
