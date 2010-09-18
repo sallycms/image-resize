@@ -55,7 +55,7 @@ class Thumbnail
 		if (!$this->isExternal) {
 			$this->fileName = $REX['MEDIAFOLDER'].DIRECTORY_SEPARATOR.$this->fileName;
 			if(!file_exists($this->fileName)) {
-				$this->sendError();
+				throw new Exception('File '.$this->fileName.' does not exist.');
 			}
 		}
 
@@ -63,7 +63,7 @@ class Thumbnail
 		$this->imgsrc = imagecreatefromstring($data);
 
 		if (!$this->imgsrc){
-			$this->sendError();
+			throw new Exception('Can not create valid Image Source.');
 		}
 
 		$this->origWidth  = imagesx($this->imgsrc);
@@ -104,8 +104,7 @@ class Thumbnail
 		}
 
 		if (!$this->imgthumb) {
-			$this->sendError();
-			exit();
+			throw new Exception('Can not create valid Thumbnail Image');
 		}
 
 		// Transparenz erhalten
@@ -122,18 +121,6 @@ class Thumbnail
 				$this->width,
 				$this->height
 		);
-	}
-
-	/**
-	 * Sendet die Fehlerdatei
-	 *
-	 * @return void
-	 */
-	private function sendError()
-	{
-		$service = sly_Service_Factory::getService('AddOn');
-		$folder  = $service->publicFolder('image_resize');
-		self::sendImage($folder.'/'.self::ERRORFILE, true);
 	}
 
 	/**
@@ -190,14 +177,9 @@ class Thumbnail
 	private function imageGetsModified() {
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		if (empty($this->filters)
+		return (empty($this->filters)
 			&& $this->thumbWidth >= $this->width && $this->thumbHeight >= $this->height
-			&& $this->thumbQuality >= $this->quality) {
-
-			return false;
-		}
-
-		return true;
+			&& $this->thumbQuality >= $this->quality);
 	}
 
 	/**
@@ -284,7 +266,6 @@ class Thumbnail
 				// resize height
 				$this->resizeHeight($height);
 
-
 				// crop width
 
 				// set new cropped width from original image
@@ -322,7 +303,6 @@ class Thumbnail
 				else {
 					$this->widthOffset = (int) (floor($this->origWidth - $this->width) / 2);
 				}
-
 			}
 			// else resize into bounding box
 			else {
@@ -336,7 +316,6 @@ class Thumbnail
 
 				// resize width
 				$this->resizeWidth($width);
-
 
 				// crop height
 
@@ -547,11 +526,14 @@ class Thumbnail
 			if (empty($imageFile)) {
 				self::sendError();
 			}
-
-			$thumb = new self($imageFile);
-			$thumb->setNewSize($imgParams);
-			$thumb->addFilters();
-			$thumb->generateImage($cachefile);
+			try {
+				$thumb = new self($imageFile);
+				$thumb->setNewSize($imgParams);
+				$thumb->addFilters();
+				$thumb->generateImage($cachefile);
+			}catch(Exception $e) {
+				self::sendError();
+			}
 
 		}
 
@@ -628,6 +610,20 @@ class Thumbnail
 	}
 
 	/**
+	 * Sendet die Fehlerdatei
+	 *
+	 * @return void
+	 */
+	private static function sendError()
+	{
+		header('HTTP/1.0 404 Not Found');
+
+		$service = sly_Service_Factory::getService('AddOn');
+		$folder  = $service->publicFolder('image_resize');
+		self::sendImage($folder.'/'.self::ERRORFILE, true);
+	}
+
+	/**
 	 * Sendet ein Bild an den Browser und beendet das Script
 	 *
 	 * @param string $fileName Dateiname des Bildes
@@ -638,12 +634,9 @@ class Thumbnail
 	{
 		while (ob_get_level()) ob_end_clean();
 
-		$etag = md5($fileName.filectime($fileName));
+		if(!$error) {
+			$etag = md5($fileName.filectime($fileName));
 
-		if ($error) {
-			header('HTTP/1.0 404 Not Found');
-		}
-		else {
 			if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] == $etag) {
 				header('HTTP/1.0 304 Not Modified');
 				exit();
@@ -653,12 +646,13 @@ class Thumbnail
 				header('HTTP/1.0 404 Not Found');
 				exit();
 			}
+
+			header('ETag: '.$etag);
+			header('Cache-Control: ');
+			header('Pragma: ');
 		}
 
 		header('Content-Type: image/'.self::getFileExtensionStatic($fileName));
-		header('ETag: '.$etag);
-		header('Cache-Control: ');
-		header('Pragma: ');
 
 		readfile($fileName);
 		exit();
