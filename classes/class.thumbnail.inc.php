@@ -68,10 +68,13 @@ class Thumbnail
 			throw new Exception('Can not create valid Image Source.');
 		}
 
+		$this->allowedTypes = self::getSupportedTypes();
+
 		$this->origWidth  = imagesx($this->imgsrc);
 		$this->origHeight = imagesy($this->imgsrc);
 		$this->width      = $this->origWidth;
 		$this->height     = $this->origHeight;
+		$this->imageType  = $this->getImageType();
 
 		if (isset($REX['ADDON']['image_resize']['jpg_quality'])) {
 			$this->thumbQuality = (int) $REX['ADDON']['image_resize']['jpg_quality'];
@@ -199,18 +202,21 @@ class Thumbnail
 
 			$fileext = strtoupper($this->getFileExtension());
 
-			if ($fileext == 'JPG' || $fileext == 'JPEG') {
-				imageJPEG($this->imgthumb, $file, $this->thumbQuality);
-			}
-			elseif ($fileext == 'PNG') {
-				imagePNG($this->imgthumb, $file);
-			}
-			elseif ($fileext == 'GIF') {
-				imageGIF($this->imgthumb, $file);
-			}
-			elseif ($fileext == 'WBMP') {
-				imageWBMP($this->imgthumb, $file);
-			}
+			switch ($this->imageType) {
+				case 'JPG':
+				case 'JPEG':
+					imagejpeg($this->imgthumb, $file, $this->thumbQuality);
+					break;
+				case 'PNG':
+					imagepng($this->imgthumb, $file);
+					break;
+				case 'GIF':
+					imagegif($this->imgthumb, $file);
+					break;
+				case 'WBMP':
+					imagewbmp($this->imgthumb, $file);
+					break;
+ 			}
 		}
 		// just copy the image
 		else {
@@ -243,7 +249,7 @@ class Thumbnail
 	}
 
 	/**
-	 * Setzt Höhe und Breite des Thumbnails
+	 * set height and width of thumbnail
 	 *
 	 * @param int $width Breite des Thumbs
 	 * @param int $height Höhe des Thumbs
@@ -402,30 +408,29 @@ class Thumbnail
 	}
 
 	/**
-	 * Setzt die Höhe und Breite des Thumbnails
+	 * set height and width of thumbnail
 	 *
-	 * @param int $size breite/höhe in pixel je nach modus
-	 * @param string $mode resize modus
-	 * @param int $height höhe in pixel wenn $mode2 gesetzt
-	 * @param string $mode2 resize modus2
-	 * @param int $offset offset in pixel
-	 * @param string $offsetType offset von links, oder rechts, default ist mitte
+	 * @param params Width, Height, Crop and Offset parameters
 	 * @return void
 	 */
-	//public function setNewSize($size, $mode, $height, $mode2, $offset, $offsetType)
 	public function setNewSize($params) {
 
+		// resize to square
 		if (isset($params['auto'])) {
 			$this->resizeBoth($params['auto'], $params['auto']);
 		}
+		// resize width
 		elseif (isset($params['width'])) {
+			// and resize height
 			if (isset($params['height'])) {
 				$this->resizeBoth($params['width'], $params['height']);
 			}
+			// just resize width
 			else {
 				$this->resizeWidth($params['width']);
 			}
 		}
+		// resize height
 		elseif (isset($params['height'])) {
 			$this->resizeHeight($params['height']);
 		}
@@ -576,9 +581,50 @@ class Thumbnail
 	/**
 	 * @return int
 	 */
-	public static function mediaUpdated($params)
-	{
+	public static function mediaUpdated($params) {
 		return self::deleteCache($params['filename']);
+	}
+
+ 	/**
+	 * return the image types supported by this PHP build
+	 *
+	 * @return array     supported types as strings
+	 */
+	public static function getSupportedTypes() {
+	    $aSupportedTypes = array();
+
+	    $aPossibleImageTypeBits = array(
+	        IMG_GIF => 'GIF',
+	        IMG_JPG => 'JPEG',
+	        IMG_PNG => 'PNG',
+	        IMG_WBMP => 'WBMP'
+	    );
+
+	    foreach ($aPossibleImageTypeBits as $iImageTypeBits => $sImageTypeString) {
+	        if (imagetypes() & $iImageTypeBits) $aSupportedTypes[] = $sImageTypeString;
+	    }
+
+	    return $aSupportedTypes;
+	}
+
+	/**
+	 * @return string image type
+	 */
+	private function getImageType() {
+
+		if (empty($this->allowedTypes) || !($imgInfo = getImageSize($this->fileName))
+			|| !isset( $imgInfo['mime'] ) || !strLen( $imgInfo['mime'] )
+			|| strToLower( subStr( $imgInfo['mime'], 0, strLen( 'image/' ))) != 'image/') {
+
+			return FALSE;
+		}
+
+		$mime = strToUpper( subStr( $imgInfo['mime'], strLen( 'image/' )));
+
+		if (!in_Array( $mime, $this->allowedTypes )) return FALSE;
+
+		return $mime;
+
 	}
 
 	/**
