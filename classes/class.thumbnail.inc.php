@@ -35,6 +35,9 @@ class Thumbnail
 	private $widthOffset  = 0;
 	private $heightOffset = 0;
 	private $quality      = 100;
+	private $imageType    = null;
+
+	private $allowedTypes = array();
 
 	private	$thumbWidth        = 0;
 	private	$thumbHeight       = 0;
@@ -50,9 +53,8 @@ class Thumbnail
 		global $REX;
 
 		$this->fileName   = $imgfile;
-		$this->isExternal = strpos($imgfile, 'http') === 0;
 
-		if (!$this->isExternal) {
+		if (strpos($imgfile, 'http://') !== 0) {
 			$this->fileName = $REX['MEDIAFOLDER'].DIRECTORY_SEPARATOR.$this->fileName;
 			if(!file_exists($this->fileName)) {
 				throw new Exception('File '.$this->fileName.' does not exist.');
