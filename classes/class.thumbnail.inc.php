@@ -182,9 +182,15 @@ class Thumbnail
 	private function imageGetsModified() {
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		return (empty($this->filters)
-			&& $this->thumbWidth >= $this->width && $this->thumbHeight >= $this->height
-			&& $this->thumbQuality >= $this->quality);
+		if (empty($this->filters)
+ 			&& (!$this->upscalingAllowed
+				&& ($this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height))
+			&& $this->thumbQuality >= $this->quality) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
