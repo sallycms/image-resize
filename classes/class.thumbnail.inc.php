@@ -9,8 +9,8 @@
  * @author zozi@webvariants.de
  *
  *
- * @package redaxo4
- * @version svn:$Id$
+ * @package sally 0.2
+ * @version 1.6
  */
 
 class Thumbnail
@@ -20,8 +20,6 @@ class Thumbnail
 	const USECACHE  = true;
 
 	private $fileName = '';
-
-	private $isExternal = false;
 
 	private $imgsrc   = null;
 	private $imgthumb = null;
@@ -61,20 +59,24 @@ class Thumbnail
 			}
 		}
 
+		$this->allowedTypes = self::getSupportedTypes();
+		$this->imageType  = $this->getImageType();
+
+		if (!$this->imageType) {
+			throw new Exception('File is not a supported image type.');
+		}
+
 		$data = file_get_contents($this->fileName);
 		$this->imgsrc = imagecreatefromstring($data);
 
-		if (!$this->imgsrc){
+		if (!$this->imgsrc) {
 			throw new Exception('Can not create valid Image Source.');
 		}
-
-		$this->allowedTypes = self::getSupportedTypes();
 
 		$this->origWidth  = imagesx($this->imgsrc);
 		$this->origHeight = imagesy($this->imgsrc);
 		$this->width      = $this->origWidth;
 		$this->height     = $this->origHeight;
-		$this->imageType  = $this->getImageType();
 
 		if (isset($REX['ADDON']['image_resize']['jpg_quality'])) {
 			$this->thumbQuality = (int) $REX['ADDON']['image_resize']['jpg_quality'];
