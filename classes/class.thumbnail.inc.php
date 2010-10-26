@@ -8,9 +8,10 @@
  * @author markus[dot]staab[at]redaxo[dot]de Markus Staab
  * @author zozi@webvariants.de
  *
+ * @author memento@webvariants.de
  *
  * @package sally 0.2
- * @version 1.6
+ * @version 1.6.1
  */
 
 class Thumbnail
