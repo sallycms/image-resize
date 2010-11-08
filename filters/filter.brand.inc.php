@@ -7,9 +7,8 @@
  */
 function image_resize_brand(&$src_im)
 {
-	global $REX;
 
-	$files = glob($REX['INCLUDE_PATH'].'/addons/image_resize/media/brand.*');
+	$files = glob(SLY_INCLUDE_PATH.'/addons/image_resize/media/brand.*');
 	
 	if (empty($files)) {
 		return;

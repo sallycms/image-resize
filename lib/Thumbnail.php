@@ -10,8 +10,8 @@
  *
  * @author memento@webvariants.de
  *
- * @package sally 0.2
- * @version 1.6.1
+ * @package sally 0.3
+ * @version 1.7.0
  */
 
 class Thumbnail
@@ -47,12 +47,10 @@ class Thumbnail
 
 	public function __construct($imgfile) {
 
-		global $REX;
-
 		$this->fileName   = $imgfile;
 
 		if (strpos($imgfile, 'http://') !== 0) {
-			$this->fileName = $REX['MEDIAFOLDER'].DIRECTORY_SEPARATOR.$this->fileName;
+			$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$this->fileName;
 			if(!file_exists($this->fileName)) {
 				throw new Exception('File '.$this->fileName.' does not exist.');
 			}
@@ -76,12 +74,10 @@ class Thumbnail
 		$this->width      = $this->origWidth;
 		$this->height     = $this->origHeight;
 
-		if (isset($REX['ADDON']['image_resize']['jpg_quality'])) {
-			$this->thumbQuality = (int) $REX['ADDON']['image_resize']['jpg_quality'];
-		}
-		if (isset($REX['ADDON']['image_resize']['upscaling_allowed'])) {
-			$this->upscalingAllowed = (bool) $REX['ADDON']['image_resize']['upscaling_allowed'];
-		}
+		$service = sly_Service_Factory::getAddOnService();
+
+		$this->thumbQuality = (int) $service->getProperty('image_resize', 'jpg_quality');
+		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed');
 	}
 
 	/**
@@ -237,11 +233,9 @@ class Thumbnail
 	 */
 	private function applyFilters()
 	{
-		$includePath = sly_Core::config()->get('INCLUDE_PATH');
-
 		foreach ($this->filters as $filter) {
 			$filter = preg_replace('#[^a-z0-9_]#i', '', $filter);
-			$file   = $includePath.'/addons/image_resize/filters/filter.'.$filter.'.inc.php';
+			$file   = SLY_INCLUDE_PATH.'/addons/image_resize/filters/filter.'.$filter.'.inc.php';
 			$fname  = 'image_resize_'.$filter;
 
 			if (file_exists($file))      require_once $file;
@@ -654,9 +648,7 @@ class Thumbnail
 	{
 		header('HTTP/1.0 404 Not Found');
 
-		$service = sly_Service_Factory::getService('AddOn');
-		$folder  = $service->publicFolder('image_resize');
-		self::sendImage($folder.'/'.self::ERRORFILE, true);
+		self::sendImage(SLY_INCLUDE_PATH.'/addons/image_resize/media/'.self::ERRORFILE, true);
 	}
 
 	/**

@@ -11,4 +11,4 @@ if ($subpage == 'clear_cache') {
 }
 
 if ($subpage != 'settings') $subpage = 'overview';
-require $REX['INCLUDE_PATH'].'/addons/image_resize/pages/'.$subpage.'.inc.php';
+require SLY_INCLUDE_PATH.'/addons/image_resize/pages/'.$subpage.'.inc.php';

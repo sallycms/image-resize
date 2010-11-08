@@ -15,34 +15,20 @@
 // Resize WYSIWYG Editor Images
 function rex_resize_wysiwyg_output($params)
 {
-	global $REX;
-
 	$content = $params['subject'];
 
-	preg_match_all('/<img[^>]*?ismap="ismap"[^>]*?>/is', $content, $matches);
-
+	preg_match_all('#<img [^\>]*src=\"(data\/mediapool\/([^\"]*))[^\>]*>#is', $content, $matches);
 	if (is_array($matches[0])) {
-		foreach ($matches[0] as $var) {
+		foreach ($matches[0] as $key => $var) {
 			preg_match('/width="(.*?)"/is', $var, $width);
 			if (!$width) preg_match('/width: (.*?)px/is', $var, $width);
-
-			preg_match('/height="(.*?)"/is', $var, $height);
-			if (!$height) preg_match('/height: (.*?)px/is', $var, $height);
-
 			if ($width) {
-				preg_match('/src="(.*?files\/(.*?))"/is', $var, $src);
-				
-				if (file_exists($REX['HTDOCS_PATH'].'files/'.$src[2])) {
-					$realsize = getimagesize($REX['HTDOCS_PATH'].'files/'.$src[2]);
+				if (file_exists(SLY_BASE.'/data/mediapool/'.$matches[2][$key])) {
+					$realsize = getimagesize(SLY_BASE.'/data/mediapool/'.$matches[2][$key]);
 					
 					if ($realsize[0] != $width[1] || $realsize[1] != $height[1]) {
-						$newsrc   = $REX['FRONTEND_FILE'].'?rex_resize='.$width[1].'w__'.$height[1].'h__'.$src[2];
-						$newimage = str_replace(array($src[1], 'ismap="ismap" '), array($newsrc, ''), $var);
-						$content  = str_replace($var, $newimage, $content);
-					}
-					elseif ($REX['REDAXO']) {
-						$newsrc   = $REX['HTDOCS_PATH'].'files/'.$src[2];
-						$newimage = str_replace(array($src[1], 'ismap="ismap" '), array($newsrc, ''), $var);
+						$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
+						$newimage = str_replace($matches[1][$key], $newsrc, $var);
 						$content  = str_replace($var, $newimage, $content);
 					}
 				}
