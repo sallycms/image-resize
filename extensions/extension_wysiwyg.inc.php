@@ -26,7 +26,7 @@ function rex_resize_wysiwyg_output($params)
 				if (file_exists(SLY_BASE.'/data/mediapool/'.$matches[2][$key])) {
 					$realsize = getimagesize(SLY_BASE.'/data/mediapool/'.$matches[2][$key]);
 					
-					if ($realsize[0] != $width[1] || $realsize[1] != $height[1]) {
+					if ($realsize[0] != $width[1]) {
 						$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
 						$newimage = str_replace($matches[1][$key], $newsrc, $var);
 						$content  = str_replace($var, $newimage, $content);
