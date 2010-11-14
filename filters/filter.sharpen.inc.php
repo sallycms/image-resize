@@ -1,7 +1,6 @@
 <?php
 
-function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3)
-{
+function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3) {
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	////
 	////                  Unsharp Mask for PHP - version 2.1.1
@@ -55,7 +54,7 @@ function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3
 	else {
 		// Move copies of the image around one pixel at the time and merge them with weight
 		// according to the matrix. The same matrix is simply repeated for higher radii.
-		
+
 		for ($i = 0; $i < $radius; ++$i) {
 			imagecopy($imgBlur, $img, 0, 0, 1, 0, $w - 1, $h); // left
 			imagecopymerge($imgBlur, $img, 1, 0, 0, 0, $w, $h, 50); // right
@@ -70,7 +69,7 @@ function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3
 	if ($threshold > 0) {
 		// Calculate the difference between the blurred pixels and the original
 		// and set the pixels
-		
+
 		for ($x = 0; $x < $w-1; ++$x) { // each row
 			for ($y = 0; $y < $h; ++$y) { // each pixel
 				$rgbOrig = imagecolorat($img, $x, $y);
@@ -85,19 +84,19 @@ function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3
 
 				// When the masked pixels differ less from the original
 				// than the threshold specifies, they are set to their original value.
-				
+
 				$rNew = (abs($rOrig - $rBlur) >= $threshold)
 					? max(0, min(255, ($amount * ($rOrig - $rBlur)) + $rOrig))
 					: $rOrig;
-				
+
 				$gNew = (abs($gOrig - $gBlur) >= $threshold)
 					? max(0, min(255, ($amount * ($gOrig - $gBlur)) + $gOrig))
 					: $gOrig;
-				
+
 				$bNew = (abs($bOrig - $bBlur) >= $threshold)
 					? max(0, min(255, ($amount * ($bOrig - $bBlur)) + $bOrig))
 					: $bOrig;
-				
+
 				if ($rOrig != $rNew || $gOrig != $gNew || $bOrig != $bNew) {
 					$pixCol = imagecolorallocate($img, $rNew, $gNew, $bNew);
 					imagesetpixel($img, $x, $y, $pixCol);
@@ -121,21 +120,21 @@ function image_resize_sharpen(&$img, $amount = 80, $radius = 0.5, $threshold = 3
 				$rNew = ($amount * ($rOrig - $rBlur)) + $rOrig;
 				if ($rNew > 255 )  $rNew = 255;
 				elseif ($rNew < 0) $rNew = 0;
-				
+
 				$gNew = ($amount * ($gOrig - $gBlur)) + $gOrig;
 				if ($gNew > 255 )  $gNew = 255;
 				elseif ($gNew < 0) $gNew = 0;
-				
+
 				$bNew = ($amount * ($bOrig - $bBlur)) + $bOrig;
 				if ($bNew > 255 )  $bNew = 255;
 				elseif ($bNew < 0) $bNew = 0;
-				
+
 				$rgbNew = ($rNew << 16) + ($gNew <<8) + $bNew;
 				imagesetpixel($img, $x, $y, $rgbNew);
 			}
 		}
 	}
-	
+
 	imagedestroy($imgCanvas);
 	imagedestroy($imgBlur);
 }

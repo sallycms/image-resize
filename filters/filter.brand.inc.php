@@ -5,15 +5,13 @@
  * Der Filter sucht im Verzeichnis addons/image_resize/media/
  * nach einem Bild mit dem Dateinamen "brand.*" und verwendet den 1. Treffer
  */
-function image_resize_brand(&$src_im)
-{
-
+function image_resize_brand(&$src_im) {
 	$files = glob(SLY_INCLUDE_PATH.'/addons/image_resize/media/brand.*');
-	
+
 	if (empty($files)) {
 		return;
 	}
-	
+
 	$brandImage = $files[0];
 	$brand      = new Thumbnail($brandImage);
 

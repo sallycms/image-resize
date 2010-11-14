@@ -14,8 +14,7 @@
  * @version 1.7.0
  */
 
-class Thumbnail
-{
+class Thumbnail {
 	const ERRORFILE = 'error.png';
 	const QUALITY   = 85;
 	const USECACHE  = true;
@@ -28,35 +27,34 @@ class Thumbnail
 	private $filters = array();
 
 	private $origWidth    = 0;
-	private	$origHeight   = 0;
+	private $origHeight   = 0;
 	private $width        = 0;
-	private	$height       = 0;
+	private $height       = 0;
 	private $widthOffset  = 0;
 	private $heightOffset = 0;
 	private $quality      = 100;
 	private $imageType    = null;
 
-	private	$thumbWidth        = 0;
-	private	$thumbHeight       = 0;
-	private	$thumbWidthOffset  = 0;
-	private	$thumbHeightOffset = 0;
-	private	$thumbQuality      = self::QUALITY;
+	private $thumbWidth        = 0;
+	private $thumbHeight       = 0;
+	private $thumbWidthOffset  = 0;
+	private $thumbHeightOffset = 0;
+	private $thumbQuality      = self::QUALITY;
 
 	private $upscalingAllowed = false;
 
-
 	public function __construct($imgfile) {
-
-		$this->fileName   = $imgfile;
+		$this->fileName = $imgfile;
 
 		if (strpos($imgfile, 'http://') !== 0) {
 			$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$this->fileName;
-			if(!file_exists($this->fileName)) {
+
+			if (!file_exists($this->fileName)) {
 				throw new Exception('File '.$this->fileName.' does not exist.');
 			}
 		}
 
-		$this->imageType  = self::getImageType($this->fileName);
+		$this->imageType = self::getImageType($this->fileName);
 
 		if (!$this->imageType) {
 			throw new Exception('File is not a supported image type.');
@@ -76,14 +74,12 @@ class Thumbnail
 
 		$service = sly_Service_Factory::getAddOnService();
 
-		$this->thumbQuality = (int) $service->getProperty('image_resize', 'jpg_quality');
+		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality');
 		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed');
 	}
 
 	/**
 	 * Baut das Thumbnail
-	 *
-	 * @return void
 	 */
 	private function resampleImage() {
 		// Originalbild selbst sehr klein und wuerde via resize vergrößert
@@ -111,26 +107,23 @@ class Thumbnail
 		// Transparenz erhalten
 		$this->keepTransparent();
 		imagecopyresampled(
-				$this->imgthumb,
-				$this->imgsrc,
-				$this->thumbWidthOffset,
-				$this->thumbHeightOffset,
-				$this->widthOffset,
-				$this->heightOffset,
-				$this->thumbWidth,
-				$this->thumbHeight,
-				$this->width,
-				$this->height
+			$this->imgthumb,
+			$this->imgsrc,
+			$this->thumbWidthOffset,
+			$this->thumbHeightOffset,
+			$this->widthOffset,
+			$this->heightOffset,
+			$this->thumbWidth,
+			$this->thumbHeight,
+			$this->width,
+			$this->height
 		);
 	}
 
 	/**
 	 * Sorgt dafür, dass Bilder transparent bleiben
-	 *
-	 * @return void
 	 */
 	private function keepTransparent() {
-
 		if ($this->imageType == IMAGETYPE_PNG || $this->imageType == IMAGETYPE_GIF) {
 			if ($this->imageType == IMAGETYPE_GIF) {
 				imagepalettecopy($this->imgsrc, $this->imgthumb);
@@ -171,16 +164,16 @@ class Thumbnail
 
 	/**
 	 * determined whether the image need to be modified or not
+	 *
 	 * @return boolean
 	 */
 	private function imageGetsModified() {
+		$thumbLargerThanImage = $this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height;
+		$qualityTooHigh       = $this->thumbQuality >= $this->quality;
+		$noFilters            = empty($this->filters);
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		if (empty($this->filters)
- 			&& (!$this->upscalingAllowed
-				&& ($this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height))
-			&& $this->thumbQuality >= $this->quality) {
-
+		if ($noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $qualityTooHigh) {
 			return false;
 		}
 
@@ -190,13 +183,10 @@ class Thumbnail
 	/**
 	 * Schreibt das Thumbnail an den durch $file definierten Platz
 	 *
-	 * @param string $file Dateiname des zu generierenden Bildes
-	 * @return void
+	 * @param string $file  Dateiname des zu generierenden Bildes
 	 */
 	public function generateImage($file) {
-
 		if ($this->imageGetsModified()) {
-
 			$this->resampleImage();
 			$this->applyFilters();
 
@@ -204,12 +194,15 @@ class Thumbnail
 				case IMAGETYPE_JPEG:
 					imagejpeg($this->imgthumb, $file, $this->thumbQuality);
 					break;
+
 				case IMAGETYPE_PNG:
 					imagepng($this->imgthumb, $file);
 					break;
+
 				case IMAGETYPE_GIF:
 					imagegif($this->imgthumb, $file);
 					break;
+
 				case IMAGETYPE_WBMP:
 					imagewbmp($this->imgthumb, $file);
 					break;
@@ -228,11 +221,8 @@ class Thumbnail
 
 	/**
 	 * Wendet alle konfigurierten Filter auf das Thumbnail an
-	 *
-	 * @return void
 	 */
-	private function applyFilters()
-	{
+	private function applyFilters() {
 		foreach ($this->filters as $filter) {
 			$filter = preg_replace('#[^a-z0-9_]#i', '', $filter);
 			$file   = SLY_INCLUDE_PATH.'/addons/image_resize/filters/filter.'.$filter.'.inc.php';
@@ -246,26 +236,21 @@ class Thumbnail
 	/**
 	 * set height and width of thumbnail
 	 *
-	 * @param int $width Breite des Thumbs
-	 * @param int $height Höhe des Thumbs
-	 * @return void
+	 * @param int $width   Breite des Thumbs
+	 * @param int $height  Höhe des Thumbs
 	 */
 	private function resizeBoth($width, $height) {
-
-		if (!is_array($width) || !isset($width['value'])
-			|| !is_array($height) || !isset($height['value'])) {
-
+		if (!is_array($width) || !isset($width['value']) || !is_array($height) || !isset($height['value'])) {
 			return false;
 		}
 
-		$imgRatio  = $this->origWidth / $this->origHeight;
+		$imgRatio    = $this->origWidth / $this->origHeight;
 		$resizeRatio = $width['value'] / $height['value'];
 
 		// if image ratio is wider than thumb ratio
 		if ($imgRatio > $resizeRatio) {
 			// if image should be cropped
 			if (isset($width['crop']) && $width['crop']) {
-
 				// resize height
 				$this->resizeHeight($height);
 
@@ -370,16 +355,16 @@ class Thumbnail
 	 * Setzt die Höhe und Breite des Thumbnails
 	 *
 	 * @param int $size
-	 * @return void
 	 */
 	private function resizeHeight($size) {
-
 		if (!is_array($size) || !isset($size['value'])) {
 			return false;
 		}
+
 		if ($this->origHeight < $size['value'] && !$this->upscalingAllowed) {
 			$size['value'] = $this->origHeight;
 		}
+
 		$this->thumbHeight = (int) $size['value'];
 		$this->thumbWidth  = (int) round($this->origWidth / $this->origHeight * $this->thumbHeight);
 	}
@@ -388,16 +373,16 @@ class Thumbnail
 	 * Setzt die Höhe und Breite des Thumbnails
 	 *
 	 * @param int $size
-	 * @return void
 	 */
 	private function resizeWidth($size) {
-
 		if (!is_array($size) || !isset($size['value'])) {
 			return false;
 		}
+
 		if ($this->origWidth < $size['value'] && !$this->upscalingAllowed) {
 			$size['value'] = $this->origWidth;
 		}
+
 		$this->thumbWidth  = (int) $size['value'];
 		$this->thumbHeight = (int) ($this->origHeight / $this->origWidth * $this->thumbWidth);
 	}
@@ -405,11 +390,9 @@ class Thumbnail
 	/**
 	 * set height and width of thumbnail
 	 *
-	 * @param params Width, Height, Crop and Offset parameters
-	 * @return void
+	 * @param  array $params  Width, Height, Crop and Offset parameters
 	 */
 	public function setNewSize($params) {
-
 		// resize to square
 		if (isset($params['auto'])) {
 			$this->resizeBoth($params['auto'], $params['auto']);
@@ -432,26 +415,21 @@ class Thumbnail
 	}
 
 	/**
-	 * Wendet filtern auf das thumbnail an
-	 *
-	 * @return void
+	 * Wendet Filter auf das Thumbnail an
 	 */
 	public function addFilters() {
-		$this->filters = array_unique(array_filter(rex_get('rex_filter', 'array', array())));
+		$this->filters = array_unique(array_filter(sly_get('rex_filter', 'array', array())));
 	}
 
 	/**
-	 * sendet ein bearbeitetes bild an den browser
+	 * Sendet ein bearbeitetes Bild an den Browser
 	 *
 	 * @param string $rex_resize
-	 * @return void
 	 */
 	public static function getResizedImage($rex_resize) {
-		
 		$cachefile = self::getCacheFileName($rex_resize);
 
 		if (!self::USECACHE || !file_exists($cachefile)) {
-
 			// c100w__c200h__20r__20t__filename.jpg
 
 			// separate filename and parameters
@@ -468,14 +446,17 @@ class Thumbnail
 
 			// iterate parameters
 			$imgParams = array();
+
 			foreach ($params as $param) {
 				// check crop option
-				$crop = false;
+				$crop   = false;
 				$prefix = substr($param, 0, 1);
+
 				if ($prefix == 'c') {
 					$crop = true;
 					$param = substr($param, 1);
 				}
+
 				// identify type
 				$suffix = substr($param, strlen($param)-1);
 				// get value
@@ -487,18 +468,22 @@ class Thumbnail
 						case 'w':
 							$suffix = 'width';
 							break;
+
 						case 'h':
 							$suffix = 'height';
 							break;
+
 						case 'a':
 							$suffix = 'auto';
 							break;
+
 						case 'x':
 						case 'c':
 							$suffix = 'width';
 							$crop = true;
 							break;
 					}
+
 					$imgParams[$suffix] = array('value' => $value, 'crop' => ($crop));
 				}
 
@@ -506,18 +491,22 @@ class Thumbnail
 				if (in_array($suffix, array('o', 'r', 'l', 't', 'b'))) {
 					switch ($suffix) {
 						case 'o':
-							$imgParams['width']['offset']['left']    = $value;
-							$imgParams['height']['offset']['top']    = $value;
+							$imgParams['width']['offset']['left'] = $value;
+							$imgParams['height']['offset']['top'] = $value;
 							break;
+
 						case 'r':
-							$imgParams['width']['offset']['right']   = $value;
+							$imgParams['width']['offset']['right'] = $value;
 							break;
+
 						case 'l':
-							$imgParams['width']['offset']['left']    = $value;
+							$imgParams['width']['offset']['left'] = $value;
 							break;
+
 						case 't':
-							$imgParams['height']['offset']['top']    = $value;
+							$imgParams['height']['offset']['top'] = $value;
 							break;
+
 						case 'b':
 							$imgParams['height']['offset']['bottom'] = $value;
 							break;
@@ -528,15 +517,16 @@ class Thumbnail
 			if (empty($imageFile)) {
 				self::sendError();
 			}
+
 			try {
 				$thumb = new self($imageFile);
 				$thumb->setNewSize($imgParams);
 				$thumb->addFilters();
 				$thumb->generateImage($cachefile);
-			}catch(Exception $e) {
+			}
+			catch (Exception $e) {
 				self::sendError();
 			}
-
 		}
 
 		$cachetime = filectime($cachefile);
@@ -546,11 +536,10 @@ class Thumbnail
 	/**
 	 * Löscht den Cache
 	 *
-	 * @param $filename um ein bestimmtes bild zu löschen
-	 * @return int Anzahl der gelöschten Bilder
+	 * @param  string $filename  um ein bestimmtes Bild zu löschen
+	 * @return int               Anzahl der gelöschten Bilder
 	 */
-	public static function deleteCache($filename = '')
-	{
+	public static function deleteCache($filename = '') {
 		$service = sly_Service_Factory::getService('AddOn');
 		$folder  = $service->publicFolder('image_resize');
 		$c       = 0;
@@ -574,6 +563,7 @@ class Thumbnail
 	}
 
 	/**
+	 * @param  array  EP-Parameter
 	 * @return int
 	 */
 	public static function mediaUpdated($params) {
@@ -583,47 +573,46 @@ class Thumbnail
  	/**
 	 * return the image types supported by this PHP build
 	 *
-	 * @return array     supported types as strings
+	 * @return array  supported types as strings
 	 */
 	public static function getSupportedTypes() {
-	    $aSupportedTypes = array();
+		$aSupportedTypes = array();
 
-	    $aPossibleImageTypeBits = array(
-	        'GIF' => IMAGETYPE_GIF,
-	        'JPEG' => IMAGETYPE_JPEG,
-	        'PNG' => IMAGETYPE_PNG,
-	        'WBMP' => IMAGETYPE_WBMP
-	    );
+		$aPossibleImageTypeBits = array(
+			'GIF'  => IMAGETYPE_GIF,
+			'JPEG' => IMAGETYPE_JPEG,
+			'PNG'  => IMAGETYPE_PNG,
+			'WBMP' => IMAGETYPE_WBMP
+		);
 
-	    foreach ($aPossibleImageTypeBits as $sImageTypeString => $iImageTypeBits) {
-	        if (imagetypes() & $iImageTypeBits) {
+		foreach ($aPossibleImageTypeBits as $sImageTypeString => $iImageTypeBits) {
+			if (imagetypes() & $iImageTypeBits) {
 				$aSupportedTypes[$sImageTypeString] = $iImageTypeBits;
 			}
-	    }
+		}
 
-	    return $aSupportedTypes;
+		return $aSupportedTypes;
 	}
 
 	/**
-	 * @return string image type
+	 * @param  string $fileName
+	 * @return string            image type
 	 */
 	private static function getImageType($fileName) {
-
 		$allowedTypes = self::getSupportedTypes();
 
-		if (!$fileName || !is_array($allowedTypes) || empty($allowedTypes)) return false;
-			
-		$imgInfo = getImageSize($fileName);
-		if (!is_array($imgInfo) || empty($imgInfo)
-			|| !array_key_exists(2, $imgInfo) || !is_int($imgInfo[2])) {
-
-			return FALSE;
+		if (!$fileName || !is_array($allowedTypes) || empty($allowedTypes)) {
+			return false;
 		}
 
-		if (!in_array($imgInfo[2], $allowedTypes)) return FALSE;
+		$imgInfo = getImageSize($fileName);
 
+		if (!is_array($imgInfo) || empty($imgInfo) || !array_key_exists(2, $imgInfo) || !is_int($imgInfo[2])) {
+			return false;
+		}
+
+		if (!in_array($imgInfo[2], $allowedTypes)) return false;
 		return $imgInfo[2];
-
 	}
 
 	/**
@@ -632,8 +621,7 @@ class Thumbnail
 	 * @param string $rex_resize
 	 * @return string Dateiname des Bildes im Cache
 	 */
-	private static function getCacheFileName($rex_resize)
-	{
+	private static function getCacheFileName($rex_resize) {
 		$service = sly_Service_Factory::getService('AddOn');
 		$folder  = $service->publicFolder('image_resize');
 		return $folder.'/cache__'.str_replace(array('http://', 'https://', '/'), array('', '', '_'), $rex_resize);
@@ -644,10 +632,8 @@ class Thumbnail
 	 *
 	 * @return void
 	 */
-	private static function sendError()
-	{
+	private static function sendError() {
 		header('HTTP/1.0 404 Not Found');
-
 		self::sendImage(SLY_INCLUDE_PATH.'/addons/image_resize/media/'.self::ERRORFILE, true);
 	}
 
@@ -659,10 +645,9 @@ class Thumbnail
 	 * @return void
 	 */
 	private static function sendImage($fileName, $error = false) {
-		
 		while (ob_get_level()) ob_end_clean();
 
-		if(!$error) {
+		if (!$error) {
 			$etag = md5($fileName.filectime($fileName));
 
 			if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] == $etag) {

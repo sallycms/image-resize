@@ -13,8 +13,7 @@
  */
 
 // Resize WYSIWYG Editor Images
-function rex_resize_wysiwyg_output($params)
-{
+function rex_resize_wysiwyg_output($params) {
 	$content = $params['subject'];
 
 	preg_match_all('#<img [^\>]*src=\"(data\/mediapool\/([^\"]*))[^\>]*>#is', $content, $matches);
@@ -25,7 +24,7 @@ function rex_resize_wysiwyg_output($params)
 			if ($width) {
 				if (file_exists(SLY_BASE.'/data/mediapool/'.$matches[2][$key])) {
 					$realsize = getimagesize(SLY_BASE.'/data/mediapool/'.$matches[2][$key]);
-					
+
 					if ($realsize[0] != $width[1]) {
 						$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
 						$newimage = str_replace($matches[1][$key], $newsrc, $var);
