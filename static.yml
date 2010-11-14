@@ -1,5 +1,5 @@
 rxid: "469"
-page: "image_resize"
+page: "imageresize"
 name: "translate:iresize_image_resize"
 perm: "image_resize[]"
 author: "Wolfgang Hutteger, Markus Staab, Jan Kristinus, Christian Zozmann, Christoph Mewes"

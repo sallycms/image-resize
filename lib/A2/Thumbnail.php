@@ -14,7 +14,7 @@
  * @version 1.7.0
  */
 
-class Thumbnail {
+class A2_Thumbnail {
 	const ERRORFILE = 'error.png';
 	const QUALITY   = 85;
 	const USECACHE  = true;

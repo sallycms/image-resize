@@ -1,4 +1,3 @@
-<?php
 /*
  * Copyright (c) 2010, webvariants GbR, http://www.webvariants.de
  *
@@ -8,5 +7,9 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-require_once dirname(__FILE__).'/lib/A2/Thumbnail.php';
-A2_Thumbnail::deleteCache();
+#rex-page-imageresize .sly-form {
+	label { width: 480px; }
+	.rex-form-text input.rex-form-text { width: 40px; }
+	#upscaling_allowed { padding-left: 480px; }
+	input.rex-form-submit { margin-left: 480px; }
+}

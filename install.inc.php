@@ -1,26 +1,21 @@
 <?php
-/**
- * Image-Resize Addon
+/*
+ * Copyright (c) 2010, webvariants GbR, http://www.webvariants.de
  *
- * @author office[at]vscope[dot]at Wolfgang Hutteger
- * @author <a href="http://www.vscope.at">www.vscope.at</a>
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
  *
- * @author markus[dot]staab[at]redaxo[dot]de Markus Staab
- *
- * @author zozi@webvariants.de
- * 
- *
- * @package sally 0.3
+ * http://www.opensource.org/licenses/mit-license.php
  */
-
-$error   = '';
-$service = sly_Service_Factory::getService('AddOn');
 
 if (!extension_loaded('gd')) {
 	throw new Exception('GD-LIB-extension not available! See <a href="http://www.php.net/gd">http://www.php.net/gd</a>');
 }
 
-$pubDir = $service->publicFolder('image_resize');
-if (($state = rex_is_writable($pubDir)) !== true) {
+$service = sly_Service_Factory::getService('AddOn');
+$pubDir  = $service->publicFolder('image_resize');
+$state   = rex_is_writable($pubDir);
+
+if ($state !== true) {
 	throw new Exception($state);
 }
