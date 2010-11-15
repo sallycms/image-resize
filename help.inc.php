@@ -9,23 +9,23 @@
  * @author zozi@webvariants.de
  * 
  *
- * @package redaxo4
+ * @package sally 0.3
  * @version $Id: 
  */
 ?>
-<h3>Features:</h3>
+<h3 class="rex-hl3">Features:</h3>
 
-<p>Makes resize of images on the fly, with extra cache of resized images so performance loss is extremly small.</p>
+<p class="rex-tx1">Makes resize of images on the fly, with extra cache of resized images so performance loss is extremly small.</p>
 
-<h3>Usage:</h3>
-<p>call an image that way <b>imageresize/100w__imagefile</b>
+<h3 class="rex-hl3">Usage:</h3>
+<p class="rex-tx1">call an image that way <b>imageresize/100w__imagefile</b>
  to resize the imagefile to a width of 100px</p>
 
-<p><b>Notice:</b> if mod-rewrite doesn't work on this server, you can use the old syntax instead:</p>
-<p>index.php?rex_resize=100w__imagefile</p>
+<p class="rex-tx1"><b>Notice:</b> if mod-rewrite doesn't work on this server, you can use the old syntax instead:</p>
+<p class="rex-tx1">index.php?rex_resize=100w__imagefile</p>
 
-<h3>Methods:</h3>
-<p>
+<h3 class="rex-hl3">Methods:</h3>
+<p class="rex-tx1">
 w = width       (max width)<br />
 h = height      (max height)<br />
 a = automatic   (max width and max height are the same)<br />
@@ -37,16 +37,16 @@ t = top         (offset from top) <br />
 b = bottom      (offset from bottom) <br />
 </p>
 
-<h3>Default-Filters:</h3>
-<p>
+<h3 class="rex-hl3">Default-Filters:</h3>
+<p class="rex-tx1">
 blur<br />
 brand<br />
 sepia<br />
 sharpen
 </p>
 
-<h3>Examples:</h3>
-<p>
+<h3 class="rex-hl3">Examples:</h3>
+<p class="rex-tx1">
 resize image to a length of 100px and calculate heigt to match ratio<br />
 <b>imageresize/100w__imagefile</b><br />
 or <b>index.php?rex_resize=100w__imagefile</b>
