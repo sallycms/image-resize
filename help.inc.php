@@ -77,7 +77,7 @@ resize image to a width of 100px and crop to a height of 200px if nessessary<br 
 or <b>index.php?rex_resize=100w__c200h__imagefile</b>
 
 <br /><br />
-resize and crop image to a width of 100px and a height of 200px<br />
+crop image to a width of 100px and a height of 200px<br />
 <b>imageresize/c100w__c200h__imagefile</b>
 or <b>index.php?rex_resize=c100w__c200h__imagefile</b>
 
