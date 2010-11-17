@@ -432,8 +432,8 @@ class A2_Thumbnail {
 		if (!self::USECACHE || !file_exists($cachefile)) {
 			// c100w__c200h__20r__20t__filename.jpg
 
-			// separate filename and parameters
-			preg_match('@((?:c?[0-9]{1,4}[whaxc]__)*(?:\-?[0-9]{1,4}[orltb]?__)*)(.*)@', $rex_resize, $params);
+			// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
+			preg_match('@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2})(.*)@', $rex_resize, $params);
 			if (!isset($params[1]) || !isset($params[2])) return false;
 
 			// get filename
