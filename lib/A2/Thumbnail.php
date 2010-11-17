@@ -163,17 +163,17 @@ class A2_Thumbnail {
 	}
 
 	/**
-	 * determined whether the image need to be modified or not
+	 * determine whether the image needs to be modified or not
 	 *
 	 * @return boolean
 	 */
 	private function imageGetsModified() {
 		$thumbLargerThanImage = $this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height;
-		$qualityTooHigh       = $this->thumbQuality >= $this->quality;
+		$thumbQualityTooLow   = $this->thumbQuality >= $this->quality;
 		$noFilters            = empty($this->filters);
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		if ($noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $qualityTooHigh) {
+		if ($noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $thumbQualityTooLow) {
 			return false;
 		}
 
