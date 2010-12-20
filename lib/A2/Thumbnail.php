@@ -674,4 +674,27 @@ class A2_Thumbnail {
 		readfile($fileName);
 		exit();
 	}
+	
+	public static function scaleMediaImagesInHtml($html, $maxImageSize = 500) {
+		// use imageresize to scale images instead of style width and height
+		$html = preg_replace(
+			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
+			'src="imageresize/\1w__\2h__\3"',
+			$html);
+		// the same just height first
+		$html = preg_replace(
+			'~style="height\:[ ]*([0-9]+)px;[ ]*width\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
+			'src="imageresize/\2w__\1h__\3"',
+			$html);
+
+		// resize the rest of the images to max resize value
+		if ($maxImageSize) {
+			$html = preg_replace(
+				'~src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
+				'src="imageresize/'.$maxImageSize.'a__\1"',
+				$html);
+		}
+
+		return $html;
+	}
 }
