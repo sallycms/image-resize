@@ -16,7 +16,6 @@
 
 class A2_Thumbnail {
 	const ERRORFILE = 'error.png';
-	const QUALITY   = 85;
 	const USECACHE  = true;
 
 	private $fileName = '';
@@ -39,7 +38,7 @@ class A2_Thumbnail {
 	private $thumbHeight       = 0;
 	private $thumbWidthOffset  = 0;
 	private $thumbHeightOffset = 0;
-	private $thumbQuality      = self::QUALITY;
+	private $thumbQuality      = 85;
 
 	private $upscalingAllowed = false;
 
@@ -74,8 +73,8 @@ class A2_Thumbnail {
 
 		$service = sly_Service_Factory::getAddOnService();
 
-		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality');
-		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed');
+		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
+		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
 	}
 
 	/**
