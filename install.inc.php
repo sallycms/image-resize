@@ -14,8 +14,8 @@ if (!extension_loaded('gd')) {
 
 $service = sly_Service_Factory::getService('AddOn');
 $pubDir  = $service->publicFolder('image_resize');
-$state   = rex_is_writable($pubDir);
+$state   = is_writable($pubDir);
 
 if ($state !== true) {
-	throw new Exception($state);
+	throw new Exception('The cache directory ('.$pubDir.') has no writing permissions.');
 }
