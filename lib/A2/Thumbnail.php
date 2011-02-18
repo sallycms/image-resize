@@ -194,6 +194,7 @@ class A2_Thumbnail {
 
 			switch ($this->imageType) {
 				case IMAGETYPE_JPEG:
+					imageinterlace($this->imgthumb, true); // set to progressive mode
 					imagejpeg($this->imgthumb, $file, $this->thumbQuality);
 					break;
 
