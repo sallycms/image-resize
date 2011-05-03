@@ -54,7 +54,7 @@ class A2_Thumbnail {
 		}
 
 		$this->imageType = self::getImageType($this->fileName);
-		
+
 		// avoid resizing animated gifs by sending the original image
 		if ($this->imageType == IMAGETYPE_GIF && self::is_animated_gif($this->fileName)) {
 			self::sendImage($this->fileName);
@@ -712,8 +712,8 @@ class A2_Thumbnail {
 		readfile($fileName);
 		exit();
 	}
-	
-	public static function scaleMediaImagesInHtml($html, $maxImageSize = 500) {
+
+	public static function scaleMediaImagesInHtml($html, $maxImageSize = 650) {
 		// use imageresize to scale images instead of style width and height
 		$html = preg_replace(
 			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
