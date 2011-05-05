@@ -39,11 +39,17 @@ function image_resize_sepia(&$src_im, $quality = 60) {
 			$g = $grey * 0.98;
 			$b = $grey * 0.90;
 
+			// round to positive int values
+
+			$r = abs(round($r));
+			$g = abs(round($g));
+			$b = abs(round($b));
+
 			// Correct max values
 
-			$r   = max($r, 255);
-			$g   = max($g, 255);
-			$b   = max($b, 255);
+			$r   = min($r, 255);
+			$g   = min($g, 255);
+			$b   = min($b, 255);
 			$col = imagecolorallocate($dst_im, $r, $g, $b);
 
 			imagesetpixel($dst_im, $x, $y, $col);
