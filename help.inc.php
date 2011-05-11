@@ -7,10 +7,10 @@
  *
  * @author markus[dot]staab[at]redaxo[dot]de Markus Staab
  * @author zozi@webvariants.de
- * 
  *
- * @package sally 0.3
- * @version $Id: 
+ *
+ * @package sally 0.4
+ * @version $Id:
  */
 ?>
 <h3 class="rex-hl3">Features:</h3>
@@ -107,7 +107,7 @@ resize and crop image to a square of 100x100px<br />
 or <b>index.php?rex_resize=c100a__imagefile</b>
 
 <br /><br />
-add filter/s: here blur and sepia<br />
-<b>index.php?rex_resize=200a__imagefile&amp;rex_filter[]=blur&amp;rex_filter[]=sepia</b>
+add filters: here blur and sepia<br />
+<b>index.php?rex_resize=200a__fblur__fsepia__imagefile</b>
 
 </p>

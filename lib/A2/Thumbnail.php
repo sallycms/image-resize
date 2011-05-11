@@ -228,16 +228,17 @@ class A2_Thumbnail {
 	}
 
 	/**
-	 * Wendet alle konfigurierten Filter auf das Thumbnail an
+	 * use all requested filters on the thumb
 	 */
 	private function applyFilters() {
 		foreach ($this->filters as $filter) {
-			$filter = preg_replace('#[^a-z0-9_]#i', '', $filter);
-			$file   = SLY_INCLUDE_PATH.'/addons/image_resize/filters/filter.'.$filter.'.inc.php';
-			$fname  = 'image_resize_'.$filter;
-
-			if (file_exists($file))      require_once $file;
-			if (function_exists($fname)) $fname($this->imgthumb);
+			$filter = preg_replace('#[^a-z0-9]#i', '', $filter);
+			$filterClass = 'A2_Filters_'.ucfirst($filter);
+			if (method_exists($filterClass, 'filter')) {
+				$return = call_user_func(array($filterClass, 'filter'), $this->imgthumb);
+				if ($return) $this->imgthumb = $return;
+				unset($return);
+			}
 		}
 	}
 
@@ -425,8 +426,10 @@ class A2_Thumbnail {
 	/**
 	 * Wendet Filter auf das Thumbnail an
 	 */
-	public function addFilters() {
-		$this->filters = array_unique(array_filter(sly_get('rex_filter', 'array', array())));
+	public function addFilters($filters) {
+		if (!is_array($filters) || empty($filters)) return false;
+
+		$this->filters = array_unique(array_filter($filters));
 	}
 
 	/**
@@ -441,11 +444,15 @@ class A2_Thumbnail {
 			// c100w__c200h__20r__20t__filename.jpg
 
 			// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
-			preg_match('@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2})(.*)@', $rex_resize, $params);
+			preg_match('@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*)(.*)@', $rex_resize, $params);
 			if (!isset($params[1]) || !isset($params[2])) return false;
 
 			// get filename
 			$imageFile = $params[2];
+
+			if (empty($imageFile)) {
+				self::sendError();
+			}
 
 			// trim _ at the end
 			$params = trim($params[1], '_');
@@ -455,6 +462,8 @@ class A2_Thumbnail {
 			// iterate parameters
 			$imgParams = array();
 
+			$filters = array();
+
 			foreach ($params as $param) {
 				// check crop option
 				$crop   = false;
@@ -463,6 +472,10 @@ class A2_Thumbnail {
 				if ($prefix == 'c') {
 					$crop = true;
 					$param = substr($param, 1);
+				}
+				elseif ($prefix == 'f') {
+					$filters[] = substr($param, 1);
+					continue;
 				}
 
 				// identify type
@@ -522,14 +535,10 @@ class A2_Thumbnail {
 				}
 			}
 
-			if (empty($imageFile)) {
-				self::sendError();
-			}
-
 			try {
 				$thumb = new self($imageFile);
 				$thumb->setNewSize($imgParams);
-				$thumb->addFilters();
+				$thumb->addFilters($filters);
 				$thumb->generateImage($cachefile);
 			}
 			catch (Exception $e) {
