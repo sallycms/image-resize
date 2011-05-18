@@ -89,6 +89,8 @@ class A2_Thumbnail {
 			$this->thumbWidth  = $this->width;
 			$this->thumbHeight = $this->height;
 		}
+		$this->thumbWidth  = max(1, $this->thumbWidth);
+		$this->thumbHeight = max(1, $this->thumbHeight);
 
 		$this->thumbWidth  = max(1, $this->thumbWidth);
 		$this->thumbHeight = max(1, $this->thumbHeight);
