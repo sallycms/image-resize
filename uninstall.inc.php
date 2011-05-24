@@ -9,4 +9,3 @@
  */
 
 require_once dirname(__FILE__).'/lib/A2/Thumbnail.php';
-A2_Thumbnail::deleteCache();

@@ -13,7 +13,7 @@ if (!extension_loaded('gd')) {
 }
 
 if (version_compare(sly_Core::getVersion('X.Y.Z'), '0.4.2', '<')) {
-	throw new Exception('This version of Image Resize requires at least Sally 0.4.2.');
+	throw new Exception('This version requires at least Sally 0.4.2.');
 }
 
 $service = sly_Service_Factory::getAddOnService();
