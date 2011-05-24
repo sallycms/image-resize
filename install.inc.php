@@ -12,7 +12,11 @@ if (!extension_loaded('gd')) {
 	throw new Exception('GD-LIB-extension not available! See <a href="http://www.php.net/gd">http://www.php.net/gd</a>');
 }
 
-$service = sly_Service_Factory::getService('AddOn');
+if (version_compare(sly_Core::getVersion('X.Y.Z'), '0.4.2', '<')) {
+	throw new Exception('This version of Image Resize requires at least Sally 0.4.2.');
+}
+
+$service = sly_Service_Factory::getAddOnService();
 $pubDir  = $service->publicFolder('image_resize');
 $state   = is_writable($pubDir);
 

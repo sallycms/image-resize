@@ -12,19 +12,14 @@
  */
 
 sly_Loader::addLoadPath(dirname(__FILE__).'/lib');
+sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
 
-if (sly_Core::isBackend()) {
-	sly_Core::dispatcher()->register('MEDIA_UPDATED', array('A2_Thumbnail', 'mediaUpdated'));
-	sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
-}
-else {
-	$rex_resize = sly_get('rex_resize', 'string', null);
+if (!sly_Core::isBackend()) {
+	$dispatcher = sly_Core::dispatcher();
 
-	if (!empty($rex_resize)) { // start resizing
-		A2_Thumbnail::getResizedImage(urldecode($rex_resize));
-	}
-	else { // try to make nicer html output
-		require_once dirname(__FILE__).'/extensions/extension_wysiwyg.inc.php';
-		sly_Core::dispatcher()->register('OUTPUT_FILTER', 'rex_resize_wysiwyg_output');
-	}
+	$dispatcher->register(sly_Service_Asset::EVENT_PROCESS_ASSET, array('A2_Extensions', 'resizeListener'));
+	$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
+
+	require_once dirname(__FILE__).'/extensions/extension_wysiwyg.inc.php';
+	$dispatcher->register('OUTPUT_FILTER', 'rex_resize_wysiwyg_output');
 }

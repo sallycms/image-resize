@@ -10,14 +10,11 @@
  *
  * @author memento@webvariants.de
  *
- * @package sally 0.3
+ * @package sally 0.4
  * @version 1.7.0
  */
 
 class A2_Thumbnail {
-	const ERRORFILE = 'error.png';
-	const USECACHE  = true;
-
 	private $fileName = '';
 
 	private $imgsrc   = null;
@@ -43,32 +40,28 @@ class A2_Thumbnail {
 	private $upscalingAllowed = false;
 
 	public function __construct($imgfile) {
-		$this->fileName = $imgfile;
+		$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imgfile;
 
-		if (strpos($imgfile, 'http://') !== 0) {
-			$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$this->fileName;
-
-			if (!file_exists($this->fileName)) {
-				throw new Exception('File '.$this->fileName.' does not exist.');
-			}
+		if (!file_exists($this->fileName)) {
+			throw new Exception('File '.$this->fileName.' does not exist.', 404);
 		}
 
-		$this->imageType = self::getImageType($this->fileName);
+		$this->imageType = $this->getImageType();
 
 		// avoid resizing animated gifs by sending the original image
-		if ($this->imageType == IMAGETYPE_GIF && self::is_animated_gif($this->fileName)) {
-			self::sendImage($this->fileName);
+		if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
+			throw new Exception('I will not resize animated GIFs, sorry.', 501);
 		}
 
 		if (!$this->imageType) {
-			throw new Exception('File is not a supported image type.');
+			throw new Exception('File is not a supported image type.', 406);
 		}
 
 		$data = file_get_contents($this->fileName);
 		$this->imgsrc = imagecreatefromstring($data);
 
 		if (!$this->imgsrc) {
-			throw new Exception('Can not create valid Image Source.');
+			throw new Exception('Can not create valid Image Source.', 500);
 		}
 
 		$this->origWidth  = imagesx($this->imgsrc);
@@ -96,6 +89,7 @@ class A2_Thumbnail {
 			$this->thumbWidth  = $this->width;
 			$this->thumbHeight = $this->height;
 		}
+
 		$this->thumbWidth  = max(1, $this->thumbWidth);
 		$this->thumbHeight = max(1, $this->thumbHeight);
 
@@ -107,7 +101,7 @@ class A2_Thumbnail {
 		}
 
 		if (!$this->imgthumb) {
-			throw new Exception('Can not create valid Thumbnail Image');
+			throw new Exception('Can not create valid Thumbnail Image', 500);
 		}
 
 		// Transparenz erhalten
@@ -430,164 +424,8 @@ class A2_Thumbnail {
 	 */
 	public function addFilters($filters) {
 		if (!is_array($filters) || empty($filters)) return false;
-
 		$this->filters = array_unique(array_filter($filters));
-	}
-
-	/**
-	 * Sendet ein bearbeitetes Bild an den Browser
-	 *
-	 * @param string $rex_resize
-	 */
-	public static function getResizedImage($rex_resize) {
-		$cachefile = self::getCacheFileName($rex_resize);
-
-		if (!self::USECACHE || !file_exists($cachefile)) {
-			// c100w__c200h__20r__20t__filename.jpg
-
-			// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
-			preg_match('@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*)(.*)@', $rex_resize, $params);
-			if (!isset($params[1]) || !isset($params[2])) return false;
-
-			// get filename
-			$imageFile = $params[2];
-
-			if (empty($imageFile)) {
-				self::sendError();
-			}
-
-			// trim _ at the end
-			$params = trim($params[1], '_');
-			// split parameters
-			$params = explode('__', $params);
-
-			// iterate parameters
-			$imgParams = array();
-
-			$filters = array();
-
-			foreach ($params as $param) {
-				// check crop option
-				$crop   = false;
-				$prefix = substr($param, 0, 1);
-
-				if ($prefix == 'c') {
-					$crop = true;
-					$param = substr($param, 1);
-				}
-				elseif ($prefix == 'f') {
-					$filters[] = substr($param, 1);
-					continue;
-				}
-
-				// identify type
-				$suffix = substr($param, strlen($param)-1);
-				// get value
-				$value = substr($param, 0, strlen($param)-1);
-
-				// set parameters for resizing (x and c just for backwards compatibility)
-				if (in_array($suffix, array('w', 'h', 'a', 'x', 'c'))) {
-					switch ($suffix) {
-						case 'w':
-							$suffix = 'width';
-							break;
-
-						case 'h':
-							$suffix = 'height';
-							break;
-
-						case 'a':
-							$suffix = 'auto';
-							break;
-
-						case 'x':
-						case 'c':
-							$suffix = 'width';
-							$crop = true;
-							break;
-					}
-
-					$imgParams[$suffix] = array('value' => $value, 'crop' => ($crop));
-				}
-
-				// set parameters for crop offset
-				if (in_array($suffix, array('o', 'r', 'l', 't', 'b'))) {
-					switch ($suffix) {
-						case 'o':
-							$imgParams['width']['offset']['left'] = $value;
-							$imgParams['height']['offset']['top'] = $value;
-							break;
-
-						case 'r':
-							$imgParams['width']['offset']['right'] = $value;
-							break;
-
-						case 'l':
-							$imgParams['width']['offset']['left'] = $value;
-							break;
-
-						case 't':
-							$imgParams['height']['offset']['top'] = $value;
-							break;
-
-						case 'b':
-							$imgParams['height']['offset']['bottom'] = $value;
-							break;
-					}
-				}
-			}
-
-			try {
-				$thumb = new self($imageFile);
-				$thumb->setNewSize($imgParams);
-				$thumb->addFilters($filters);
-				$thumb->generateImage($cachefile);
-			}
-			catch (Exception $e) {
-				self::sendError();
-			}
-		}
-
-		$cachetime = filectime($cachefile);
-		self::sendImage($cachefile, $cachetime);
-	}
-
-	/**
-	 * Löscht den Cache
-	 *
-	 * @param  string $filename  um ein bestimmtes Bild zu löschen
-	 * @return int               Anzahl der gelöschten Bilder
-	 */
-	public static function deleteCache($filename = '') {
-		$service = sly_Service_Factory::getService('AddOn');
-		$folder  = $service->publicFolder('image_resize');
-		$c       = 0;
-		$files   = glob($folder.'/cache__*');
-
-		if ($files) {
-			if (empty($filename)) {
-				array_map('unlink', $files);
-				return count($files);
-			}
-
-			foreach ($files as $file) {
-				if ($filename == substr($file, -strlen($filename))) {
-					unlink($file);
-					++$c;
-				}
-			}
-		}
-
-		return $c;
-	}
-
-	/**
-	 * @param  array  EP-Parameter
-	 * @return int
-	 */
-	public static function mediaUpdated($params) {
-		if (!isset($params['filename'])) return false;
-		return self::deleteCache($params['filename']);
+		return true;
 	}
 
  	/**
@@ -617,27 +455,28 @@ class A2_Thumbnail {
 	/**
 	 * Thanks to ZeBadger for original example, and Davide Gualano for pointing me to it
 	 * Original at http://it.php.net/manual/en/function.imagecreatefromgif.php#59787
-	 **/
-	private static function is_animated_gif($filename) {
-
-		$raw = file_get_contents($filename);
-
+	 */
+	private static function isAnimatedGIF($filename) {
+		$raw    = file_get_contents($filename);
 		$offset = 0;
 		$frames = 0;
+
 		while ($frames < 2) {
 			$where1 = strpos($raw, "\x00\x21\xF9\x04", $offset);
+
 			if ($where1 === false) {
 				break;
 			}
 			else {
 				$offset = $where1 + 1;
 				$where2 = strpos($raw, "\x00\x2C", $offset);
+
 				if ($where2 === false) {
 					break;
 				}
 				else {
 					if ($where1 + 8 == $where2) {
-						$frames ++;
+						++$frames;
 					}
 					$offset = $where2 + 1;
 				}
@@ -648,80 +487,20 @@ class A2_Thumbnail {
 	}
 
 	/**
-	 * @param  string $fileName
-	 * @return string            image type
+	 * @return string  image type
 	 */
-	private static function getImageType($fileName) {
+	private function getImageType() {
 		$allowedTypes = self::getSupportedTypes();
 
-		if (!$fileName || !is_array($allowedTypes) || empty($allowedTypes)) {
+		if (!is_array($allowedTypes) || empty($allowedTypes)) {
 			return false;
 		}
 
-		$imgInfo = getImageSize($fileName);
-
-		if (!is_array($imgInfo) || empty($imgInfo) || !array_key_exists(2, $imgInfo) || !is_int($imgInfo[2])) {
-			return false;
-		}
+		$imgInfo = getimagesize($this->fileName);
+		if ($imgInfo === false) return false;
 
 		if (!in_array($imgInfo[2], $allowedTypes)) return false;
 		return $imgInfo[2];
-	}
-
-	/**
-	 * Gibt den Dateinamen eines Bildes anhand des rex_resize Parameters zurück
-	 *
-	 * @param string $rex_resize
-	 * @return string Dateiname des Bildes im Cache
-	 */
-	private static function getCacheFileName($rex_resize) {
-		$service = sly_Service_Factory::getService('AddOn');
-		$folder  = $service->publicFolder('image_resize');
-		return $folder.'/cache__'.str_replace(array('http://', 'https://', '/'), array('', '', '_'), $rex_resize);
-	}
-
-	/**
-	 * Sendet die Fehlerdatei
-	 *
-	 * @return void
-	 */
-	private static function sendError() {
-		header('HTTP/1.0 404 Not Found');
-		self::sendImage(SLY_INCLUDE_PATH.'/addons/image_resize/media/'.self::ERRORFILE, true);
-	}
-
-	/**
-	 * Sendet ein Bild an den Browser und beendet das Script
-	 *
-	 * @param string $fileName Dateiname des Bildes
-	 * @param timestamp $lastModified wann wurde das Bild zuletzt modifiziert?
-	 * @return void
-	 */
-	private static function sendImage($fileName, $error = false) {
-		while (ob_get_level()) ob_end_clean();
-
-		if (!$error) {
-			$etag = md5($fileName.filectime($fileName));
-
-			if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] == $etag) {
-				header('HTTP/1.0 304 Not Modified');
-				exit();
-			}
-			if (!is_readable($fileName)) {
-				trigger_error('The Image "'.$fileName.'" cannot be read.', E_USER_WARNING);
-				header('HTTP/1.0 404 Not Found');
-				exit();
-			}
-
-			header('ETag: '.$etag);
-			header('Cache-Control: ');
-			header('Pragma: ');
-		}
-
-		header('Content-Type: '.image_type_to_mime_type(self::getImageType($fileName)));
-
-		readfile($fileName);
-		exit();
 	}
 
 	public static function scaleMediaImagesInHtml($html, $maxImageSize = 650) {
@@ -729,19 +508,23 @@ class A2_Thumbnail {
 		$html = preg_replace(
 			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
 			'src="imageresize/\1w__\2h__\3"',
-			$html);
+			$html
+		);
+
 		// the same just height first
 		$html = preg_replace(
 			'~style="height\:[ ]*([0-9]+)px;[ ]*width\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
 			'src="imageresize/\2w__\1h__\3"',
-			$html);
+			$html
+		);
 
 		// resize the rest of the images to max resize value
 		if ($maxImageSize) {
 			$html = preg_replace(
 				'~src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
 				'src="imageresize/'.$maxImageSize.'a__\1"',
-				$html);
+				$html
+			);
 		}
 
 		return $html;
