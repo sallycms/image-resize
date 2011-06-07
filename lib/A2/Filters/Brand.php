@@ -2,18 +2,13 @@
 /**
  * Branded ein Bild mit einem Wasserzeichen
  *
- * Der Filter sucht im Verzeichnis addons/image_resize/media/
- * nach einem Bild mit dem Dateinamen "brand.*" und verwendet den 1. Treffer
+ * Der Filter sucht im Medienpool nach einem Bild mit dem Dateinamen "branding.*"
+ * und verwendet den 1. Treffer
  */
 class A2_Filters_Brand {
-
 	public static function filter($src_im) {
-
-		$files = glob(SLY_INCLUDE_PATH.'/addons/image_resize/media/brand.*');
-
-		if (empty($files)) {
-			return;
-		}
+		$files = glob(SLY_MEDIAFOLDER.'/branding.*');
+		if (empty($files)) return;
 
 		$brandImage = $files[0];
 		$brand      = new A2_Thumbnail($brandImage);
@@ -63,7 +58,6 @@ class A2_Filters_Brand {
 		imagecopy($src_im, $brand->getImage(), $dstX + $paddX, $dstY + $paddY, 0, 0, $brand->getImageWidth(), $brand->getImageHeight());
 
 		$brand->destroyImage();
-
 
 		return $src_im;
 	}
