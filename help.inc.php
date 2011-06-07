@@ -108,6 +108,7 @@ or <b>index.php?rex_resize=c100a__imagefile</b>
 
 <br /><br />
 add filters: here blur and sepia<br />
-<b>index.php?rex_resize=200a__fblur__fsepia__imagefile</b>
+<b>imageresize/200a__fblur__fsepia__imagefile</b>
+or <b>index.php?rex_resize=200a__fblur__fsepia__imagefile</b>
 
 </p>
