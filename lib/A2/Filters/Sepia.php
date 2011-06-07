@@ -1,4 +1,4 @@
-<?
+<?php
 
 class A2_Filters_Sepia {
 	public static function filter($src_im) {

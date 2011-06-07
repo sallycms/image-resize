@@ -1,9 +1,7 @@
 <?php
 
 class A2_Filters_Monochrome {
-
-	public static function filter($src_im, $rFactor=1.0, $gFactor=1.0, $bFactor=1.0) {
-
+	public static function filter($src_im, $rFactor = 1.0, $gFactor = 1.0, $bFactor = 1.0) {
 		$src_x  = ceil(imagesx($src_im));
 		$src_y  = ceil(imagesy($src_im));
 		$dst_x  = $src_x;
@@ -61,5 +59,4 @@ class A2_Filters_Monochrome {
 
 		return $dst_im;
 	}
-
 }

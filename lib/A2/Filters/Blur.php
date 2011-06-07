@@ -15,9 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 class A2_Filters_Blur {
-
 	public static function filter($img, $amount = 80, $radius = 8, $threshold = 3) {
-
 		// Attempt to calibrate the parameters to Photoshop:
 
 		if ($amount > 500)    $amount    = 500;
@@ -65,11 +63,11 @@ class A2_Filters_Blur {
 
 		for ($x = 0; $x < $w; ++$x) { // each row
 			for ($y = 0; $y < $h; ++$y) { // each pixel
-				$rgbOrig = ImageColorAt($imgCanvas2, $x, $y);
+				$rgbOrig = imagecolorat($imgCanvas2, $x, $y);
 				$rOrig   = ($rgbOrig >> 16) & 0xFF;
 				$gOrig   = ($rgbOrig >> 8) & 0xFF;
 				$bOrig   = $rgbOrig & 0xFF;
-				$rgbBlur = ImageColorAt($imgCanvas, $x, $y);
+				$rgbBlur = imagecolorat($imgCanvas, $x, $y);
 				$rBlur   = ($rgbBlur >> 16) & 0xFF;
 				$gBlur   = ($rgbBlur >> 8) & 0xFF;
 				$bBlur   = $rgbBlur & 0xFF;
@@ -82,8 +80,8 @@ class A2_Filters_Blur {
 				$bNew = (abs($bOrig - $bBlur) >= $threshold) ? max(0, min(255, ($amount * ($bOrig - $bBlur)) + $bOrig)) : $bOrig;
 
 				if ($rOrig != $rNew || $gOrig != $gNew || $bOrig != $bNew) {
-					$pixCol = ImageColorAllocate($img, $rNew, $gNew, $bNew);
-					ImageSetPixel($img, $x, $y, $pixCol);
+					$pixCol = imagecolorallocate($img, $rNew, $gNew, $bNew);
+					imagesetpixel($img, $x, $y, $pixCol);
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 <?php
 
 class A2_Filters_Sharpen {
-
 	public static function filter($img, $amount = 80, $radius = 0.5, $threshold = 3) {
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		////
@@ -139,7 +138,6 @@ class A2_Filters_Sharpen {
 
 		imagedestroy($imgCanvas);
 		imagedestroy($imgBlur);
-
 
 		return $img;
 	}
