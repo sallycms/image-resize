@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2010, webvariants GbR, http://www.webvariants.de
+ * Copyright (c) 2011, webvariants GbR, http://www.webvariants.de
  *
  * This file is released under the terms of the MIT license. You can find the
  * complete text in the attached LICENSE file or online at:
@@ -36,7 +36,7 @@ class sly_Controller_Imageresize extends sly_Controller_Sally {
 		$jpg_quality      = min(abs(sly_request('jpg_quality', 'int')), 100);
 		$upscalingAllowed = sly_request('upscaling_allowed', 'boolean');
 
-		$service = sly_Service_Factory::getService('AddOn');
+		$service = sly_Service_Factory::getAddOnService();
 
 		$service->setProperty('image_resize', 'max_cachefiles', $max_cachefiles);
 		$service->setProperty('image_resize', 'max_filters', $max_filters);
@@ -50,7 +50,7 @@ class sly_Controller_Imageresize extends sly_Controller_Sally {
 	}
 
 	protected function checkPermission() {
-		$user = sly_Service_Factory::getService('User')->getCurrentUser();
+		$user = sly_Util_User::getCurrentUser();
 		return $user->hasRight('image_resize[]') || $user->isAdmin();
 	}
 }

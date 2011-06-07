@@ -2,7 +2,7 @@ iresize_image_resize: Image Resize
 iresize_subpage_config: Config
 iresize_subpage_clear_cache: Clear cache
 
-iresize_cache_files_removed: "{0} cache files deleted"
+iresize_cache_files_removed: Cache has been cleared.
 
 iresize_config_saved: Configuration saved
 

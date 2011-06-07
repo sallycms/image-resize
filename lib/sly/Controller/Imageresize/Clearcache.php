@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2010, webvariants GbR, http://www.webvariants.de
+ * Copyright (c) 2011, webvariants GbR, http://www.webvariants.de
  *
  * This file is released under the terms of the MIT license. You can find the
  * complete text in the attached LICENSE file or online at:
@@ -10,10 +10,8 @@
 
 class sly_Controller_Imageresize_Clearcache extends sly_Controller_Imageresize {
 	protected function index() {
-		$c   = A2_Thumbnail::deleteCache();
-		$msg = t('iresize_cache_files_removed', $c);
-		if (!empty($msg)) print rex_info($msg);
-
+		sly_Service_Factory::getAssetService()->clearCache(array());
+		print rex_info(t('iresize_cache_files_removed'));
 		$this->render('addons/image_resize/views/index.phtml');
 	}
 }
