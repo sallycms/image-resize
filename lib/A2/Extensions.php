@@ -15,6 +15,26 @@ class A2_Extensions {
 	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*)(.*)$@';
 
 	/**
+	 * Try to parse a file as an imageresize request
+	 *
+	 * This method can be used by other addOns to determine whether a given file
+	 * is likely to be a virtual filename, used by this addOn.
+	 *
+	 * @param  string $filename  the filename (like "600w__foo.jpg")
+	 * @return mixed             null if invalid, else an array with the filename and the params
+	 */
+	public static function parseFilename($filename) {
+		// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
+		preg_match(self::$godRegex, $filename, $params);
+		if (!isset($params[1]) || empty($params[2])) return null;
+
+		return array(
+			'filename' => $params[2],
+			'params'   => explode('__', trim($params[1], '_'))
+		);
+	}
+
+	/**
 	 * Verarbeitet ein vom Asset Cache angegebene Bild
 	 *
 	 * @param  array $params
@@ -26,15 +46,12 @@ class A2_Extensions {
 		// c100w__c200h__20r__20t__filename.jpg
 
 		// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
-		preg_match(self::$godRegex, $filename, $params);
-		if (!isset($params[1]) || empty($params[2])) return $filename;
+		$result = self::parseFilename($filename);
+		if ($result === null) return $filename;
 
 		// get parts
-		$imageFile = $params[2];
-		$params    = trim($params[1], '_');
-
-		// split parameters
-		$params = explode('__', $params);
+		$imageFile = $result['filename'];
+		$params    = $result['params'];
 
 		// iterate parameters
 		$imgParams = array();
