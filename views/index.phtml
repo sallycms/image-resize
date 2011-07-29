@@ -1,0 +1,39 @@
+<?php
+/*
+ * Copyright (c) 2011, webvariants GbR, http://www.webvariants.de
+ *
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
+ *
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+$service = sly_Service_Factory::getAddOnService();
+$version = $service->getVersion('image_resize');
+
+$form = new sly_Form('index.php', 'POST', 'Image Resize (v'.$version.')');
+$form->addHiddenValue('page', 'imageresize');
+$form->addHiddenValue('func', 'update');
+
+$form->add(new sly_Form_Input_Text('max_cachefiles', t('iresize_max_cache_files'), $service->getProperty('image_resize', 'max_cachefiles')));
+$form->add(new sly_Form_Input_Text('max_filters', t('iresize_max_filters'), $service->getProperty('image_resize', 'max_filters')));
+
+$bytes = new sly_Form_Input_Text('max_resizekb', t('iresize_max_resizekb'), $service->getProperty('image_resize', 'max_resizekb'));
+$bytes->setAnnotation('KB');
+$form->add($bytes);
+
+$pixel = new sly_Form_Input_Text('max_resizepixel', t('iresize_max_resizepx'), $service->getProperty('image_resize', 'max_resizepixel'));
+$pixel->setAnnotation('Pixel');
+$form->add($pixel);
+
+$quality = new sly_Form_Input_Text('jpg_quality', t('iresize_jpg_quality'), $service->getProperty('image_resize', 'jpg_quality'));
+$quality->setAnnotation('(1 - 100)');
+$form->add($quality);
+
+$options = array(1 => t('iresize_upscaling_allowed_yes'), 0 => t('iresize_upscaling_allowed_no'));
+$options = new sly_Form_Select_Radio('upscaling_allowed', t('iresize_upscaling_allowed'), $service->getProperty('image_resize', 'upscaling_allowed'), $options);
+
+$form->add($options);
+$form->setResetButton(null);
+$form->getSubmitButton()->setAttribute('value', t('update'));
+print $form->render();
