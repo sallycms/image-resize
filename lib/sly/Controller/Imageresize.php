@@ -8,7 +8,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-class sly_Controller_Imageresize extends sly_Controller_Sally {
+class sly_Controller_Imageresize extends sly_Controller_Backend {
 	protected function init() {
 		$subpages = array(
 			array('',           t('iresize_subpage_config')),
@@ -20,12 +20,12 @@ class sly_Controller_Imageresize extends sly_Controller_Sally {
 
 		$page->addSubpages($subpages);
 
-		$layout->addCSSFile('../data/dyn/public/image_resize/backend.css');
+		$layout->addCSSFile('../sally/data/dyn/public/image_resize/backend.css');
 		$layout->pageHeader(t('iresize_image_resize'), $subpages);
 	}
 
 	protected function index() {
-		$this->render('addons/image_resize/views/index.phtml');
+		print $this->render('index.phtml');
 	}
 
 	protected function update() {
@@ -45,12 +45,16 @@ class sly_Controller_Imageresize extends sly_Controller_Sally {
 		$service->setProperty('image_resize', 'jpg_quality', $jpg_quality);
 		$service->setProperty('image_resize', 'upscaling_allowed', $upscalingAllowed);
 
-		print rex_info(t('iresize_config_saved'));
+		print sly_Helper_Message::info(t('iresize_config_saved'));
 		$this->index();
 	}
 
 	protected function checkPermission() {
 		$user = sly_Util_User::getCurrentUser();
-		return $user->hasRight('image_resize[]') || $user->isAdmin();
+		return $user && ($user->hasRight('image_resize[]') || $user->isAdmin());
+	}
+
+	protected function getViewFolder() {
+		return SLY_ADDONFOLDER.'/image_resize/views/';
 	}
 }

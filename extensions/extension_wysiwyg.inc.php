@@ -16,14 +16,19 @@
 function rex_resize_wysiwyg_output($params) {
 	$content = $params['subject'];
 
-	preg_match_all('#<img [^\>]*src=\"(data\/mediapool\/([^\"]*))[^\>]*>#is', $content, $matches);
+	preg_match_all('#<img [^\>]*src="(data/mediapool/([^"]*))[^\>]*>#is', $content, $matches);
 	if (is_array($matches[0])) {
 		foreach ($matches[0] as $key => $var) {
 			preg_match('/width="(.*?)"/is', $var, $width);
-			if (!$width) preg_match('/width: (.*?)px/is', $var, $width);
+			if (!$width) {
+				preg_match('/width: (.*?)px/is', $var, $width);
+			}
+
 			if ($width) {
-				if (file_exists(SLY_BASE.'/data/mediapool/'.$matches[2][$key])) {
-					$realsize = getimagesize(SLY_BASE.'/data/mediapool/'.$matches[2][$key]);
+				$filename = SLY_MEDIAFOLDER.'/'.$matches[2][$key];
+
+				if (file_exists($filename)) {
+					$realsize = getimagesize($filename);
 
 					if ($realsize[0] != $width[1]) {
 						$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];

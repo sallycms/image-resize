@@ -11,7 +11,7 @@
 class sly_Controller_Imageresize_Clearcache extends sly_Controller_Imageresize {
 	protected function index() {
 		sly_Service_Factory::getAssetService()->clearCache(array());
-		print rex_info(t('iresize_cache_files_removed'));
-		$this->render('addons/image_resize/views/index.phtml');
+		print sly_Helper_Message::info(t('iresize_cache_files_removed'));
+		print $this->render('index.phtml');
 	}
 }

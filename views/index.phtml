@@ -36,4 +36,4 @@ $options = new sly_Form_Select_Radio('upscaling_allowed', t('iresize_upscaling_a
 $form->add($options);
 $form->setResetButton(null);
 $form->getSubmitButton()->setAttribute('value', t('update'));
-$form->render();
+print $form->render();
