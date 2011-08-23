@@ -523,7 +523,7 @@ class A2_Thumbnail {
 		// resize the rest of the images to max resize value
 		if ($maxImageSize) {
 			$html = preg_replace(
-				'~src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
+				'~src="data/mediapool/([a-zA-Z0-9\.-_]+)(?<!\.bmp)"~',
 				'src="imageresize/'.$maxImageSize.'a__\1"',
 				$html
 			);
