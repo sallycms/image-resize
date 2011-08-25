@@ -133,8 +133,9 @@ class A2_Extensions {
 			$thumb->setNewSize($imgParams);
 			$thumb->addFilters($filters);
 
+			$ext     = strtolower(substr(strrchr($imageFile, '.'), 1));
 			$service = sly_Service_Factory::getAddOnService();
-			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.bin';
+			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.'.$ext;
 
 			$thumb->generateImage($tmpFile);
 		}
