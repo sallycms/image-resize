@@ -48,31 +48,35 @@ class A2_Thumbnail {
 
 		$this->imageType = $this->getImageType();
 
+
+
 		// avoid resizing animated gifs by sending the original image
 		if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
-			throw new Exception('I will not resize animated GIFs, sorry.', 501);
+			//throw new Exception('I will not resize animated GIFs, sorry.', 501);
 		}
 
-		if (!$this->imageType) {
-			throw new Exception('File is not a supported image type.', 406);
-		}
+                else {
+                        if (!$this->imageType) {
+                                throw new Exception('File is not a supported image type.', 406);
+                        }
 
-		$data = file_get_contents($this->fileName);
-		$this->imgsrc = imagecreatefromstring($data);
+                        $data = file_get_contents($this->fileName);
+                        $this->imgsrc = imagecreatefromstring($data);
 
-		if (!$this->imgsrc) {
-			throw new Exception('Can not create valid Image Source.', 500);
-		}
+                        if (!$this->imgsrc) {
+                                throw new Exception('Can not create valid Image Source.', 500);
+                        }
 
-		$this->origWidth  = imagesx($this->imgsrc);
-		$this->origHeight = imagesy($this->imgsrc);
-		$this->width      = $this->origWidth;
-		$this->height     = $this->origHeight;
+                        $this->origWidth  = imagesx($this->imgsrc);
+                        $this->origHeight = imagesy($this->imgsrc);
+                        $this->width      = $this->origWidth;
+                        $this->height     = $this->origHeight;
 
-		$service = sly_Service_Factory::getAddOnService();
+                        $service = sly_Service_Factory::getAddOnService();
 
-		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
-		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
+                        $this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
+                        $this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
+                }
 	}
 
 	/**
@@ -181,6 +185,9 @@ class A2_Thumbnail {
 		if ($noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $imageQualityTooLow) {
 			return false;
 		}
+
+                if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName))
+                    return false;
 
 		return true;
 	}
