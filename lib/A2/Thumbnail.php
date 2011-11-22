@@ -255,9 +255,6 @@ class A2_Thumbnail {
 		$gifTransG   = $this->gifObject->getTransparentG();
 		$gifTransB   = $this->gifObject->getTransparentB();
 
-		for ($i = 1; $i < count($gifDelays); $i++) {
-			$gifOffsets[$i] = array(40, 230);
-		}
 
 		$scalingFactor = $this->thumbWidth / $this->origWidth;
 		if ($this->widthOffset > 0) $scalingFactor = $this->thumbHeight / $this->origHeight;
@@ -371,7 +368,7 @@ class A2_Thumbnail {
 			ob_start();
 			imagegif($this->imgthumb);
 			$gifData[] = ob_get_clean();
-			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
+//			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
 			imagedestroy($this->imgthumb);
 
 			// reset offsets for next layer
@@ -387,7 +384,7 @@ class A2_Thumbnail {
 //		var_dump($gifTransR);
 //		var_dump($gifTransG);
 //		var_dump($gifTransB);
-die;
+//die;
 		$gifmerge = new A2_GIF_Encoder(
 			$gifData,
 			$gifDelays,
@@ -400,7 +397,10 @@ die;
 //		var_dump($gifmerge);
 //		die;
 
-		fwrite(fopen($file, 'wb'), $gifmerge->GetAnimation());
+		#fwrite(fopen($file, 'wb'), $gifmerge->GetAnimation());
+		header('Content-Type: image/gif');
+		print $gifmerge->GetAnimation();
+		die;
 	}
 
 	/**
