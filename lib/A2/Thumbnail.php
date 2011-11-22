@@ -257,7 +257,7 @@ class A2_Thumbnail {
 		$gifTransB   = $this->gifObject->getTransparentB();
 
 		for ($i = 1; $i < count($gifDelays); $i++) {
-			$gifOffsets[$i] = array(40, 0);
+			$gifOffsets[$i] = array(40, 230);
 		}
 
 		$scalingFactor = $this->thumbWidth / $this->origWidth;
@@ -299,39 +299,35 @@ class A2_Thumbnail {
 
 				$this->keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
 
-				$oSLLeftOffset = $gifOffsets[$i][0];
-				$oSLTopOffset  = $gifOffsets[$i][1];
-
 				// copy layer into empty image
-				imagecopy($this->imgsrc, $smallLayer, $oSLLeftOffset, $oSLTopOffset, 0, 0, $sLWidth, $sLHeight);
+				imagecopy($this->imgsrc, $smallLayer, $gifOffsets[$i][0], $gifOffsets[$i][1], 0, 0, $sLWidth, $sLHeight);
 
-				$sLThumbWidth  = (int) round($scalingFactor * $sLWidth);
-				$sLThumbHeight = (int) round($scalingFactor * $sLHeight);
+				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
+				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
 
-				$sLLeftOffset = (int) round($scalingFactor * $oSLLeftOffset);
-				$sLTopOffset  = (int) round($scalingFactor * $oSLTopOffset);
+				$sLLeftOffset      = (int) round($scalingFactor * $gifOffsets[$i][0]);
+				$gifOffsets[$i][0] = $sLLeftOffset;
+				$sLTopOffset       = (int) round($scalingFactor * $gifOffsets[$i][1]);
+				$gifOffsets[$i][1] = $sLTopOffset;
 
 				// adjust width offset, if image gets cropped
 				if ($this->widthOffset > 0) {
-					$this->widthOffset = (int) round($scalingFactor * $this->widthOffset);
-					if ($this->widthOffset > $sLLeftOffset) $sLThumbWidth = max(1, $sLThumbWidth - $this->widthOffset);
+					// if layer gets cropped
+					if ($this->widthOffset > $sLLeftOffset) {
+						$sLThumbWidth = max(1, $sLThumbWidth - ($this->widthOffset - $sLLeftOffset));
+					}
 					$gifOffsets[$i][0] = max(0, $sLLeftOffset - $this->widthOffset);
-//					var_dump($gifOffsets[$i][0]);die;
-				}
-				else {
-					$this->widthOffset      = 0;
-					$this->thumbWidthOffset = 0;
+					$sLLeftOffset = max(0, $sLLeftOffset - (int) round($scalingFactor * $this->widthOffset));
 				}
 
 				// adjust height offset, if image gets cropped
-				if ($this->heightOffset > $oSLTopOffset) {
-					$this->heightOffset      = (int) round($scalingFactor * $this->heightOffset);
-					$sLThumbHeight = max(1, $sLThumbHeight - $this->heightOffset);
+				if ($this->heightOffset > 0) {
 					$gifOffsets[$i][1] = max(0, $sLTopOffset - $this->heightOffset);
-				}
-				else {
-					$this->heightOffset      = 0;
-					$this->thumbHeightOffset = 0;
+					// if layer gets cropped
+					if ($this->heightOffset > $sLTopOffset) {
+						$sLThumbHeight = max(1, $sLThumbHeight - ($this->heightOffset - $sLTopOffset));
+					}
+					$sLTopOffset = max(0, $sLTopOffset - (int) round($scalingFactor * $this->heightOffset));
 				}
 
 				$this->resampleImage();
