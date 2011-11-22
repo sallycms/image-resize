@@ -301,6 +301,7 @@ class A2_Thumbnail {
 
 				// copy layer into empty image
 				imagecopy($this->imgsrc, $smallLayer, $gifOffsets[$i][0], $gifOffsets[$i][1], 0, 0, $sLWidth, $sLHeight);
+				imagedestroy($smallLayer);
 
 				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
 				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
@@ -317,17 +318,17 @@ class A2_Thumbnail {
 						$sLThumbWidth = max(1, $sLThumbWidth - ($this->widthOffset - $sLLeftOffset));
 					}
 					$gifOffsets[$i][0] = max(0, $sLLeftOffset - $this->widthOffset);
-					$sLLeftOffset = max(0, $sLLeftOffset - (int) round($scalingFactor * $this->widthOffset));
+					$sLLeftOffset      = max(0, $sLLeftOffset - (int) round($scalingFactor * $this->widthOffset));
 				}
 
 				// adjust height offset, if image gets cropped
 				if ($this->heightOffset > 0) {
-					$gifOffsets[$i][1] = max(0, $sLTopOffset - $this->heightOffset);
 					// if layer gets cropped
 					if ($this->heightOffset > $sLTopOffset) {
 						$sLThumbHeight = max(1, $sLThumbHeight - ($this->heightOffset - $sLTopOffset));
 					}
-					$sLTopOffset = max(0, $sLTopOffset - (int) round($scalingFactor * $this->heightOffset));
+					$gifOffsets[$i][1] = max(0, $sLTopOffset - $this->heightOffset);
+					$sLTopOffset       = max(0, $sLTopOffset - (int) round($scalingFactor * $this->heightOffset));
 				}
 
 				$this->resampleImage();
@@ -343,6 +344,7 @@ class A2_Thumbnail {
 				}
 				// copy layer part of resized image into smaller image
 				imagecopy($this->imgthumb, $smallLayerThumb, 0, 0, $sLLeftOffset, $sLTopOffset, $sLThumbWidth, $sLThumbHeight);
+				imagedestroy($smallLayerThumb);
 
 			}
 			// else just resample image
@@ -356,6 +358,7 @@ class A2_Thumbnail {
 			imagegif($this->imgthumb);
 			$gifData[] = ob_get_clean();
 //			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
+			imagedestroy($this->imgthumb);
 
 			// reset offsets for next layer
 			$this->widthOffset       = $widthOffset;
@@ -418,6 +421,7 @@ class A2_Thumbnail {
 						imagewbmp($this->imgthumb, $file);
 						break;
 				}
+				imagedestroy($this->imgthumb);
 			}
 
 			imagedestroy($this->imgthumb);
