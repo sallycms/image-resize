@@ -125,8 +125,14 @@ class A2_GIF_Decoder {
 
 		$this->getByte ( 9 );
 		$GIF_screen = $this->buffer;
+
+		$imageLeft = $this->getInt(array($this->buffer[0], $this->buffer[1]));
+		$imageTop  = $this->getInt(array($this->buffer[2], $this->buffer[3]));
+
+		$this->offset[] = array($imageLeft, $imageTop);
+
 		$GIF_colorF = $this->buffer [ 8 ] & 0x80 ? 1 : 0;
-		if ( $GIF_colorF ) {
+		if ($GIF_colorF) {
 			$GIF_code = $this->buffer [ 8 ] & 0x07;
 			$GIF_sort = $this->buffer [ 8 ] & 0x20 ? 1 : 0;
 		}
@@ -214,6 +220,20 @@ class A2_GIF_Decoder {
 		foreach ($bytes as $byte) {
 			$this->string .= chr ( $byte );
 		}
+	}
+
+	private function getInt(array $bytes) {
+		if (count($bytes) === 1) return (int) reset($bytes);
+
+		$skew  = count($bytes)-1;
+		$bytes = array_reverse($bytes);
+
+		foreach ($bytes as $idx => $byte) {
+			$bytes[$idx] = ($byte << ($skew*8));
+			$skew--;
+		}
+
+		return array_sum($bytes);
 	}
 
 	public function getFrames()       { return $this->arrays; }
