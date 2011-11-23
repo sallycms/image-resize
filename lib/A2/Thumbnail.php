@@ -397,9 +397,9 @@ class A2_Thumbnail {
 //		var_dump($gifmerge);
 //		die;
 
-		#fwrite(fopen($file, 'wb'), $gifmerge->GetAnimation());
+		#fwrite(fopen($file, 'wb'), $gifmerge->getAnimation());
 		header('Content-Type: image/gif');
-		print $gifmerge->GetAnimation();
+		print $gifmerge->getAnimation();
 		die;
 	}
 
