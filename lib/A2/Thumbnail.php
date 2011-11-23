@@ -259,11 +259,8 @@ class A2_Thumbnail {
 		$scalingFactor = $this->thumbWidth / $this->origWidth;
 		if ($this->widthOffset > 0) $scalingFactor = $this->thumbHeight / $this->origHeight;
 
-		// remember offsets for resetting later
-		$widthOffset       = $this->widthOffset;
-		$heightOffset      = $this->heightOffset;
-		$thumbWidthOffset  = $this->thumbWidthOffset;
-		$thumbHeightOffset = $this->thumbHeightOffset;
+		$widthOffset  = (int) round($scalingFactor * $this->widthOffset);
+		$heightOffset = (int) round($scalingFactor * $this->heightOffset);
 
 
 		if (!is_array($gifFrames) || count($gifFrames) <= 0) self::sendError();
@@ -295,47 +292,44 @@ class A2_Thumbnail {
 
 				$this->keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
 
-//				header('Content-Type: image/gif');
-//				print imagegif($this->imgsrc);
-//				die;
-
 				// copy layer into empty image
 				imagecopy($this->imgsrc, $smallLayer, $gifOffsets[$i][0], $gifOffsets[$i][1], 0, 0, $sLWidth, $sLHeight);
 				imagedestroy($smallLayer);
 
+				// resize layer
+				$this->resampleImage();
+
+
+				// calculate offsets and size of resized layer part
+
 				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
 				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
 
-				$sLLeftOffset      = (int) round($scalingFactor * $gifOffsets[$i][0]);
-				$gifOffsets[$i][0] = $sLLeftOffset;
-				$sLTopOffset       = (int) round($scalingFactor * $gifOffsets[$i][1]);
-				$gifOffsets[$i][1] = $sLTopOffset;
+				$gifOffsets[$i][0] = (int) round($scalingFactor * $gifOffsets[$i][0]);
+				$gifOffsets[$i][1] = (int) round($scalingFactor * $gifOffsets[$i][1]);
 
 				// adjust width offset, if image gets cropped
-				if ($this->widthOffset > 0) {
+				if ($widthOffset > 0) {
 					// if layer gets cropped
-					if ($this->widthOffset > $sLLeftOffset) {
-						$sLThumbWidth = max(1, $sLThumbWidth - ($this->widthOffset - $sLLeftOffset));
+					if ($widthOffset > $gifOffsets[$i][0]) {
+						$sLThumbWidth = max(1, $sLThumbWidth - ($widthOffset - $gifOffsets[$i][0]));
 					}
-					$gifOffsets[$i][0] = max(0, $sLLeftOffset - $this->widthOffset);
-					$sLLeftOffset      = max(0, $sLLeftOffset - (int) round($scalingFactor * $this->widthOffset));
+					$gifOffsets[$i][0] = max(0, $gifOffsets[$i][0] - $widthOffset);
 				}
 
 				// adjust height offset, if image gets cropped
-				if ($this->heightOffset > 0) {
+				if ($heightOffset > 0) {
 					// if layer gets cropped
-					if ($this->heightOffset > $sLTopOffset) {
-						$sLThumbHeight = max(1, $sLThumbHeight - ($this->heightOffset - $sLTopOffset));
+					if ($heightOffset > $gifOffsets[$i][1]) {
+						$sLThumbHeight = max(1, $sLThumbHeight - ($heightOffset - $gifOffsets[$i][1]));
 					}
-					$gifOffsets[$i][1] = max(0, $sLTopOffset - $this->heightOffset);
-					$sLTopOffset       = max(0, $sLTopOffset - (int) round($scalingFactor * $this->heightOffset));
+					$gifOffsets[$i][1] = max(0, $gifOffsets[$i][1] - $heightOffset);
 				}
 
-				$this->resampleImage();
-
+				// remember resized layer
 				$smallLayerThumb = $this->imgthumb;
 
-				// create image which has size of resized layer
+				// create image which has size of resized layer part
 				if (function_exists('imagecreatetruecolor')) {
 					$this->imgthumb = @imagecreatetruecolor($sLThumbWidth, $sLThumbHeight);
 				}
@@ -345,17 +339,9 @@ class A2_Thumbnail {
 
 				$this->keepTransparent($this->imageType, $smallLayerThumb, $this->imgthumb);
 
-//				header('Content-Type: image/gif');
-//				print imagegif($smallLayerThumb);
-//				die;
-
-				// copy layer part of resized image into smaller image
-				imagecopy($this->imgthumb, $smallLayerThumb, 0, 0, $sLLeftOffset, $sLTopOffset, $sLThumbWidth, $sLThumbHeight);
+				// copy layer part of resized image into empty image
+				imagecopy($this->imgthumb, $smallLayerThumb, 0, 0, $gifOffsets[$i][0], $gifOffsets[$i][1], $sLThumbWidth, $sLThumbHeight);
 				imagedestroy($smallLayerThumb);
-
-//				header('Content-Type: image/gif');
-//				print imagegif($this->imgthumb);
-//				die;
 
 			}
 			// else just resample image
@@ -371,11 +357,6 @@ class A2_Thumbnail {
 //			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
 			imagedestroy($this->imgthumb);
 
-			// reset offsets for next layer
-			$this->widthOffset       = $widthOffset;
-			$this->heightOffset      = $heightOffset;
-			$this->thumbWidthOffset  = $thumbWidthOffset;
-			$this->thumbHeightOffset = $thumbHeightOffset;
 		}
 //		var_dump($gifData);
 //		var_dump($gifDelays);
