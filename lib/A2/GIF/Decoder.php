@@ -1,5 +1,6 @@
 <?php
-/* based on GIFDecoder by László Zsidi
+/* 
+ * based on GIFDecoder by László Zsidi
  * http://www.phpclasses.org/package/3163-PHP-Generate-GIF-animations-from-a-set-of-GIF-images.html
  * http://www.phpclasses.org/package/3234-PHP-Split-GIF-animations-into-multiple-images.html
  * http://www.gifs.hu
