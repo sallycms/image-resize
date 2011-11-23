@@ -29,9 +29,9 @@ class A2_GIF_Encoder {
 	var $IMG = -1;
 
 	var $ERR = array(
-			'ERR00'=>"Does not supported function for only one image!",
+			'ERR00'=>"Does support animated GIF images only!",
 			'ERR01'=>"Source is not a GIF image!",
-			'ERR02'=>"Unintelligible flag ",
+			'ERR02'=>"Unintelligible flag",
 			'ERR03'=>"Does not make animation from animated GIF source",
 	);
 
@@ -40,7 +40,7 @@ class A2_GIF_Encoder {
 						 $GIF_red, $GIF_grn, $GIF_blu,
 						 $GIF_ofs, $GIF_mod) {
 
-		if (!is_array($GIF_src) && ! is_array($GIF_dly)) {
+		if (!is_array($GIF_src) && !is_array($GIF_dly)) {
 			printf  ("%s: %s", $this->VER, $this->ERR ['ERR00']);
 			exit    (0);
 		}
@@ -66,7 +66,7 @@ class A2_GIF_Encoder {
 				exit    (0);
 			}
 
-			for ($j = (13 + 3 * (2 << (ord ($this->BUF [$i] { 10 }) & 0x07))), $k = TRUE; $k; $j++) {
+			for ($j = $this->getLocalsStrLength($i), $k = TRUE; $k; $j++) {
 				switch ($this->BUF [$i] { $j }) {
 					case "!":
 						if ((substr ($this->BUF [$i], ($j + 3), 8)) == "NETSCAPE") {
@@ -97,18 +97,18 @@ class A2_GIF_Encoder {
 
 
 		$this->addHeader();
-		for ($i = 0; $i < count ($this->BUF); $i++) {
+		for ($i = 0; $i < count($this->BUF); $i++) {
 			$this->addFrames ($i, $GIF_dly [$i], $GIF_dis[$i]);
 		}
 //		die;
-		$this->addFooter ();
+		$this->addFooter();
 	}
 
 	private function addHeader() {
 		$cmap = 0;
 
 		if (ord ($this->BUF [0] { 10 }) & 0x80) {
-			$cmap = 3 * (2 << (ord ($this->BUF [0] { 10 }) & 0x07));
+			$cmap = $this->getColorTableLength(0);
 
 			$this->GIF .= substr ($this->BUF [0], 6, 7          );
 			$this->GIF .= substr ($this->BUF [0], 13, $cmap     );
@@ -118,37 +118,68 @@ class A2_GIF_Encoder {
 		}
 	}
 
+	/**
+	 *
+	 * @param int     $delay             delay in seconds to next image
+	 * @param int     $disposal          disposal method type (0-7)
+	 * @param int     $transpColorIndex  color index for transparency
+	 * @return string in hex code
+	 */
+	private function getGraphicalControlExtension($delay, $disposal, $transpColorIndex = null) {
+
+		$transpFlag = 0;
+		if (!is_int($transpColorIndex) || $transpColorIndex < 0) $transpColorIndex = 0;
+		else $transpFlag = 1;
+
+		return "\x21"                    // extension introducer (always 21)
+		     . "\xF9"                    // graphic control label (F9 means graphic control extension)
+		     . "\x04"                    // block size (fixed value 4)
+		     . chr(                      // packed fields
+		           ($disposal << 2)         // disposal method
+		         + $transpFlag              // transparency flag
+		     )
+		     . chr(($delay >> 0) & 0xFF) // delay time
+		     . chr(($delay >> 8) & 0xFF) // delay time
+		     . chr($transpColorIndex)    // transparent color index
+		     . "\x0";                    // block terminator (always zero)
+	}
+
+	private function getColorLength($imageNumber) {
+		return 2 << (ord($this->BUF[$imageNumber][10]) & 0x07);
+	}
+
+	private function getColorTableLength($imageNumber) {
+		return 3 * $this->getColorLength($imageNumber);
+	}
+
+	private function getLocalsStrLength($imageNumber) {
+		return 13 + $this->getColorTableLength($imageNumber);
+	}
+
 	private function addFrames($i, $d, $disposal) {
 
-		$Locals_str = 13 + 3 * (2 << (ord ($this->BUF [$i] { 10 }) & 0x07));
+		$Locals_str = $this->getLocalsStrLength($i);
 
 		$Locals_end = strlen ($this->BUF [$i]) - $Locals_str - 1;
 		$Locals_tmp = substr ($this->BUF [$i], $Locals_str, $Locals_end);
 
-		$Global_len = 2 << (ord ($this->BUF [0] { 10 }) & 0x07);
-		$Locals_len = 2 << (ord ($this->BUF [$i] { 10 }) & 0x07);
+		$Global_len = $this->getColorLength(0);
+		$Locals_len = $this->getColorLength($i);
 
-		$Global_rgb = substr ($this->BUF [0], 13,
-												3 * (2 << (ord ($this->BUF [0][10]) & 0x07)));
-		$Locals_rgb = substr ($this->BUF [$i], 13,
-												3 * (2 << (ord ($this->BUF [$i][10]) & 0x07)));
+		$Global_rgb = substr ($this->BUF [0], 13, $this->getColorTableLength(0));
+		$Locals_rgb = substr ($this->BUF [$i], 13, $this->getColorTableLength($i));
 
-		$Locals_ext = "!\xF9\x04" . chr (($disposal << 2) + 0) .
-										chr (($d >> 0) & 0xFF) . chr (($d >> 8) & 0xFF) . "\x0\x0";
+		$Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
 
 		if ($this->COL > -1 && ord($this->BUF [$i][10]) & 0x80) {
-			for ($j = 0; $j < (2 << (ord ($this->BUF [$i][10]) & 0x07)); $j++) {
+//			print 'maximum color index: '.$this->getColorLength($i).'<br>';
+			for ($j = 0; $j < $this->getColorLength($i); $j++) {
 
 				if (ord ($Locals_rgb { 3 * $j + 0 }) == (($this->COL >> 16) & 0xFF)
 				 && ord ($Locals_rgb { 3 * $j + 1 }) == (($this->COL >>  8) & 0xFF)
 				 && ord ($Locals_rgb { 3 * $j + 2 }) == (($this->COL >>  0) & 0xFF)) {
 
-					$Locals_ext = "!\xF9\x04"
-					            . chr(($disposal << 2) + 1)
-					            . chr(($d >> 0) & 0xFF)
-					            . chr(($d >> 8) & 0xFF)
-					            . chr($j)
-					            . "\x0";
+					$Locals_ext = $this->getGraphicalControlExtension($d, $disposal, $j);
 					break;
 				}
 			}
