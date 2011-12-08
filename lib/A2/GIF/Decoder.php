@@ -1,5 +1,5 @@
 <?php
-/* 
+/*
  * based on GIFDecoder by László Zsidi
  * http://www.phpclasses.org/package/3163-PHP-Generate-GIF-animations-from-a-set-of-GIF-images.html
  * http://www.phpclasses.org/package/3234-PHP-Split-GIF-animations-into-multiple-images.html
@@ -106,15 +106,15 @@ class A2_GIF_Decoder {
 				}
 				$this->getByte ( $u );
 				if ( $u == 0x04 ) {
-					if (isset($this->buffer[4]) && $this->buffer [ 4 ] & 0x80 ) {
-						$this->dispos [ ] = ( $this->buffer [ 0 ] >> 2 ) - 1;
+					if (isset($this->buffer[4]) && $this->buffer[4] & 0x80 ) {
+						$this->dispos[] = ( $this->buffer[0] >> 2 ) - 1;
 					}
 					else {
-						$this->dispos [ ] = ( $this->buffer [ 0 ] >> 2 ) - 0;
+						$this->dispos[] = ( $this->buffer[0] >> 2 ) - 0;
 					}
-					$this->delays [ ] = ( $this->buffer [ 1 ] | $this->buffer [ 2 ] << 8 );
-					if ( $this->buffer [ 3 ] ) {
-						$this->transparentI = $this->buffer [ 3 ];
+					$this->delays[] = ( $this->buffer[1] | $this->buffer[2] << 8 );
+					if ( $this->buffer[3] ) {
+						$this->transparentI = $this->buffer[3];
 					}
 				}
 			}
