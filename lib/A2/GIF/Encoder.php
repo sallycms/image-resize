@@ -156,28 +156,49 @@ class A2_GIF_Encoder {
 		return 13 + $this->getColorTableLength($imageNumber);
 	}
 
+	private function getXYPadding($i, $Locals_ext, $Locals_img, $Locals_rgb, $Locals_tmp, $local=true) {
+
+		if ($this->SIG == 1) {
+			$Locals_img[1] = chr( $this->OFS[$i][0] & 0xFF);
+			$Locals_img[2] = chr(($this->OFS[$i][0] & 0xFF00) >> 8);
+			$Locals_img[3] = chr( $this->OFS[$i][1] & 0xFF);
+			$Locals_img[4] = chr(($this->OFS[$i][1] & 0xFF00) >> 8);
+		}
+
+		$byte  = ord($Locals_img[9]);
+		$byte |= 0x80;
+		$byte &= 0xF8;
+
+		if ($local) $byte |= (ord($this->BUF[$i][10]) & 0x07);
+		else        $byte |= (ord($this->BUF[0] [10]) & 0x07);
+
+		$Locals_img[9] = chr($byte);
+
+		return $Locals_ext.$Locals_img.$Locals_rgb.$Locals_tmp;
+	}
+
 	private function addFrames($i, $d, $disposal) {
 
 		$Locals_str = $this->getLocalsStrLength($i);
 
-		$Locals_end = strlen ($this->BUF [$i]) - $Locals_str - 1;
-		$Locals_tmp = substr ($this->BUF [$i], $Locals_str, $Locals_end);
+		$Locals_end = strlen ($this->BUF[$i]) - $Locals_str - 1;
+		$Locals_tmp = substr ($this->BUF[$i], $Locals_str, $Locals_end);
 
 		$Global_len = $this->getColorLength(0);
 		$Locals_len = $this->getColorLength($i);
 
-		$Global_rgb = substr ($this->BUF [0], 13, $this->getColorTableLength(0));
-		$Locals_rgb = substr ($this->BUF [$i], 13, $this->getColorTableLength($i));
+		$Global_rgb = substr ($this->BUF[0], 13, $this->getColorTableLength(0));
+		$Locals_rgb = substr ($this->BUF[$i], 13, $this->getColorTableLength($i));
 
 		$Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
 
-		if ($this->COL > -1 && ord($this->BUF [$i][10]) & 0x80) {
+		if ($this->COL > -1 && ord($this->BUF[$i][10]) & 0x80) {
 //			print 'maximum color index: '.$this->getColorLength($i).'<br>';
 			for ($j = 0; $j < $this->getColorLength($i); $j++) {
 
-				if (ord ($Locals_rgb { 3 * $j + 0 }) == (($this->COL >> 16) & 0xFF)
-				 && ord ($Locals_rgb { 3 * $j + 1 }) == (($this->COL >>  8) & 0xFF)
-				 && ord ($Locals_rgb { 3 * $j + 2 }) == (($this->COL >>  0) & 0xFF)) {
+				if (ord($Locals_rgb[3 * $j + 0]) == (($this->COL >> 16) & 0xFF)
+				 && ord($Locals_rgb[3 * $j + 1]) == (($this->COL >>  8) & 0xFF)
+				 && ord($Locals_rgb[3 * $j + 2]) == (($this->COL >>  0) & 0xFF)) {
 
 					$Locals_ext = $this->getGraphicalControlExtension($d, $disposal, $j);
 					break;
@@ -196,49 +217,30 @@ class A2_GIF_Encoder {
 				$Locals_tmp = substr ($Locals_tmp, 10, strlen ($Locals_tmp) - 10);
 				break;
 		}
-		if (ord ($this->BUF [$i] { 10 }) & 0x80 && $this->IMG > -1) {
+
+		if (ord($this->BUF[$i][10]) & 0x80 && $this->IMG > -1) {
+
+			// global and local color table have same length
 			if ($Global_len == $Locals_len) {
-				if ($this->blockCompare ($Global_rgb, $Locals_rgb, $Global_len)) {
-					$this->GIF .= ($Locals_ext . $Locals_img . $Locals_tmp);
+
+				// global and local color table are equal
+				if ($this->blockCompare($Global_rgb, $Locals_rgb, $Global_len)) {
+					$this->GIF .= $Locals_ext.$Locals_img.$Locals_tmp;
 				}
 				else {
-					// XY Padding...
-
-					if ($this->SIG == 1) {
-						$Locals_img { 1 } = chr ($this->OFS [$i] [0] & 0xFF);
-						$Locals_img { 2 } = chr (($this->OFS [$i] [0] & 0xFF00) >> 8);
-						$Locals_img { 3 } = chr ($this->OFS [$i] [1] & 0xFF);
-						$Locals_img { 4 } = chr (($this->OFS [$i] [1] & 0xFF00) >> 8);
-					}
-					$byte  = ord ($Locals_img { 9 });
-					$byte |= 0x80;
-					$byte &= 0xF8;
-					$byte |= (ord ($this->BUF [0] { 10 }) & 0x07);
-					$Locals_img { 9 } = chr ($byte);
-					$this->GIF .= ($Locals_ext . $Locals_img . $Locals_rgb . $Locals_tmp);
+					$this->GIF .= $this->getXYPadding($i, $Locals_ext, $Locals_img, $Locals_rgb, $Locals_tmp, false);
 				}
 			}
+			// special local color table
 			else {
-				// XY Padding...
-
-				if ($this->SIG == 1) {
-					$Locals_img { 1 } = chr ($this->OFS [$i] [0] & 0xFF);
-					$Locals_img { 2 } = chr (($this->OFS [$i] [0] & 0xFF00) >> 8);
-					$Locals_img { 3 } = chr ($this->OFS [$i] [1] & 0xFF);
-					$Locals_img { 4 } = chr (($this->OFS [$i] [1] & 0xFF00) >> 8);
-				}
-				$byte  = ord ($Locals_img { 9 });
-				$byte |= 0x80;
-				$byte &= 0xF8;
-				$byte |= (ord ($this->BUF [$i] { 10 }) & 0x07);
-				$Locals_img { 9 } = chr ($byte);
-				$this->GIF .= ($Locals_ext . $Locals_img . $Locals_rgb . $Locals_tmp);
+				$this->GIF .= $this->getXYPadding($i, $Locals_ext, $Locals_img, $Locals_rgb, $Locals_tmp);
 			}
 		}
+		// global and local color table are equal
 		else {
-			$this->GIF .= ($Locals_ext . $Locals_img . $Locals_tmp);
+			$this->GIF .= $Locals_ext.$Locals_img.$Locals_tmp;
 		}
-		$this->IMG  = 1;
+		$this->IMG = 1;
 	}
 
 	private function addFooter() {
@@ -246,23 +248,25 @@ class A2_GIF_Encoder {
 	}
 
 	private function blockCompare($GlobalBlock, $LocalBlock, $Len) {
-		for ($i = 0; $i < $Len; $i++) {
-			if ($GlobalBlock { 3 * $i + 0 } != $LocalBlock { 3 * $i + 0 }
-			 || $GlobalBlock { 3 * $i + 1 } != $LocalBlock { 3 * $i + 1 }
-			 || $GlobalBlock { 3 * $i + 2 } != $LocalBlock { 3 * $i + 2 }) {
 
-				return (0);
+		for ($i = 0; $i < $Len; $i++) {
+
+			if ($GlobalBlock[3 * $i + 0] != $LocalBlock[3 * $i + 0]
+			 || $GlobalBlock[3 * $i + 1] != $LocalBlock[3 * $i + 1]
+			 || $GlobalBlock[3 * $i + 2] != $LocalBlock[3 * $i + 2]) {
+
+				return false;
 			}
 		}
-		return (1);
+		return true;
 	}
 
 	private function intToWord($int) {
-		return (chr ($int & 0xFF) . chr (($int >> 8) & 0xFF));
+		return chr($int & 0xFF).chr(($int >> 8) & 0xFF);
 	}
 
 	public function getAnimation() {
-		return ($this->GIF);
+		return $this->GIF;
 	}
 
 }
