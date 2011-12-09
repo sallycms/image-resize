@@ -126,12 +126,9 @@ class A2_GIF_Encoder {
 	 */
 	private function getGraphicalControlExtension($delay, $disposal, $transpColorIndex = null) {
 
-//var_dump($transpColorIndex);
 		$transpFlag = 0;
 		if (!is_int($transpColorIndex) || $transpColorIndex < 0) $transpColorIndex = 0;
 		else $transpFlag = 1;
-
-//var_dump($transpFlag, $transpColorIndex);
 
 		return "\x21"                    // extension introducer (always 21)
 		     . "\xF9"                    // graphic control label (F9 means graphic control extension)
@@ -192,11 +189,12 @@ class A2_GIF_Encoder {
 		$Global_rgb = substr($this->BUF[0], 13, $this->getColorTableLength(0));
 		$Locals_rgb = substr($this->BUF[$i], 13, $this->getColorTableLength($i));
 
-		$Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
+		// first frame
+		if ($i < 1) $Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
+		// get original graphical control extension from all other frames
+		else $Locals_ext = substr($this->BUF[$i], 13+3*$Locals_len, 8);
 
-
-//		print(substr($this->BUF[$i], 6, 7)).'x';
-		if ($this->COL > -1 && ord($this->BUF[$i][10]) & 0x80) {
+//		if ($this->COL > -1 && ord($this->BUF[$i][10]) & 0x80) {
 //			print 'maximum color index: '.$this->getColorLength($i).'<br>';
 //			for ($j = 0; $j < $this->getColorLength($i); $j++) {
 //
@@ -208,11 +206,10 @@ class A2_GIF_Encoder {
 //					break;
 //				}
 //			}
-			// hack to get index 1 transparent
-			if ($i > 0) $Locals_ext = $this->getGraphicalControlExtension($d, $disposal, 1);
-		}
+//			// hack to get index 1 transparent
+//			if ($i > 0) $Locals_ext = $this->getGraphicalControlExtension($d, $disposal, 1);
+//		}
 
-//		print "$i: ".urlencode($Locals_ext)."<br>\n";
 		switch ($Locals_tmp[0]) {
 			case "!":
 				$Locals_img = substr ($Locals_tmp, 8, 10);
@@ -253,6 +250,14 @@ class A2_GIF_Encoder {
 		$this->GIF .= ";";
 	}
 
+	/**
+	 * compare two color tables
+	 *
+	 * @param  array    $GlobalBlock
+	 * @param  array    $LocalBlock
+	 * @param  int      $Len
+	 * @return boolean  true if tables match, else false
+	 */
 	private function blockCompare($GlobalBlock, $LocalBlock, $Len) {
 
 		for ($i = 0; $i < $Len; $i++) {
