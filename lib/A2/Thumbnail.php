@@ -69,14 +69,18 @@ class A2_Thumbnail {
 
 		$data = file_get_contents($this->fileName);
 
-		// special handling for animated gifs
-		if ($this->imageType == IMAGETYPE_GIF && self::is_animated_gif($this->fileName)) {
-			$this->isAnimated = true;
+		if ($this->imageType == IMAGETYPE_GIF) {
+			// special handling for animated gifs
+			if (self::is_animated_gif($this->fileName)) {
+				$this->isAnimated = true;
 
-			$this->gifObject = new A2_GIF_Decoder($data);
-			$frames = $this->gifObject->getFrames();
-			if (!is_array($frames) || count($frames) <= 0) self::sendError();
-			$data = $frames[0];
+				$this->gifObject = new A2_GIF_Decoder($data);
+				$frames = $this->gifObject->getFrames();
+				if (!is_array($frames) || count($frames) <= 0) self::sendError();
+				$data = $frames[0];
+			}
+			// set quality to zero, so that gifs are not recompressed, if not resized or filtered
+			$this->quality = 0;
 		}
 
 		$this->imgsrc = imagecreatefromstring($data);
