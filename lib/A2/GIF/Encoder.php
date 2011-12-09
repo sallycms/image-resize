@@ -190,9 +190,8 @@ class A2_GIF_Encoder {
 		$Locals_rgb = substr($this->BUF[$i], 13, $this->getColorTableLength($i));
 
 		// first frame
-		if ($i < 1) $Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
-		// get original graphical control extension from all other frames
-		else $Locals_ext = substr($this->BUF[$i], 13+3*$Locals_len, 8);
+		$transpColorIndex = ord(substr($this->BUF[$i], $Locals_str+6, 1));
+		$Locals_ext = $this->getGraphicalControlExtension($d, $disposal, $transpColorIndex);
 
 //		if ($this->COL > -1 && ord($this->BUF[$i][10]) & 0x80) {
 //			print 'maximum color index: '.$this->getColorLength($i).'<br>';
@@ -243,6 +242,7 @@ class A2_GIF_Encoder {
 			$this->GIF .= $Locals_ext.$Locals_img.$Locals_tmp;
 		}
 		$this->IMG = 1;
+//		print '<br />';
 //		print '<br />';
 	}
 
