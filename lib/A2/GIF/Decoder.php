@@ -85,28 +85,38 @@ class A2_GIF_Decoder {
 	}
 
 	private function readExtensions() {
-		$this->getByte ( 1 );
+		$this->getByte(1);
+
+		// application extension
 		if ( $this->buffer [ 0 ] == 0xff ) {
 			for ( ; ; ) {
-				$this->getByte ( 1 );
-				if ( ( $u = $this->buffer [ 0 ] ) == 0x00 ) {
-					break;
-				}
-				$this->getByte ( $u );
-				if ( $u == 0x03 ) {
-					$this->anloop = ( $this->buffer [ 1 ] | $this->buffer [ 2 ] << 8 );
+				$this->getByte(1);
+				// if byte size is zero, return
+				if (($u = $this->buffer[0]) == 0x00) return false;
+
+				// get bytes in length of byte size
+				$this->getByte($u);
+
+				// if byte size is 3
+				if ($u == 0x03) {
+					// get loop counter (0 to 65535), zero means infinite
+					$this->anloop = ($this->buffer[1] | $this->buffer[2] << 8);
 				}
 			}
 		}
+		// other applications
 		else {
 			for ( ; ; ) {
-				$this->getByte ( 1 );
-				if ( ( $u = $this->buffer [ 0 ] ) == 0x00 ) {
-					break;
+				$this->getByte(1);
+				// if byte size is zero, return
+				if (($u = $this->buffer[0]) == 0x00) {
+					return false;
 				}
-				$this->getByte ( $u );
-				if ( $u == 0x04 ) {
-					// disposal
+				$this->getByte($u);
+
+				// if graphics control extension
+				if ($u == 0x04) {
+					// disposal method
 					if (isset($this->buffer[4]) && $this->buffer[4] & 0x80 ) {
 						$this->dispos[] = ( $this->buffer[0] >> 2 ) - 1;
 					}
