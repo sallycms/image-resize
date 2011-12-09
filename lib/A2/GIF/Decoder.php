@@ -106,14 +106,18 @@ class A2_GIF_Decoder {
 				}
 				$this->getByte ( $u );
 				if ( $u == 0x04 ) {
+					// disposal
 					if (isset($this->buffer[4]) && $this->buffer[4] & 0x80 ) {
 						$this->dispos[] = ( $this->buffer[0] >> 2 ) - 1;
 					}
 					else {
 						$this->dispos[] = ( $this->buffer[0] >> 2 ) - 0;
 					}
+					// delay
 					$this->delays[] = ( $this->buffer[1] | $this->buffer[2] << 8 );
-					if ( $this->buffer[3] ) {
+
+					// transparent color index
+					if ($this->buffer[3]) {
 						$this->transparentI = $this->buffer[3];
 					}
 				}
