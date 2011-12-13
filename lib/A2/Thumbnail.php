@@ -36,6 +36,7 @@ class A2_Thumbnail {
 	private $thumbWidthOffset  = 0;
 	private $thumbHeightOffset = 0;
 	private $thumbQuality      = 85;
+	private $compressJPG       = true;
 
 	private $upscalingAllowed = false;
 
@@ -181,7 +182,8 @@ class A2_Thumbnail {
 		}
 
 		$thumbLargerThanImage = $this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height;
-		$imageQualityTooLow   = $this->thumbQuality >= $this->quality;
+		// compare image quality only for jpeg
+		$imageQualityTooLow   = $this->imageType != IMAGETYPE_JPEG || !$this->compressJPG || $this->thumbQuality >= $this->quality;
 		$noFilters            = empty($this->filters);
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
@@ -190,6 +192,10 @@ class A2_Thumbnail {
 		}
 
 		return true;
+	}
+
+	public function setJpgCompress($compress) {
+		if (!((boolean) $compress)) $this->compressJPG = false;
 	}
 
 	/**

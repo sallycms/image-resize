@@ -12,7 +12,7 @@
  * @author Robert
  */
 class A2_Extensions {
-	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*)(.*)$@';
+	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:n__)?)(.*)$@';
 
 	/**
 	 * Try to parse a file as an imageresize request
@@ -56,6 +56,7 @@ class A2_Extensions {
 		// iterate parameters
 		$imgParams = array();
 		$filters   = array();
+		$compress  = true;
 
 		foreach ($params as $param) {
 			// check crop option
@@ -68,6 +69,11 @@ class A2_Extensions {
 			}
 			elseif ($prefix == 'f') {
 				$filters[] = substr($param, 1);
+				continue;
+			}
+			// n for no compression
+			elseif ($prefix == 'n') {
+				$compress = false;
 				continue;
 			}
 
@@ -132,6 +138,7 @@ class A2_Extensions {
 			$thumb = new A2_Thumbnail($imageFile);
 			$thumb->setNewSize($imgParams);
 			$thumb->addFilters($filters);
+			$thumb->setJpgCompress($compress);
 
 			$service = sly_Service_Factory::getAddOnService();
 			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.'.sly_Util_String::getFileExtension($imageFile);
