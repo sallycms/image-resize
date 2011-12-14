@@ -54,9 +54,9 @@ class A2_Extensions {
 		$params    = $result['params'];
 
 		// iterate parameters
-		$imgParams = array();
-		$filters   = array();
-		$compress  = true;
+		$imgParams  = array();
+		$filters    = array();
+		$nocompress = false;
 
 		foreach ($params as $param) {
 			// check crop option
@@ -73,7 +73,7 @@ class A2_Extensions {
 			}
 			// n for no compression
 			elseif ($prefix == 'n') {
-				$compress = false;
+				$nocompress = true;
 				continue;
 			}
 
@@ -138,7 +138,7 @@ class A2_Extensions {
 			$thumb = new A2_Thumbnail($imageFile);
 			$thumb->setNewSize($imgParams);
 			$thumb->addFilters($filters);
-			$thumb->setJpgCompress($compress);
+			if ($nocompress) $thumb->disableJpgCompress();
 
 			$service = sly_Service_Factory::getAddOnService();
 			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.'.sly_Util_String::getFileExtension($imageFile);
