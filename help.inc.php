@@ -111,4 +111,17 @@ add filters: here blur and sepia<br />
 <b>imageresize/200a__fblur__fsepia__imagefile</b>
 or <b>index.php?rex_resize=200a__fblur__fsepia__imagefile</b>
 
+<br /><br />
+allow upscaling of smaller images:<br />
+<b>imageresize/200a__u__imagefile</b>
+
+<br /><br />
+disable recompression of jpgs:<br />
+<b>imageresize/200a__n__imagefile</b>
+
+<br /><br />
+set image type for thumbnail: here 2 for JPEG and 3 for PNG<br />
+<b>imageresize/200a__t2__imagefile</b>
+or <b>imageresize/200a__t3__imagefile</b>
+
 </p>

@@ -196,6 +196,11 @@ class A2_Thumbnail {
 		return true;
 	}
 
+	public function allowUpscaling($upscaling = true) {
+		if ((bool) $upscaling) $this->upscalingAllowed = true;
+		else $this->upscalingAllowed = false;
+	}
+
 	public function disableJpgCompress() {
 		$this->compressJPG = false;
 	}

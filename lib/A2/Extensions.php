@@ -12,7 +12,7 @@
  * @author Robert
  */
 class A2_Extensions {
-	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:n__)?(?:t[0-9]+__)?)(.*)$@';
+	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:u[01]?__)?(?:n__)?(?:t[0-9]+__)?)(.*)$@';
 
 	/**
 	 * Try to parse a file as an imageresize request
@@ -54,10 +54,11 @@ class A2_Extensions {
 		$params    = $result['params'];
 
 		// iterate parameters
-		$imgParams  = array();
-		$filters    = array();
-		$nocompress = false;
-		$type       = null;
+		$imgParams        = array();
+		$filters          = array();
+		$upscalingAllowed = false;
+		$nocompress       = false;
+		$type             = null;
 
 		foreach ($params as $param) {
 			// check crop option
@@ -70,6 +71,13 @@ class A2_Extensions {
 			}
 			elseif ($prefix == 'f') {
 				$filters[] = substr($param, 1);
+				continue;
+			}
+			// check upscale option
+			elseif ($prefix == 'u') {
+				if (strlen($param) < 2 || substr($param, 1, 1) === '1') {
+					$upscalingAllowed = true;
+				}
 				continue;
 			}
 			// n for no compression
@@ -144,6 +152,7 @@ class A2_Extensions {
 
 		try {
 			$thumb = new A2_Thumbnail($imageFile);
+			if ($upscalingAllowed) $thumb->allowUpscaling();
 			$thumb->setNewSize($imgParams);
 			$thumb->addFilters($filters);
 			if ($nocompress) $thumb->disableJpgCompress();
