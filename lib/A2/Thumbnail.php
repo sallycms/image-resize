@@ -36,6 +36,7 @@ class A2_Thumbnail {
 	private $thumbWidthOffset  = 0;
 	private $thumbHeightOffset = 0;
 	private $thumbQuality      = 85;
+	private $thumbType         = null;
 	private $compressJPG       = true;
 
 	private $upscalingAllowed = false;
@@ -48,8 +49,7 @@ class A2_Thumbnail {
 		}
 
 		$this->imageType = $this->getImageType();
-
-
+		$this->thumbType = $this->imageType;
 
 		// avoid resizing animated gifs by sending the original image
 		if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
@@ -182,13 +182,14 @@ class A2_Thumbnail {
 			return false;
 		}
 
+		$sameImageType        = $this->imageType == $this->thumbType;
 		$thumbLargerThanImage = $this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height;
 		// compare image quality only for jpeg
 		$imageQualityTooLow   = $this->imageType != IMAGETYPE_JPEG || !$this->compressJPG || $this->thumbQuality >= $this->quality;
 		$noFilters            = empty($this->filters);
 
 		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		if ($noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $imageQualityTooLow) {
+		if ($sameImageType && $noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $imageQualityTooLow) {
 			return false;
 		}
 
@@ -197,6 +198,13 @@ class A2_Thumbnail {
 
 	public function disableJpgCompress() {
 		$this->compressJPG = false;
+	}
+
+	public function setThumbType($type) {
+		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
+			return false;
+		}
+		$this->thumbType = $type;
 	}
 
 	/**
@@ -209,7 +217,7 @@ class A2_Thumbnail {
 			$this->resampleImage();
 			$this->applyFilters();
 
-			switch ($this->imageType) {
+			switch ($this->thumbType) {
 				case IMAGETYPE_JPEG:
 					imageinterlace($this->imgthumb, true); // set to progressive mode
 					imagejpeg($this->imgthumb, $file, $this->thumbQuality);
