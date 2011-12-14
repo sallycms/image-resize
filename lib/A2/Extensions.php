@@ -12,7 +12,7 @@
  * @author Robert
  */
 class A2_Extensions {
-	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:n__)?)(.*)$@';
+	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:n__)?(?:t[0-9]+__)?)(.*)$@';
 
 	/**
 	 * Try to parse a file as an imageresize request
@@ -57,6 +57,7 @@ class A2_Extensions {
 		$imgParams  = array();
 		$filters    = array();
 		$nocompress = false;
+		$type       = null;
 
 		foreach ($params as $param) {
 			// check crop option
@@ -74,6 +75,13 @@ class A2_Extensions {
 			// n for no compression
 			elseif ($prefix == 'n') {
 				$nocompress = true;
+				continue;
+			}
+			elseif ($prefix == 't') {
+				$imageType = substr($param, 1);
+				if (in_array($imageType, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
+					$type = $imageType;
+				}
 				continue;
 			}
 
@@ -139,6 +147,7 @@ class A2_Extensions {
 			$thumb->setNewSize($imgParams);
 			$thumb->addFilters($filters);
 			if ($nocompress) $thumb->disableJpgCompress();
+			if ($type !== null) $thumb->setThumbType($type);
 
 			$service = sly_Service_Factory::getAddOnService();
 			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.'.sly_Util_String::getFileExtension($imageFile);
