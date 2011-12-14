@@ -15,3 +15,7 @@ iresize_jpg_quality: JPEG-Ausgabe-Qualität
 iresize_upscaling_allowed: Vergrößern von kleinen Bilder erlauben
 iresize_upscaling_allowed_yes: Ja
 iresize_upscaling_allowed_no: Nein
+
+iresize_nocompress: Neukomprimieren von JPGs, die nicht verkleinert werden, verbieten
+iresize_nocompress_yes: Ja
+iresize_nocompress_no: Nein

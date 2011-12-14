@@ -29,21 +29,23 @@ class sly_Controller_Imageresize extends sly_Controller_Backend {
 	}
 
 	protected function update() {
-		$max_cachefiles   = sly_request('max_cachefiles', 'int');
-		$max_filters      = sly_request('max_filters', 'int');
-		$max_resizekb     = sly_request('max_resizekb', 'int');
-		$max_resizepixel  = sly_request('max_resizepixel', 'int');
+		$max_cachefiles   = sly_request('max_cachefiles',      'int');
+		$max_filters      = sly_request('max_filters',         'int');
+		$max_resizekb     = sly_request('max_resizekb',        'int');
+		$max_resizepixel  = sly_request('max_resizepixel',     'int');
 		$jpg_quality      = min(abs(sly_request('jpg_quality', 'int')), 100);
-		$upscalingAllowed = sly_request('upscaling_allowed', 'boolean');
+		$upscalingAllowed = sly_request('upscaling_allowed',   'boolean');
+		$nocompress       = sly_request('nocompress',          'boolean');
 
 		$service = sly_Service_Factory::getAddOnService();
 
-		$service->setProperty('image_resize', 'max_cachefiles', $max_cachefiles);
-		$service->setProperty('image_resize', 'max_filters', $max_filters);
-		$service->setProperty('image_resize', 'max_resizekb', $max_resizekb);
-		$service->setProperty('image_resize', 'max_resizepixel', $max_resizepixel);
-		$service->setProperty('image_resize', 'jpg_quality', $jpg_quality);
+		$service->setProperty('image_resize', 'max_cachefiles',    $max_cachefiles);
+		$service->setProperty('image_resize', 'max_filters',       $max_filters);
+		$service->setProperty('image_resize', 'max_resizekb',      $max_resizekb);
+		$service->setProperty('image_resize', 'max_resizepixel',   $max_resizepixel);
+		$service->setProperty('image_resize', 'jpg_quality',       $jpg_quality);
 		$service->setProperty('image_resize', 'upscaling_allowed', $upscalingAllowed);
+		$service->setProperty('image_resize', 'nocompress',        $nocompress);
 
 		print sly_Helper_Message::info(t('iresize_config_saved'));
 		$this->index();

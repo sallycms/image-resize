@@ -76,6 +76,7 @@ class A2_Thumbnail {
 
 		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
 		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
+		$this->compressJPG      = !((bool) $service->getProperty('image_resize', 'nocompress', !$this->compressJPG));
 	}
 
 	/**
@@ -194,8 +195,8 @@ class A2_Thumbnail {
 		return true;
 	}
 
-	public function setJpgCompress($compress) {
-		if (!((boolean) $compress)) $this->compressJPG = false;
+	public function disableJpgCompress() {
+		$this->compressJPG = false;
 	}
 
 	/**
