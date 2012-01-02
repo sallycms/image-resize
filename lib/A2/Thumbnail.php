@@ -110,8 +110,7 @@ class A2_Thumbnail {
 		// => Das Originalbild ausliefern
 
 		if (!$this->upscalingAllowed
-			&& $this->thumbWidth >= $this->width
-			&& $this->thumbHeight >= $this->height) {
+			&& ($this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height)) {
 
 			$this->thumbWidth  = $this->width;
 			$this->thumbHeight = $this->height;
@@ -238,6 +237,11 @@ class A2_Thumbnail {
 			return false;
 		}
 		$this->thumbType = $type;
+	}
+
+	public function allowUpscaling($upscaling = true) {
+		if ((bool) $upscaling) $this->upscalingAllowed = true;
+		else $this->upscalingAllowed = false;
 	}
 
 	public function setImgParams($params) {
