@@ -12,6 +12,8 @@
  * @author Robert
  */
 class A2_Extensions {
+	// c=crop before w=width|h=heigth|a=both followed by o=offset|r=right|l=left|t=top|b=bottom
+	// followed by f=filter followed by u=upscaling
 	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:u[01]?__)?(?:n__)?(?:t[0-9]+__)?)(.*)$@';
 
 	/**
@@ -69,6 +71,7 @@ class A2_Extensions {
 				$crop = true;
 				$param = substr($param, 1);
 			}
+			// check filter option
 			elseif ($prefix == 'f') {
 				$filters[] = substr($param, 1);
 				continue;
