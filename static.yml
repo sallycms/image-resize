@@ -1,7 +1,7 @@
 page: 'imageresize'
 name: 'translate:iresize_image_resize'
 perm: 'image_resize[]'
-author: 'Christian Zozmann, Robert Koppsieker, Christoph Mewes, Wolfgang Hutteger, Markus Staab, Jan Kristinus'
-supportpage: 'www.webvariants.de, forum.redaxo.de'
+author: 'webvariants GbR'
+supportpage: 'http://www.sallycms.de/'
 sally: ['0.5']
 version: '2.1.1'
