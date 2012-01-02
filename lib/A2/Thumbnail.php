@@ -33,6 +33,11 @@ class A2_Thumbnail {
 
 	private $imgParams = array();
 
+	private $gifObject    = null;
+	private $isAnimated   = false;
+
+	private $imgParams = array();
+
 	private $thumbWidth        = 0;
 	private $thumbHeight       = 0;
 	private $thumbWidthOffset  = 0;
@@ -53,16 +58,22 @@ class A2_Thumbnail {
 		$this->imageType = $this->getImageType();
 		$this->thumbType = $this->imageType;
 
-		// avoid resizing animated gifs by sending the original image
-		if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
-			//throw new Exception('I will not resize animated GIFs, sorry.', 501);
-		}
-
 		if (!$this->imageType) {
-				throw new Exception('File is not a supported image type.', 406);
+			throw new Exception('File is not a supported image type.', 406);
 		}
 
 		$data = file_get_contents($this->fileName);
+
+		// special handling for animated gifs
+		if ($this->imageType == IMAGETYPE_GIF && self::is_animated_gif($this->fileName)) {
+			$this->isAnimated = true;
+
+			$this->gifObject = new A2_GIF_Decoder($data);
+			$frames = $this->gifObject->getFrames();
+			if (!is_array($frames) || count($frames) <= 0) self::sendError();
+			$data = $frames[0];
+		}
+
 		$this->imgsrc = imagecreatefromstring($data);
 
 		if (!$this->imgsrc) {
@@ -71,6 +82,7 @@ class A2_Thumbnail {
 
 		$this->origWidth  = imagesx($this->imgsrc);
 		$this->origHeight = imagesy($this->imgsrc);
+
 		$this->width      = $this->origWidth;
 		$this->height     = $this->origHeight;
 
@@ -98,7 +110,7 @@ class A2_Thumbnail {
 		$this->thumbWidth  = max(1, $this->thumbWidth);
 		$this->thumbHeight = max(1, $this->thumbHeight);
 
-		if (function_exists('imagecreatetruecolor')) {
+		if (function_exists('imagecreatetruecolor')/* && $this->imageType != IMAGETYPE_GIF && !$this->isAnimated*/) {
 			$this->imgthumb = @imagecreatetruecolor($this->thumbWidth, $this->thumbHeight);
 		}
 		else {
@@ -110,6 +122,7 @@ class A2_Thumbnail {
 		}
 
 		// Transparenz erhalten
+
 		$this->keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
 
 		imagecopyresampled(
@@ -124,6 +137,7 @@ class A2_Thumbnail {
 			$this->width,
 			$this->height
 		);
+//		var_dump($this->imgthumb);
 	}
 
 	/**
@@ -222,6 +236,86 @@ class A2_Thumbnail {
 		if (is_array($params)) $this->imgParams = $params;
 	}
 
+	public function setImgParams($params) {
+		if (is_array($params)) $this->imgParams = $params;
+	}
+
+	public function saveAnimatedGIF($file) {
+
+		$gifDelays   = $this->gifObject->getDelays();
+		$gifFrames   = $this->gifObject->getFrames();
+		$gifLoop     = $this->gifObject->getLoop();
+		$gifDisposal = $this->gifObject->getDisposal();
+		$gifOffset   = $this->gifObject->getOffset();
+		$gifTransR   = $this->gifObject->getTransparentR();
+		$gifTransG   = $this->gifObject->getTransparentG();
+		$gifTransB   = $this->gifObject->getTransparentB();
+
+//		print'origWidth: '.$this->origWidth.'<br />';
+//		print'origHeight: '.$this->origHeight.'<br />';
+//		print'width: '.$this->width.'<br />';
+//		print'height: '.$this->height.'<br />';
+//		print'thumbWidth: '.$this->thumbWidth.'<br />';
+//		print'thumbHeight: '.$this->thumbHeight.'<br />';
+//		print'widthOffset: '.$this->widthOffset.'<br />';
+//		print'heightOffset: '.$this->heightOffset.'<br />';
+
+		$scalingFactor = $this->thumbWidth / $this->origWidth;
+		if ($this->widthOffset > 0) $scalingFactor = $this->thumbHeight / $this->origHeight;
+
+//		var_dump($scalingFactor);
+
+		if (!is_array($gifFrames) || count($gifFrames) <= 0) self::sendError();
+
+		$gifData = array();
+		for ($i = 0; $i < count($gifFrames); $i++){
+
+			$this->imgsrc = imagecreatefromstring($gifFrames[$i]);
+
+			if (!$this->imgsrc) {
+				throw new Exception('Can not create valid Image Source.');
+			}
+
+			$this->origWidth   = imagesx($this->imgsrc);
+			$this->origHeight  = imagesy($this->imgsrc);
+
+			$this->width       = $this->origWidth;
+			$this->height      = $this->origHeight;
+
+			$this->thumbWidth  = $scalingFactor * $this->width;
+			$this->thumbHeight = $scalingFactor * $this->height;
+
+			$this->setNewSize();
+
+			$this->resampleImage();
+			$this->applyFilters();
+
+			ob_start();
+			imagegif($this->imgthumb);
+			$gifData[] = ob_get_clean();
+//			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
+		}
+//		var_dump($gifData);
+//		var_dump($gifDelays);
+//		var_dump($gifLoop);
+//		var_dump($gifDisposal);
+//		var_dump($gifTransR);
+//		var_dump($gifTransG);
+//		var_dump($gifTransB);
+
+		$gifmerge = new A2_GIF_Encoder(
+			$gifData,
+			$gifDelays,
+			$gifLoop,
+			$gifDisposal,
+			$gifTransR, $gifTransG, $gifTransB,
+			"bin"
+		);
+//		var_dump($gifmerge);
+
+		fwrite(fopen($file, 'wb'), $gifmerge->GetAnimation());
+	}
+
 	/**
 	 * Schreibt das Thumbnail an den durch $file definierten Platz
 	 *
@@ -229,27 +323,33 @@ class A2_Thumbnail {
 	 */
 	public function generateImage($file) {
 		if ($this->imageGetsModified()) {
-			$this->resampleImage();
-			$this->applyFilters();
+			if ($this->imageType == IMAGETYPE_GIF && $this->isAnimated) {
+				$this->saveAnimatedGIF($file);
+			}
+			else {
+				$this->resampleImage();
+				$this->applyFilters();
 
-			switch ($this->thumbType) {
-				case IMAGETYPE_JPEG:
-					imageinterlace($this->imgthumb, true); // set to progressive mode
-					imagejpeg($this->imgthumb, $file, $this->thumbQuality);
-					break;
+				switch ($this->imageType) {
+					case IMAGETYPE_JPEG:
+						imageinterlace($this->imgthumb, true); // set to progressive mode
+						imagejpeg($this->imgthumb, $file, $this->thumbQuality);
+						break;
 
-				case IMAGETYPE_PNG:
-					imagepng($this->imgthumb, $file);
-					break;
+					case IMAGETYPE_PNG:
+						imagepng($this->imgthumb, $file);
+						break;
 
-				case IMAGETYPE_GIF:
-					imagegif($this->imgthumb, $file);
-					break;
+ 					case IMAGETYPE_GIF:
+						imagegif($this->imgthumb, $file);
+						break;
 
-				case IMAGETYPE_WBMP:
-					imagewbmp($this->imgthumb, $file);
-					break;
- 			}
+					case IMAGETYPE_WBMP:
+						imagewbmp($this->imgthumb, $file);
+						break;
+				}
+			}
+
 			imagedestroy($this->imgthumb);
 		}
 		// just copy the image
