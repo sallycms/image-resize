@@ -1,6 +1,15 @@
 <?php
+/*
+ * Copyright (c) 2012, webvariants GbR, http://www.webvariants.de
+ *
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
+ *
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
 /**
- * Image-Resize Addon
+ * Image-Resize AddOn
  *
  * @author office[at]vscope[dot]at Wolfgang Hutteger
  * @author <a href="http://www.vscope.at">www.vscope.at</a>
@@ -9,11 +18,7 @@
  * @author zozi@webvariants.de
  *
  * @author memento@webvariants.de
- *
- * @package sally 0.4
- * @version 1.7.0
  */
-
 class A2_Thumbnail {
 	private $fileName = '';
 
@@ -246,54 +251,121 @@ class A2_Thumbnail {
 		$gifFrames   = $this->gifObject->getFrames();
 		$gifLoop     = $this->gifObject->getLoop();
 		$gifDisposal = $this->gifObject->getDisposal();
-		$gifOffset   = $this->gifObject->getOffset();
+		$gifOffsets  = $this->gifObject->getOffset();
 		$gifTransR   = $this->gifObject->getTransparentR();
 		$gifTransG   = $this->gifObject->getTransparentG();
 		$gifTransB   = $this->gifObject->getTransparentB();
 
-//		print'origWidth: '.$this->origWidth.'<br />';
-//		print'origHeight: '.$this->origHeight.'<br />';
-//		print'width: '.$this->width.'<br />';
-//		print'height: '.$this->height.'<br />';
-//		print'thumbWidth: '.$this->thumbWidth.'<br />';
-//		print'thumbHeight: '.$this->thumbHeight.'<br />';
-//		print'widthOffset: '.$this->widthOffset.'<br />';
-//		print'heightOffset: '.$this->heightOffset.'<br />';
+		for ($i = 1; $i < count($gifDelays); $i++) {
+			$gifOffsets[$i] = array(40, 0);
+		}
 
 		$scalingFactor = $this->thumbWidth / $this->origWidth;
 		if ($this->widthOffset > 0) $scalingFactor = $this->thumbHeight / $this->origHeight;
 
-//		var_dump($scalingFactor);
+		// remember offsets for resetting later
+		$widthOffset       = $this->widthOffset;
+		$heightOffset      = $this->heightOffset;
+		$thumbWidthOffset  = $this->thumbWidthOffset;
+		$thumbHeightOffset = $this->thumbHeightOffset;
+
 
 		if (!is_array($gifFrames) || count($gifFrames) <= 0) self::sendError();
 
 		$gifData = array();
 		for ($i = 0; $i < count($gifFrames); $i++){
 
+			// get layer as image stream
 			$this->imgsrc = imagecreatefromstring($gifFrames[$i]);
 
 			if (!$this->imgsrc) {
 				throw new Exception('Can not create valid Image Source.');
 			}
 
-			$this->origWidth   = imagesx($this->imgsrc);
-			$this->origHeight  = imagesy($this->imgsrc);
+			$smallLayer = $this->imgsrc;
+			$sLWidth    = imagesx($smallLayer);
+			$sLHeight   = imagesy($smallLayer);
 
-			$this->width       = $this->origWidth;
-			$this->height      = $this->origHeight;
+			// if layer has an offset relative to gif canvas, set image offsets to zero
+			if (isset($gifOffsets[$i]) && ($sLWidth < $this->origWidth || $sLHeight < $this->origHeight)) {
 
-			$this->thumbWidth  = $scalingFactor * $this->width;
-			$this->thumbHeight = $scalingFactor * $this->height;
+				// create empty image which has size of whole image
+				if (function_exists('imagecreatetruecolor')) {
+					$this->imgsrc = @imagecreatetruecolor($this->origWidth, $this->origHeight);
+				}
+				else {
+					$this->imgsrc = @imagecreate($this->origWidth, $this->origHeight);
+				}
 
-			$this->setNewSize();
+				$this->keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
 
-			$this->resampleImage();
+				$oSLLeftOffset = $gifOffsets[$i][0];
+				$oSLTopOffset  = $gifOffsets[$i][1];
+
+				// copy layer into empty image
+				imagecopy($this->imgsrc, $smallLayer, $oSLLeftOffset, $oSLTopOffset, 0, 0, $sLWidth, $sLHeight);
+
+				$sLThumbWidth  = (int) round($scalingFactor * $sLWidth);
+				$sLThumbHeight = (int) round($scalingFactor * $sLHeight);
+
+				$sLLeftOffset = (int) round($scalingFactor * $oSLLeftOffset);
+				$sLTopOffset  = (int) round($scalingFactor * $oSLTopOffset);
+
+				// adjust width offset, if image gets cropped
+				if ($this->widthOffset > 0) {
+					$this->widthOffset = (int) round($scalingFactor * $this->widthOffset);
+					if ($this->widthOffset > $sLLeftOffset) $sLThumbWidth = max(1, $sLThumbWidth - $this->widthOffset);
+					$gifOffsets[$i][0] = max(0, $sLLeftOffset - $this->widthOffset);
+//					var_dump($gifOffsets[$i][0]);die;
+				}
+				else {
+					$this->widthOffset      = 0;
+					$this->thumbWidthOffset = 0;
+				}
+
+				// adjust height offset, if image gets cropped
+				if ($this->heightOffset > $oSLTopOffset) {
+					$this->heightOffset      = (int) round($scalingFactor * $this->heightOffset);
+					$sLThumbHeight = max(1, $sLThumbHeight - $this->heightOffset);
+					$gifOffsets[$i][1] = max(0, $sLTopOffset - $this->heightOffset);
+				}
+				else {
+					$this->heightOffset      = 0;
+					$this->thumbHeightOffset = 0;
+				}
+
+				$this->resampleImage();
+
+				$smallLayerThumb = $this->imgthumb;
+
+				// create image which has size of resized layer
+				if (function_exists('imagecreatetruecolor')) {
+					$this->imgthumb = @imagecreatetruecolor($sLThumbWidth, $sLThumbHeight);
+				}
+				else {
+					$this->imgthumb = @imagecreate($sLThumbWidth, $sLThumbHeight);
+				}
+				// copy layer part of resized image into smaller image
+				imagecopy($this->imgthumb, $smallLayerThumb, 0, 0, $sLLeftOffset, $sLTopOffset, $sLThumbWidth, $sLThumbHeight);
+
+			}
+			// else just resample image
+			else {
+				$this->resampleImage();
+			}
+
 			$this->applyFilters();
 
 			ob_start();
 			imagegif($this->imgthumb);
 			$gifData[] = ob_get_clean();
 //			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
+
+			// reset offsets for next layer
+			$this->widthOffset       = $widthOffset;
+			$this->heightOffset      = $heightOffset;
+			$this->thumbWidthOffset  = $thumbWidthOffset;
+			$this->thumbHeightOffset = $thumbHeightOffset;
 		}
 //		var_dump($gifData);
 //		var_dump($gifDelays);
@@ -309,9 +381,11 @@ class A2_Thumbnail {
 			$gifLoop,
 			$gifDisposal,
 			$gifTransR, $gifTransG, $gifTransB,
+			$gifOffsets,
 			"bin"
 		);
 //		var_dump($gifmerge);
+//		die;
 
 		fwrite(fopen($file, 'wb'), $gifmerge->GetAnimation());
 	}

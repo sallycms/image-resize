@@ -24,7 +24,7 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
-Class X_A2_GIF_Encoder {
+Class A2_GIF_Encoder {
         var $GIF = "GIF89a";            /* GIF header 6 bytes   */
         var $VER = "GIFEncoder V3.00";  /* Encoder version              */
 
@@ -49,11 +49,10 @@ Class X_A2_GIF_Encoder {
         ::      GIFEncoder...
         ::
         */
-        function GIFEncoder     (
-                                                        $GIF_src, $GIF_dly, $GIF_lop, $GIF_dis,
-                                                        $GIF_red, $GIF_grn, $GIF_blu, $GIF_ofs,
-                                                        $GIF_mod
-                                                ) {
+        function __construct($GIF_src, $GIF_dly, $GIF_lop, $GIF_dis,
+		                     $GIF_red, $GIF_grn, $GIF_blu,
+		                     $GIF_ofs, $GIF_mod) {
+
                 if ( ! is_array ( $GIF_src ) && ! is_array ( $GIF_dly ) ) {
                         printf  ( "%s: %s", $this->VER, $this->ERR [ 'ERR00' ] );
                         exit    ( 0 );
@@ -98,7 +97,7 @@ Class X_A2_GIF_Encoder {
 					if (!isset($GIF_dis[$i])) $GIF_dis[$i] = $this->DIS;
 					else $GIF_dis[$i] = ( $GIF_dis[$i] > -1 ) ? ( ( $GIF_dis[$i] < 3 ) ? $GIF_dis[$i] : 3 ) : 2;
 
-					if (!isset($GIF_ofs[$i])) $GIF_dis[$i] = 0;
+					if (!isset($GIF_ofs[$i])) $GIF_ofs[$i] = 0;
 				}
 
 				if ( is_array ( $GIF_ofs ) && count ( $GIF_ofs ) > 1 ) {
@@ -107,11 +106,11 @@ Class X_A2_GIF_Encoder {
                 }
 
 
-                GIFEncoder::GIFAddHeader ( );
+				$this->GIFAddHeader ( );
                 for ( $i = 0; $i < count ( $this->BUF ); $i++ ) {
-                        GIFEncoder::GIFAddFrames ( $i, $GIF_dly [ $i ], $GIF_dis[$i] );
+                        $this->GIFAddFrames ( $i, $GIF_dly [ $i ], $GIF_dis[$i] );
                 }
-                GIFEncoder::GIFAddFooter ( );
+                $this->GIFAddFooter ( );
         }
         /*
         :::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -129,7 +128,7 @@ Class X_A2_GIF_Encoder {
                         $this->GIF .= substr ( $this->BUF [ 0 ], 13, $cmap      );
                         if($this->LOP !== false)
                         {
-                                $this->GIF .= "!\377\13NETSCAPE2.0\3\1" . GIFEncoder::GIFWord ( $this->LOP ) . "\0";
+                                $this->GIF .= "!\377\13NETSCAPE2.0\3\1" . $this->GIFWord ( $this->LOP ) . "\0";
                         }
                 }
         }
@@ -182,7 +181,7 @@ Class X_A2_GIF_Encoder {
                 }
                 if ( ord ( $this->BUF [ $i ] { 10 } ) & 0x80 && $this->IMG > -1 ) {
                         if ( $Global_len == $Locals_len ) {
-                                if ( GIFEncoder::GIFBlockCompare ( $Global_rgb, $Locals_rgb, $Global_len ) ) {
+                                if ( $this->GIFBlockCompare ( $Global_rgb, $Locals_rgb, $Global_len ) ) {
                                         $this->GIF .= ( $Locals_ext . $Locals_img . $Locals_tmp );
                                 }
                                 else {
@@ -193,7 +192,7 @@ Class X_A2_GIF_Encoder {
                                          */
                                         if ( $this->SIG == 1 ) {
                                                 $Locals_img { 1 } = chr ( $this->OFS [ $i ] [ 0 ] & 0xFF );
-                                                $Locals_img { 2 } = chr ( ( $$this->OFS [ $i ] [ 0 ] & 0xFF00 ) >> 8 );
+                                                $Locals_img { 2 } = chr ( ( $this->OFS [ $i ] [ 0 ] & 0xFF00 ) >> 8 );
                                                 $Locals_img { 3 } = chr ( $this->OFS [ $i ] [ 1 ] & 0xFF );
                                                 $Locals_img { 4 } = chr ( ( $this->OFS [ $i ] [ 1 ] & 0xFF00 ) >> 8 );
                                         }
@@ -213,7 +212,7 @@ Class X_A2_GIF_Encoder {
                                  */
                                 if ( $this->SIG == 1 ) {
                                         $Locals_img { 1 } = chr ( $this->OFS [ $i ] [ 0 ] & 0xFF );
-                                        $Locals_img { 2 } = chr ( ( $$this->OFS [ $i ] [ 0 ] & 0xFF00 ) >> 8 );
+                                        $Locals_img { 2 } = chr ( ( $this->OFS [ $i ] [ 0 ] & 0xFF00 ) >> 8 );
                                         $Locals_img { 3 } = chr ( $this->OFS [ $i ] [ 1 ] & 0xFF );
                                         $Locals_img { 4 } = chr ( ( $this->OFS [ $i ] [ 1 ] & 0xFF00 ) >> 8 );
                                 }
@@ -307,7 +306,7 @@ Class X_A2_GIF_Encoder {
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
-class A2_GIF_Encoder {
+class X_A2_GIF_Encoder {
 	var $GIF = "GIF89a";		// GIF header 6 bytes
 	var $VER = "GIFEncoder V2.05";	// Encoder version
 
