@@ -354,18 +354,9 @@ class A2_Thumbnail {
 			ob_start();
 			imagegif($this->imgthumb);
 			$gifData[] = ob_get_clean();
-//			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
 			imagedestroy($this->imgthumb);
 
 		}
-//		var_dump($gifData);
-//		var_dump($gifDelays);
-//		var_dump($gifLoop);
-//		var_dump($gifDisposal);
-//		var_dump($gifTransR);
-//		var_dump($gifTransG);
-//		var_dump($gifTransB);
-//die;
 		$gifmerge = new A2_GIF_Encoder(
 			$gifData,
 			$gifDelays,
@@ -375,13 +366,8 @@ class A2_Thumbnail {
 			$gifOffsets,
 			"bin"
 		);
-//		var_dump($gifmerge);
-//		die;
 
-		#fwrite(fopen($file, 'wb'), $gifmerge->getAnimation());
-		header('Content-Type: image/gif');
-		print $gifmerge->getAnimation();
-		die;
+		fwrite(fopen($file, 'wb'), $gifmerge->getAnimation());
 	}
 
 	/**
