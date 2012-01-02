@@ -153,7 +153,8 @@ class A2_Extensions {
 		try {
 			$thumb = new A2_Thumbnail($imageFile);
 			if ($upscalingAllowed) $thumb->allowUpscaling();
-			$thumb->setNewSize($imgParams);
+			$thumb->setImgParams($imgParams);
+			$thumb->setNewSize();
 			$thumb->addFilters($filters);
 			if ($nocompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);

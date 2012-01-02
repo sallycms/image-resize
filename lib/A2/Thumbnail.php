@@ -31,6 +31,8 @@ class A2_Thumbnail {
 	private $quality      = 100;
 	private $imageType    = null;
 
+	private $imgParams = array();
+
 	private $thumbWidth        = 0;
 	private $thumbHeight       = 0;
 	private $thumbWidthOffset  = 0;
@@ -96,9 +98,6 @@ class A2_Thumbnail {
 		$this->thumbWidth  = max(1, $this->thumbWidth);
 		$this->thumbHeight = max(1, $this->thumbHeight);
 
-		$this->thumbWidth  = max(1, $this->thumbWidth);
-		$this->thumbHeight = max(1, $this->thumbHeight);
-
 		if (function_exists('imagecreatetruecolor')) {
 			$this->imgthumb = @imagecreatetruecolor($this->thumbWidth, $this->thumbHeight);
 		}
@@ -111,7 +110,8 @@ class A2_Thumbnail {
 		}
 
 		// Transparenz erhalten
-		$this->keepTransparent();
+		$this->keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
+
 		imagecopyresampled(
 			$this->imgthumb,
 			$this->imgsrc,
@@ -127,46 +127,52 @@ class A2_Thumbnail {
 	}
 
 	/**
-	 * Sorgt dafür, dass Bilder transparent bleiben
+	 * fills destination image with transparent color of source image
+	 *
+	 * @param type $imageType  image type constant
+	 * @param type $imgsrc     source image
+	 * @param type $imgthumb   destination image
 	 */
-	private function keepTransparent() {
-		if ($this->imageType == IMAGETYPE_PNG || $this->imageType == IMAGETYPE_GIF) {
-			if ($this->imageType == IMAGETYPE_GIF) {
-				imagepalettecopy($this->imgsrc, $this->imgthumb);
+	private function keepTransparent($imageType, $imgsrc, $imgthumb) {
+		if ($imageType == IMAGETYPE_PNG || $imageType == IMAGETYPE_GIF) {
+			if ($imageType == IMAGETYPE_GIF) {
+				imagepalettecopy($imgsrc, $imgthumb);
 			}
 
 			// get the original image's index for its transparent color
-			$colorTransparent = imagecolortransparent($this->imgsrc);
+			$colorTransparent = imagecolortransparent($imgsrc);
+			$numOfTotalColors = imagecolorstotal($imgsrc);
 
 			// if there is an index in the color index range -> the image has transparency
-			if ($colorTransparent >= 0 && $colorTransparent < imagecolorstotal($this->imgsrc)) {
+			if ($colorTransparent >= 0 && $colorTransparent < $numOfTotalColors) {
 
 				// Get the original image's transparent color's RGB values
-				$trnprt_color = imagecolorsforindex($this->imgsrc,  $colorTransparent);
+				$trnprt_color = imagecolorsforindex($imgsrc,  $colorTransparent);
 
 				// Allocate the same color in the new image resource
-				$colorTransparent = imagecolorallocate($this->imgthumb, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
+				$colorTransparent = imagecolorallocate($imgthumb, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
 
 				// Completely fill the background of the new image with allocated color.
-				imagefill($this->imgthumb, 0, 0, $colorTransparent);
+				imagefill($imgthumb, 0, 0, $colorTransparent);
 
 				// Set the background color for new image to transparent
-				imagecolortransparent($this->imgthumb, $colorTransparent);
+				imagecolortransparent($imgthumb, $colorTransparent);
+
 			}
-			elseif ($this->imageType == IMAGETYPE_PNG) {
-				imagealphablending($this->imgthumb, false);
+			elseif ($imageType == IMAGETYPE_PNG) {
+				imagealphablending($imgthumb, false);
 
 				// Create a new transparent color for image
-				$color = imagecolorallocatealpha($this->imgthumb, 0, 0, 0, 127);
+				$color = imagecolorallocatealpha($imgthumb, 0, 0, 0, 127);
 
 				// Completely fill the background of the new image with allocated color.
-				imagefill($this->imgthumb, 0, 0, $color);
+				imagefill($imgthumb, 0, 0, $color);
 
-				imagesavealpha($this->imgthumb, true);
+				imagesavealpha($imgthumb, true);
 			}
 
-			if ($this->imageType == IMAGETYPE_GIF) {
-				imagetruecolortopalette($this->imgthumb, true, 256);
+			if ($imageType == IMAGETYPE_GIF) {
+				imagetruecolortopalette($imgthumb, true, $numOfTotalColors);
 			}
 		}
 	}
@@ -212,6 +218,10 @@ class A2_Thumbnail {
 		$this->thumbType = $type;
 	}
 
+	public function setImgParams($params) {
+		if (is_array($params)) $this->imgParams = $params;
+	}
+
 	/**
 	 * Schreibt das Thumbnail an den durch $file definierten Platz
 	 *
@@ -240,6 +250,7 @@ class A2_Thumbnail {
 					imagewbmp($this->imgthumb, $file);
 					break;
  			}
+			imagedestroy($this->imgthumb);
 		}
 		// just copy the image
 		else {
@@ -426,7 +437,10 @@ class A2_Thumbnail {
 	 *
 	 * @param  array $params  Width, Height, Crop and Offset parameters
 	 */
-	public function setNewSize($params) {
+	public function setNewSize() {
+
+		$params = $this->imgParams;
+
 		// resize to square
 		if (isset($params['auto'])) {
 			$this->resizeBoth($params['auto'], $params['auto']);
