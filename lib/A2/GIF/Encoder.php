@@ -82,7 +82,6 @@ class A2_GIF_Encoder {
 		}
 		if (!is_array($GIF_ofs)) $GIF_ofs = array();
 
-		// WV-HACK: $GIF_dis is an array not an int
 		for ($i = 0; $i < count ($this->BUF); $i++) {
 			if (!isset($GIF_dis[$i])) $GIF_dis[$i] = $this->DIS;
 			else $GIF_dis[$i] = ($GIF_dis[$i] > -1) ? (($GIF_dis[$i] < 3) ? $GIF_dis[$i] : 3) : 2;
@@ -107,13 +106,13 @@ class A2_GIF_Encoder {
 	private function addHeader() {
 		$cmap = 0;
 
-		if (ord ($this->BUF [0] { 10 }) & 0x80) {
+		if (ord ($this->BUF[0][10]) & 0x80) {
 			$cmap = $this->getColorTableLength(0);
 
-			$this->GIF .= substr ($this->BUF [0], 6, 7          );
-			$this->GIF .= substr ($this->BUF [0], 13, $cmap     );
+			$this->GIF .= substr($this->BUF[0],  6, 7);
+			$this->GIF .= substr($this->BUF[0], 13, $cmap);
 			if ($this->LOP !== false) {
-				$this->GIF .= "!\377\13NETSCAPE2.0\3\1" . $this->intToWord ($this->LOP) . "\0";
+				$this->GIF .= "!\377\13NETSCAPE2.0\3\1".$this->intToWord($this->LOP)."\0";
 			}
 		}
 	}
@@ -127,9 +126,12 @@ class A2_GIF_Encoder {
 	 */
 	private function getGraphicalControlExtension($delay, $disposal, $transpColorIndex = null) {
 
+//var_dump($transpColorIndex);
 		$transpFlag = 0;
 		if (!is_int($transpColorIndex) || $transpColorIndex < 0) $transpColorIndex = 0;
 		else $transpFlag = 1;
+
+//var_dump($transpFlag, $transpColorIndex);
 
 		return "\x21"                    // extension introducer (always 21)
 		     . "\xF9"                    // graphic control label (F9 means graphic control extension)
@@ -181,29 +183,33 @@ class A2_GIF_Encoder {
 
 		$Locals_str = $this->getLocalsStrLength($i);
 
-		$Locals_end = strlen ($this->BUF[$i]) - $Locals_str - 1;
-		$Locals_tmp = substr ($this->BUF[$i], $Locals_str, $Locals_end);
+		$Locals_end = strlen($this->BUF[$i]) - $Locals_str - 1;
+		$Locals_tmp = substr($this->BUF[$i], $Locals_str, $Locals_end);
 
 		$Global_len = $this->getColorLength(0);
 		$Locals_len = $this->getColorLength($i);
 
-		$Global_rgb = substr ($this->BUF[0], 13, $this->getColorTableLength(0));
-		$Locals_rgb = substr ($this->BUF[$i], 13, $this->getColorTableLength($i));
+		$Global_rgb = substr($this->BUF[0], 13, $this->getColorTableLength(0));
+		$Locals_rgb = substr($this->BUF[$i], 13, $this->getColorTableLength($i));
 
 		$Locals_ext = $this->getGraphicalControlExtension($d, $disposal);
 
+
+//		print(substr($this->BUF[$i], 6, 7)).'x';
 		if ($this->COL > -1 && ord($this->BUF[$i][10]) & 0x80) {
 //			print 'maximum color index: '.$this->getColorLength($i).'<br>';
-			for ($j = 0; $j < $this->getColorLength($i); $j++) {
-
-				if (ord($Locals_rgb[3 * $j + 0]) == (($this->COL >> 16) & 0xFF)
-				 && ord($Locals_rgb[3 * $j + 1]) == (($this->COL >>  8) & 0xFF)
-				 && ord($Locals_rgb[3 * $j + 2]) == (($this->COL >>  0) & 0xFF)) {
-
-					$Locals_ext = $this->getGraphicalControlExtension($d, $disposal, $j);
-					break;
-				}
-			}
+//			for ($j = 0; $j < $this->getColorLength($i); $j++) {
+//
+//				if (ord($Locals_rgb[3 * $j + 0]) == (($this->COL >> 16) & 0xFF)
+//				 && ord($Locals_rgb[3 * $j + 1]) == (($this->COL >>  8) & 0xFF)
+//				 && ord($Locals_rgb[3 * $j + 2]) == (($this->COL >>  0) & 0xFF)) {
+//
+//					$Locals_ext = $this->getGraphicalControlExtension($d, $disposal, $j);
+//					break;
+//				}
+//			}
+			// hack to get index 1 transparent
+			if ($i > 0) $Locals_ext = $this->getGraphicalControlExtension($d, $disposal, 1);
 		}
 
 //		print "$i: ".urlencode($Locals_ext)."<br>\n";
@@ -236,11 +242,11 @@ class A2_GIF_Encoder {
 				$this->GIF .= $this->getXYPadding($i, $Locals_ext, $Locals_img, $Locals_rgb, $Locals_tmp);
 			}
 		}
-		// global and local color table are equal
 		else {
 			$this->GIF .= $Locals_ext.$Locals_img.$Locals_tmp;
 		}
 		$this->IMG = 1;
+//		print '<br />';
 	}
 
 	private function addFooter() {
