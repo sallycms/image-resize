@@ -128,7 +128,7 @@ class A2_Thumbnail {
 
 		// Transparenz erhalten
 
-		$this->keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
+		self::keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
 
 		imagecopyresampled(
 			$this->imgthumb,
@@ -152,7 +152,7 @@ class A2_Thumbnail {
 	 * @param type $imgsrc     source image
 	 * @param type $imgthumb   destination image
 	 */
-	private function keepTransparent($imageType, $imgsrc, $imgthumb) {
+	private static function keepTransparent($imageType, $imgsrc, $imgthumb) {
 		if ($imageType == IMAGETYPE_PNG || $imageType == IMAGETYPE_GIF) {
 			if ($imageType == IMAGETYPE_GIF) {
 				imagepalettecopy($imgsrc, $imgthumb);
@@ -176,7 +176,6 @@ class A2_Thumbnail {
 
 				// Set the background color for new image to transparent
 				imagecolortransparent($imgthumb, $colorTransparent);
-
 			}
 			elseif ($imageType == IMAGETYPE_PNG) {
 				imagealphablending($imgthumb, false);
@@ -273,7 +272,7 @@ class A2_Thumbnail {
 		if (!is_array($gifFrames) || count($gifFrames) <= 0) self::sendError();
 
 		$gifData = array();
-		for ($i = 0; $i < count($gifFrames); $i++){
+		for ($i = 0; $i < count($gifFrames); $i++) {
 
 			// get layer as image stream
 			$this->imgsrc = imagecreatefromstring($gifFrames[$i]);
@@ -297,7 +296,11 @@ class A2_Thumbnail {
 					$this->imgsrc = @imagecreate($this->origWidth, $this->origHeight);
 				}
 
-				$this->keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
+				self::keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
+
+//				header('Content-Type: image/gif');
+//				print imagegif($this->imgsrc);
+//				die;
 
 				// copy layer into empty image
 				imagecopy($this->imgsrc, $smallLayer, $gifOffsets[$i][0], $gifOffsets[$i][1], 0, 0, $sLWidth, $sLHeight);
@@ -342,9 +345,20 @@ class A2_Thumbnail {
 				else {
 					$this->imgthumb = @imagecreate($sLThumbWidth, $sLThumbHeight);
 				}
+
+				self::keepTransparent($this->imageType, $smallLayerThumb, $this->imgthumb);
+
+//				header('Content-Type: image/gif');
+//				print imagegif($smallLayerThumb);
+//				die;
+
 				// copy layer part of resized image into smaller image
 				imagecopy($this->imgthumb, $smallLayerThumb, 0, 0, $sLLeftOffset, $sLTopOffset, $sLThumbWidth, $sLThumbHeight);
 				imagedestroy($smallLayerThumb);
+
+//				header('Content-Type: image/gif');
+//				print imagegif($this->imgthumb);
+//				die;
 
 			}
 			// else just resample image
@@ -357,7 +371,7 @@ class A2_Thumbnail {
 			ob_start();
 			imagegif($this->imgthumb);
 			$gifData[] = ob_get_clean();
-//			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
+			imagegif($this->imgthumb, substr($file, 0, strlen($file)-4).'_'.sprintf('%03d', $i).substr($file, strlen($file)-4));
 			imagedestroy($this->imgthumb);
 
 			// reset offsets for next layer
@@ -373,7 +387,7 @@ class A2_Thumbnail {
 //		var_dump($gifTransR);
 //		var_dump($gifTransG);
 //		var_dump($gifTransB);
-
+die;
 		$gifmerge = new A2_GIF_Encoder(
 			$gifData,
 			$gifDelays,
