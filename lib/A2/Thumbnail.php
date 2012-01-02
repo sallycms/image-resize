@@ -128,7 +128,7 @@ class A2_Thumbnail {
 
 		// Transparenz erhalten
 
-		self::keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
+		$this->keepTransparent($this->imageType, $this->imgsrc, $this->imgthumb);
 
 		imagecopyresampled(
 			$this->imgthumb,
@@ -152,7 +152,7 @@ class A2_Thumbnail {
 	 * @param type $imgsrc     source image
 	 * @param type $imgthumb   destination image
 	 */
-	private static function keepTransparent($imageType, $imgsrc, $imgthumb) {
+	private function keepTransparent($imageType, $imgsrc, $imgthumb) {
 		if ($imageType == IMAGETYPE_PNG || $imageType == IMAGETYPE_GIF) {
 			if ($imageType == IMAGETYPE_GIF) {
 				imagepalettecopy($imgsrc, $imgthumb);
@@ -293,7 +293,7 @@ class A2_Thumbnail {
 					$this->imgsrc = @imagecreate($this->origWidth, $this->origHeight);
 				}
 
-				self::keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
+				$this->keepTransparent($this->imageType, $smallLayer, $this->imgsrc);
 
 //				header('Content-Type: image/gif');
 //				print imagegif($this->imgsrc);
@@ -343,7 +343,7 @@ class A2_Thumbnail {
 					$this->imgthumb = @imagecreate($sLThumbWidth, $sLThumbHeight);
 				}
 
-				self::keepTransparent($this->imageType, $smallLayerThumb, $this->imgthumb);
+				$this->keepTransparent($this->imageType, $smallLayerThumb, $this->imgthumb);
 
 //				header('Content-Type: image/gif');
 //				print imagegif($smallLayerThumb);
