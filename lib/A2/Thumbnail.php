@@ -41,8 +41,6 @@ class A2_Thumbnail {
 	private $gifObject    = null;
 	private $isAnimated   = false;
 
-	private $imgParams = array();
-
 	private $thumbWidth        = 0;
 	private $thumbHeight       = 0;
 	private $thumbWidthOffset  = 0;
@@ -237,15 +235,6 @@ class A2_Thumbnail {
 			return false;
 		}
 		$this->thumbType = $type;
-	}
-
-	public function allowUpscaling($upscaling = true) {
-		if ((bool) $upscaling) $this->upscalingAllowed = true;
-		else $this->upscalingAllowed = false;
-	}
-
-	public function setImgParams($params) {
-		if (is_array($params)) $this->imgParams = $params;
 	}
 
 	public function setImgParams($params) {
