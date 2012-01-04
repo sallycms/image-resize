@@ -215,4 +215,33 @@ class A2_Extensions {
 
 		return $files;
 	}
+
+	public static function articleOutput(array $params) {
+		$content = $params['subject'];
+
+		preg_match_all('#<img [^\>]*src="(data/mediapool/([^"]*))[^\>]*>#is', $content, $matches);
+
+		if (is_array($matches[0])) {
+			foreach ($matches[0] as $key => $var) {
+				preg_match('/width="(.*?)"/is', $var, $width);
+				if (!$width) preg_match('/width: (.*?)px/is', $var, $width);
+
+				if ($width) {
+					$filename = SLY_MEDIAFOLDER.'/'.$matches[2][$key];
+
+					if (file_exists($filename)) {
+						$realsize = getimagesize($filename);
+
+						if ($realsize[0] != $width[1]) {
+							$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
+							$newimage = str_replace($matches[1][$key], $newsrc, $var);
+							$content  = str_replace($var, $newimage, $content);
+						}
+					}
+				}
+			}
+		}
+
+		return $content;
+	}
 }
