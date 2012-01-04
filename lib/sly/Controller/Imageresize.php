@@ -15,8 +15,6 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		if ($this->init) return;
 		$this->init = true;
 
-		sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
-
 		$subpages = array(
 			array('imageresize',            t('iresize_subpage_config')),
 			array('imageresize_clearcache', t('iresize_subpage_clear_cache')),

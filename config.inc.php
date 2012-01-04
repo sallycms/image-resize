@@ -18,3 +18,6 @@ if (!sly_Core::isBackend()) {
 	$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
 	$dispatcher->register('SLY_ARTICLE_OUTPUT', array('A2_Extensions', 'articleOutput'));
 }
+else {
+	sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
+}
