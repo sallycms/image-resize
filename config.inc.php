@@ -1,14 +1,11 @@
 <?php
-/**
- * Image-Resize Addon
+/*
+ * Copyright (c) 2012, webvariants GbR, http://www.webvariants.de
  *
- * @author office[at]vscope[dot]at Wolfgang Hutteger
- * @author <a href="http://www.vscope.at">www.vscope.at</a>
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
  *
- * @author markus.staab[at]redaxo[dot]de Markus Staab
- *
- * @author jan.kristinus[at]redaxo[dot]de Jan Kristinus
- * @author <a href="http://www.yakamara.de">www.yakamara.de</a>
+ * http://www.opensource.org/licenses/mit-license.php
  */
 
 sly_Loader::addLoadPath(dirname(__FILE__).'/lib');
