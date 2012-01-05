@@ -9,15 +9,12 @@
 
 #sly-page-imageresize .sly-form,
 #sly-page-imageresize-clearcache .sly-form {
-	label {
+	.sly-form-col-a > label {
 		width: 480px;
 	}
-	.sly-form-text input.sly-form-text {
-		width: 40px;
-	}
 
-	#upscaling_allowed, #nocompress {
-		padding-left: 480px;
+	input[type=text] {
+		width: 40px;
 	}
 
 	input.sly-form-submit {

@@ -43,7 +43,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$max_resizepixel  = sly_request('max_resizepixel',     'int');
 		$jpg_quality      = min(abs(sly_request('jpg_quality', 'int')), 100);
 		$upscalingAllowed = sly_request('upscaling_allowed',   'boolean');
-		$nocompress       = sly_request('nocompress',          'boolean');
+		$recompress       = sly_request('recompress',          'boolean');
 
 		$service = sly_Service_Factory::getAddOnService();
 
@@ -53,7 +53,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$service->setProperty('image_resize', 'max_resizepixel',   $max_resizepixel);
 		$service->setProperty('image_resize', 'jpg_quality',       $jpg_quality);
 		$service->setProperty('image_resize', 'upscaling_allowed', $upscalingAllowed);
-		$service->setProperty('image_resize', 'nocompress',        $nocompress);
+		$service->setProperty('image_resize', 'recompress',        $recompress);
 
 		print sly_Helper_Message::info(t('iresize_config_saved'));
 		$this->indexAction();
