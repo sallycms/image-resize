@@ -59,7 +59,7 @@ class A2_Extensions {
 		$imgParams        = array();
 		$filters          = array();
 		$upscalingAllowed = false;
-		$nocompress       = false;
+		$recompress       = true;
 		$type             = null;
 
 		foreach ($params as $param) {
@@ -85,7 +85,7 @@ class A2_Extensions {
 			}
 			// n for no compression
 			elseif ($prefix == 'n') {
-				$nocompress = true;
+				$recompress = false;
 				continue;
 			}
 			elseif ($prefix == 't') {
@@ -159,7 +159,7 @@ class A2_Extensions {
 			$thumb->setImgParams($imgParams);
 			$thumb->setNewSize();
 			$thumb->addFilters($filters);
-			if ($nocompress) $thumb->disableJpgCompress();
+			if (!$recompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);
 
 			$service = sly_Service_Factory::getAddOnService();

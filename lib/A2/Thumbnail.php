@@ -97,7 +97,7 @@ class A2_Thumbnail {
 
 		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
 		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
-		$this->compressJPG      = !((bool) $service->getProperty('image_resize', 'nocompress', !$this->compressJPG));
+		$this->compressJPG      = (bool) $service->getProperty('image_resize', 'recompress', $this->compressJPG);
 	}
 
 	/**
