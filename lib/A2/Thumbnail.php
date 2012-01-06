@@ -52,7 +52,7 @@ class A2_Thumbnail {
 	private $upscalingAllowed = false;
 
 	public function __construct($imgfile) {
-		$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imgfile;
+		$this->fileName = $imgfile;
 
 		if (!file_exists($this->fileName)) {
 			throw new Exception('File '.$this->fileName.' does not exist.', 404);
