@@ -10,9 +10,30 @@
 
 sly_Core::getLayout()->addCSS('
 .iresize-help dl { margin-left: 20px }
-.iresize-help dl.ex dt { float: none; }
 .iresize-help h3 { margin: 15px 0 10px 0; }
+.iresize-help .ex.last { margin-right: 0; }
+.iresize-help .ex div { text-align: center; }
+.iresize-help .ex {
+	float: left;
+	width: 240px;
+	height: 200px;
+	margin-right: 10px;
+	margin-bottom: 20px;
+	border: 1px solid #4d4646;
+	padding: 5px;
+}
+.iresize-help .ex .img {
+	line-height: 180px;
+}
+.iresize-help .ex .caption {
+	font-weight: bold;
+}
+.iresize-help .ex img {
+	vertical-align: middle;
+}
 ');
+
+$file = sly_Core::config()->get('INSTNAME').'.jpg';
 
 ?>
 <div class="iresize-help">
@@ -113,53 +134,21 @@ sly_Core::getLayout()->addCSS('
 
 	<h3>Beispiele</h3>
 
-	<dl class="ex">
-		<dt>100w__imagefile</dt>
-		<dd>resize image to a length of 100px and calculate heigt to match ratio</dd>
+	<?php
+	$examples = array(
+		'100w', '150h', '200a', '100w__200h', 'c100w__150h', '100w__c150h', 'c100w__c150h',
+		'c100w__150h__50o', 'c100w__150h__-50o', 'c100w__150h__50r', 'c100w__150h__50l',
+		'c100a', '200a__fblur__fsepia', '200a__u', '200a__n', '200a__t2'
+	);
 
-		<dt>150h__imagefile</dt>
-		<dd>resize image to a height of 150px and calculate width to match ratio</dd>
-
-		<dt>200a__imagefile</dt>
-		<dd>resize image on the longest side to 200px and calculate the other side to match ratio</dd>
-
-		<dt>100w__200h__imagefile</dt>
-		<dd>resize image to a width of 100px and a heigt of 200px</dd>
-
-		<dt>c100w__200h__imagefile</dt>
-		<dd>resize image to a heigt of 200px and crop to a width of 100px if nessessary</dd>
-
-		<dt>100w__c200h__imagefile</dt>
-		<dd>resize image to a width of 100px and crop to a height of 200px if nessessary</dd>
-
-		<dt>c100w__c200h__imagefile</dt>
-		<dd>crop image to a width of 100px and a height of 200px</dd>
-
-		<dt>c100w__200h__50o__imagefile</dt>
-		<dd>resize image to a heigt of 200px and crop to a width of 100px with an offset of 50px</dd>
-
-		<dt>c100w__200h__-150o__imagefile</dt>
-		<dd>resize image to a heigt of 200px and crop to a width of 100px with an offset of -150px</dd>
-
-		<dt>c100w__200h__150r__imagefile</dt>
-		<dd>resize image to a heigt of 200px and crop to a width of 100px with an offset of 150px from the right edge</dd>
-
-		<dt>c100w__200h__50l__imagefile</dt>
-		<dd>resize image to a heigt of 200px and crop to a width of 100px with an offset of 50px from the left edge</dd>
-
-		<dt>c100a__imagefile</dt>
-		<dd>resize and crop image to a square of 100x100px</dd>
-
-		<dt>200a__fblur__fsepia__imagefile</dt>
-		<dd>add filters: here blur and sepia</dd>
-
-		<dt>200a__u__imagefile</dt>
-		<dd>allow upscaling of smaller images</dd>
-
-		<dt>200a__n__imagefile</dt>
-		<dd>disable recompression of JPEGs</dd>
-
-		<dt>200a__t2__imagefile</dt>
-		<dd>set image type for thumbnail: here 2 for JPEG and 3 for PNG</dd>
-	</dl>
+	foreach ($examples as $idx => $ex) {
+		?>
+		<div class="ex<?php if ($idx > 0 && ($idx+1) % 3 === 0) echo ' last'; ?>">
+			<div class="img"><img src="../imageresize/<?php echo $ex ?>__<?php echo $file ?>" alt="" /></div>
+			<div class="caption"><?php echo $ex ?>__imagefile</div>
+		</div>
+		<?php
+	}
+	?>
+	<div style="clear:left"></div>
 </div>
