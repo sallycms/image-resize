@@ -28,6 +28,22 @@ sly_Core::getLayout()->addCSS('
 	</strong>/imageresize/100w__test.jpg</strong>.<br />
 	Mehrere Aktionen und Filter können über <strong>__</strong> getrennt werden.</p>
 
+	<h3>Installation</h3>
+
+	<p>In die <strong>.htaccess</strong>-Datei des Frontends muss die folgende
+	RewriteRule <em>vor den Regeln des Asset-Caches</em> eingefügt werden.</p>
+
+	<pre class="sly-code">
+<span class="sly-comment">...</span>
+
+<span class="sly-comment"># Image Resize</span>
+<span class="sly-keyword">RewriteRule</span> ^imageresize/(.+)$ data/mediapool/$1 [L]
+
+<span class="sly-comment"># Assets Cache</span>
+<span class="sly-keyword">RewriteCond</span> %{REQUEST_FILENAME}  \.(css|js|gif|jpg|jpeg|png|swf|ico|pdf)$
+<span class="sly-comment">...</span>
+</pre>
+
 	<h3>Aktionen</h3>
 
 	<dl>
