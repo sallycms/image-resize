@@ -399,10 +399,9 @@ class A2_Thumbnail {
 						imagewbmp($this->imgthumb, $file);
 						break;
 				}
+
 				imagedestroy($this->imgthumb);
 			}
-
-			imagedestroy($this->imgthumb);
 		}
 		// just copy the image
 		else {
