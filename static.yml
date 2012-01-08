@@ -1,0 +1,7 @@
+page: 'imageresize'
+name: 'translate:iresize_image_resize'
+perm: 'image_resize[]'
+author: 'webvariants GbR'
+supportpage: 'http://www.sallycms.de/'
+sally: ['0.5']
+version: '2.1.1'
