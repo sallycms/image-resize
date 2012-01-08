@@ -3,5 +3,5 @@ name: 'translate:iresize_image_resize'
 perm: 'image_resize[]'
 author: 'webvariants GbR'
 supportpage: 'http://www.sallycms.de/'
-sally: ['0.5']
-version: '2.1.2'
+sally: ['0.6']
+version: '3.0'

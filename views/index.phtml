@@ -30,13 +30,13 @@ $quality = new sly_Form_Input_Text('jpg_quality', t('iresize_jpg_quality'), $ser
 $quality->setAnnotation('(1 - 100)');
 $form->add($quality);
 
-$options = array(1 => t('iresize_upscaling_allowed_yes'), 0 => t('iresize_upscaling_allowed_no'));
-$options = new sly_Form_Select_Radio('upscaling_allowed', t('iresize_upscaling_allowed'), $service->getProperty('image_resize', 'upscaling_allowed'), $options);
-$form->add($options);
+$upscaling = new sly_Form_Input_Checkbox('upscaling_allowed', t('iresize_upscaling'), 1, t('allowed'));
+$upscaling->setChecked($service->getProperty('image_resize', 'upscaling_allowed'));
+$form->add($upscaling);
 
-$options = array(1 => t('iresize_nocompress_yes'), 0 => t('iresize_nocompress_no'));
-$options = new sly_Form_Select_Radio('nocompress', t('iresize_nocompress'), $service->getProperty('image_resize', 'nocompress'), $options);
-$form->add($options);
+$recompress = new sly_Form_Input_Checkbox('recompress', t('iresize_recompress'), 1, t('allowed'));
+$recompress->setChecked($service->getProperty('image_resize', 'recompress'));
+$form->add($recompress);
 
 $form->setResetButton(null);
 $form->getSubmitButton()->setAttribute('value', t('update'));
