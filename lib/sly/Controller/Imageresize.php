@@ -8,11 +8,16 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-class sly_Controller_Imageresize extends sly_Controller_Backend {
+class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_Controller_Interface {
+	private $init = false;
+
 	protected function init() {
+		if ($this->init) return;
+		$this->init = true;
+
 		$subpages = array(
-			array('',           t('iresize_subpage_config')),
-			array('clearcache', t('iresize_subpage_clear_cache')),
+			array('imageresize',            t('iresize_subpage_config')),
+			array('imageresize_clearcache', t('iresize_subpage_clear_cache')),
 		);
 
 		$page   = sly_Core::getNavigation()->find('image_resize', 'addon');
@@ -20,22 +25,25 @@ class sly_Controller_Imageresize extends sly_Controller_Backend {
 
 		$page->addSubpages($subpages);
 
-		$layout->addCSSFile('../sally/data/dyn/public/image_resize/backend.css');
+		$layout->addCSSFile('../data/dyn/public/image_resize/backend.css');
 		$layout->pageHeader(t('iresize_image_resize'), $subpages);
 	}
 
-	protected function index() {
+	public function indexAction() {
+		$this->init();
 		print $this->render('index.phtml');
 	}
 
-	protected function update() {
+	public function updateAction() {
+		$this->init();
+
 		$max_cachefiles   = sly_request('max_cachefiles',      'int');
 		$max_filters      = sly_request('max_filters',         'int');
 		$max_resizekb     = sly_request('max_resizekb',        'int');
 		$max_resizepixel  = sly_request('max_resizepixel',     'int');
 		$jpg_quality      = min(abs(sly_request('jpg_quality', 'int')), 100);
 		$upscalingAllowed = sly_request('upscaling_allowed',   'boolean');
-		$nocompress       = sly_request('nocompress',          'boolean');
+		$recompress       = sly_request('recompress',          'boolean');
 
 		$service = sly_Service_Factory::getAddOnService();
 
@@ -45,15 +53,15 @@ class sly_Controller_Imageresize extends sly_Controller_Backend {
 		$service->setProperty('image_resize', 'max_resizepixel',   $max_resizepixel);
 		$service->setProperty('image_resize', 'jpg_quality',       $jpg_quality);
 		$service->setProperty('image_resize', 'upscaling_allowed', $upscalingAllowed);
-		$service->setProperty('image_resize', 'nocompress',        $nocompress);
+		$service->setProperty('image_resize', 'recompress',        $recompress);
 
 		print sly_Helper_Message::info(t('iresize_config_saved'));
-		$this->index();
+		$this->indexAction();
 	}
 
-	protected function checkPermission() {
+	public function checkPermission($action) {
 		$user = sly_Util_User::getCurrentUser();
-		return $user && ($user->hasRight('image_resize[]') || $user->isAdmin());
+		return $user && ($user->isAdmin() || $user->hasRight('image_resize[]'));
 	}
 
 	protected function getViewFolder() {
