@@ -157,7 +157,7 @@ class A2_Extensions {
 			$imageFile = 'data/dyn/public/image_resize/testimage.jpg';
 		}
 		else {
-			$imageFile = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imgfile;
+			$imageFile = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imageFile;
 		}
 
 		try {
