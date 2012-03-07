@@ -59,7 +59,7 @@ class A2_Extensions {
 		$imgParams        = array();
 		$filters          = array();
 		$upscalingAllowed = false;
-		$nocompress       = false;
+		$recompress       = true;
 		$type             = null;
 
 		foreach ($params as $param) {
@@ -85,7 +85,7 @@ class A2_Extensions {
 			}
 			// n for no compression
 			elseif ($prefix == 'n') {
-				$nocompress = true;
+				$recompress = false;
 				continue;
 			}
 			elseif ($prefix == 't') {
@@ -153,17 +153,24 @@ class A2_Extensions {
 			}
 		}
 
+		if ($imageFile === self::getSpecialFile()) {
+			$imageFile = 'data/dyn/public/image_resize/testimage.jpg';
+		}
+		else {
+			$imageFile = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imageFile;
+		}
+
 		try {
 			$thumb = new A2_Thumbnail($imageFile);
 			if ($upscalingAllowed) $thumb->allowUpscaling();
 			$thumb->setImgParams($imgParams);
 			$thumb->setNewSize();
 			$thumb->addFilters($filters);
-			if ($nocompress) $thumb->disableJpgCompress();
+			if (!$recompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);
 
 			$service = sly_Service_Factory::getAddOnService();
-			$tmpFile = $service->publicFolder('image_resize').'/'.md5(mt_rand()).'.'.sly_Util_String::getFileExtension($imageFile);
+			$tmpFile = $service->publicFolder('image_resize').'/'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
 
 			$thumb->generateImage($tmpFile);
 		}
@@ -195,24 +202,75 @@ class A2_Extensions {
 		return $tmpFile;
 	}
 
+	public static function getSpecialFile() {
+		return sly_Core::config()->get('INSTNAME').'.jpg';
+	}
+
 	public static function translateListener(array $params) {
-		$files = $params['subject'];
-		$pool  = 'data/mediapool/';
+		$files   = $params['subject'];
+		$pool    = 'data/mediapool/';
+		$special = self::getSpecialFile();
 
 		// Check every file for "data/mediapool/100w_foo.jpg" and turn them
 		// into strings like "data/mediapool/foo.jpg", so that the asset cache
 		// can check whether they have changed and remove the cached version.
 
 		foreach ($files as $idx => $filename) {
-			if (sly_Util_String::startsWith(str_replace(DIRECTORY_SEPARATOR, '/', $filename), $pool)) {
-				$relname = substr($filename, strlen($pool)); // "100w__foo.jpg"
+			$filename = str_replace(DIRECTORY_SEPARATOR, '/', $filename);
 
-				if (preg_match(self::$godRegex, $relname, $match)) {
-					$files[$idx] = $pool.$match[2];
+			if (sly_Util_String::startsWith($filename, $pool)) {
+				$relname = mb_substr($filename, strlen($pool)); // "100w__foo.jpg"
+			}
+			elseif (sly_Util_string::endsWith($filename, $special)) {
+				$relname = basename($filename);
+				die("catched");
+			}
+			else {
+				continue;
+			}
+
+			if (preg_match(self::$godRegex, $relname, $match)) {
+				$filename = $match[2];
+
+				// use the special test image
+				if ($filename === $special) {
+					$files[$idx] = 'data/dyn/public/image_resize/testimage.jpg';
+				}
+				else {
+					$files[$idx] = $pool.$filename;
 				}
 			}
 		}
 
 		return $files;
+	}
+
+	public static function articleOutput(array $params) {
+		$content = $params['subject'];
+
+		preg_match_all('#<img [^\>]*src="(data/mediapool/([^"]*))[^\>]*>#is', $content, $matches);
+
+		if (is_array($matches[0])) {
+			foreach ($matches[0] as $key => $var) {
+				preg_match('/width="(.*?)"/is', $var, $width);
+				if (!$width) preg_match('/width: (.*?)px/is', $var, $width);
+
+				if ($width) {
+					$filename = SLY_MEDIAFOLDER.'/'.$matches[2][$key];
+
+					if (file_exists($filename)) {
+						$realsize = getimagesize($filename);
+
+						if ($realsize[0] != $width[1]) {
+							$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
+							$newimage = str_replace($matches[1][$key], $newsrc, $var);
+							$content  = str_replace($var, $newimage, $content);
+						}
+					}
+				}
+			}
+		}
+
+		return $content;
 	}
 }

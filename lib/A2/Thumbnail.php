@@ -52,7 +52,7 @@ class A2_Thumbnail {
 	private $upscalingAllowed = false;
 
 	public function __construct($imgfile) {
-		$this->fileName = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imgfile;
+		$this->fileName = $imgfile;
 
 		if (!file_exists($this->fileName)) {
 			throw new Exception('File '.$this->fileName.' does not exist.', 404);
@@ -97,7 +97,7 @@ class A2_Thumbnail {
 
 		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
 		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
-		$this->compressJPG      = !((bool) $service->getProperty('image_resize', 'nocompress', !$this->compressJPG));
+		$this->compressJPG      = (bool) $service->getProperty('image_resize', 'recompress', $this->compressJPG);
 	}
 
 	/**
