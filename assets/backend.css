@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2012, webvariants GbR, http://www.webvariants.de
+ *
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
+ *
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+#rex-page-imageresize .sly-form {
+	label {
+		width: 480px;
+	}
+	.rex-form-text input.rex-form-text {
+		width: 40px;
+	}
+	#upscaling_allowed, #nocompress {
+		padding-left: 480px;
+	}
+	input.rex-form-submit { margin-left: 480px; }
+}

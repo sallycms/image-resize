@@ -1,0 +1,21 @@
+iresize_image_resize: Image Resize
+iresize_subpage_config: Konfiguration
+iresize_subpage_clear_cache: Cache löschen
+
+iresize_cache_files_removed: Cache wurde geleert.
+
+iresize_config_saved: Konfiguration wurde aktualisiert!
+
+iresize_max_cache_files: Maximale Anzahl von Cachefiles pro Datei
+iresize_max_filters: Maximale Anzahl von Filtern, die auf eine Datei angewendet werden können
+iresize_max_resizekb: Maximale Größe einer Datei, die umgewandelt werden darf
+iresize_max_resizepx: Maximale Größe der langen Seite, die umgewandelt werden darf
+iresize_jpg_quality: JPEG-Ausgabe-Qualität
+
+iresize_upscaling_allowed: Vergrößern von kleinen Bilder erlauben
+iresize_upscaling_allowed_yes: Ja
+iresize_upscaling_allowed_no: Nein
+
+iresize_nocompress: Neukomprimieren von JPGs, die nicht verkleinert werden, verbieten
+iresize_nocompress_yes: Ja
+iresize_nocompress_no: Nein
