@@ -7,15 +7,17 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-#rex-page-imageresize .sly-form {
-	label {
+#sly-page-imageresize .sly-form,
+#sly-page-imageresize-clearcache .sly-form {
+	.sly-form-col-a > label {
 		width: 480px;
 	}
-	.rex-form-text input.rex-form-text {
+
+	input[type=text] {
 		width: 40px;
 	}
-	#upscaling_allowed, #nocompress {
-		padding-left: 480px;
+
+	input.sly-form-submit {
+		margin-left: 480px;
 	}
-	input.rex-form-submit { margin-left: 480px; }
 }
