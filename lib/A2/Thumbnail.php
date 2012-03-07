@@ -69,7 +69,7 @@ class A2_Thumbnail {
 
 		if ($this->imageType == IMAGETYPE_GIF) {
 			// special handling for animated gifs
-			if (self::is_animated_gif($this->fileName)) {
+			if (self::isAnimatedGIF($this->fileName)) {
 				$this->isAnimated = true;
 
 				$this->gifObject = new A2_GIF_Decoder($data);
