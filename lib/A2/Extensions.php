@@ -153,8 +153,11 @@ class A2_Extensions {
 			}
 		}
 
+		$is06 = sly_Core::getVersion('X.Y') === '0.6';
+		$name = $is06 ? 'image_resize' : 'sallycms/image-resize';
+
 		if ($imageFile === self::getSpecialFile()) {
-			$imageFile = 'data/dyn/public/image_resize/testimage.jpg';
+			$imageFile = 'data/dyn/public/'.$name.'/testimage.jpg';
 		}
 		else {
 			$imageFile = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imageFile;
@@ -169,8 +172,9 @@ class A2_Extensions {
 			if (!$recompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);
 
-			$service = sly_Service_Factory::getAddOnService();
-			$tmpFile = $service->publicFolder('image_resize').'/'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
+			$service  = sly_Service_Factory::getAddOnService();
+			$tmpFile  = $is06 ? $service->publicFolder($name) : $service->publicDirectory($name);
+			$tmpFile .= '/'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
 
 			$thumb->generateImage($tmpFile);
 		}
@@ -210,6 +214,8 @@ class A2_Extensions {
 		$files   = $params['subject'];
 		$pool    = 'data/mediapool/';
 		$special = self::getSpecialFile();
+		$is06    = sly_Core::getVersion('X.Y') === '0.6';
+		$name    = $is06 ? 'image_resize' : 'sallycms/image-resize';
 
 		// Check every file for "data/mediapool/100w_foo.jpg" and turn them
 		// into strings like "data/mediapool/foo.jpg", so that the asset cache
@@ -223,7 +229,6 @@ class A2_Extensions {
 			}
 			elseif (sly_Util_string::endsWith($filename, $special)) {
 				$relname = basename($filename);
-				die("catched");
 			}
 			else {
 				continue;
@@ -234,7 +239,7 @@ class A2_Extensions {
 
 				// use the special test image
 				if ($filename === $special) {
-					$files[$idx] = 'data/dyn/public/image_resize/testimage.jpg';
+					$files[$idx] = 'data/dyn/public/'.$name.'/testimage.jpg';
 				}
 				else {
 					$files[$idx] = $pool.$filename;
