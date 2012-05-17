@@ -61,7 +61,7 @@ $file = sly_Core::config()->get('INSTNAME').'.jpg';
 <span class="sly-keyword">RewriteRule</span> ^imageresize/(.+)$ data/mediapool/$1 [L]
 
 <span class="sly-comment"># Assets Cache</span>
-<span class="sly-keyword">RewriteCond</span> %{REQUEST_FILENAME}  \.(css|js|gif|jpg|jpeg|png|swf|ico|pdf)$
+<span class="sly-keyword">RewriteCond</span> %{REQUEST_FILENAME}  \.(less|css|js|gif|jpg|jpeg|png|swf|ico|pdf)$
 <span class="sly-comment">...</span>
 </pre>
 
