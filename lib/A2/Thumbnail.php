@@ -94,10 +94,12 @@ class A2_Thumbnail {
 		$this->height     = $this->origHeight;
 
 		$service = sly_Service_Factory::getAddOnService();
+		$is06    = sly_Core::getVersion('X.Y') === '0.6';
+		$name    = $is06 ? 'image_resize' : 'sallycms/image-resize';
 
-		$this->thumbQuality     = (int) $service->getProperty('image_resize', 'jpg_quality', $this->thumbQuality);
-		$this->upscalingAllowed = (bool) $service->getProperty('image_resize', 'upscaling_allowed', $this->upscalingAllowed);
-		$this->compressJPG      = (bool) $service->getProperty('image_resize', 'recompress', $this->compressJPG);
+		$this->thumbQuality     = (int) $service->getProperty($name, 'jpg_quality', $this->thumbQuality);
+		$this->upscalingAllowed = (bool) $service->getProperty($name, 'upscaling_allowed', $this->upscalingAllowed);
+		$this->compressJPG      = (bool) $service->getProperty($name, 'recompress', $this->compressJPG);
 	}
 
 	/**

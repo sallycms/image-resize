@@ -20,18 +20,21 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 			array('imageresize_clearcache', t('iresize_subpage_clear_cache')),
 		);
 
-		$page   = sly_Core::getNavigation()->find('image_resize', 'addon');
+		$is06   = sly_Core::getVersion('X.Y') === '0.6';
+		$name   = $is06 ? 'image_resize' : 'sallycms/image-resize';
+		$ext    = $is06 ? 'css' : 'less';
+		$page   = sly_Core::getNavigation()->find($name, 'addon');
 		$layout = sly_Core::getLayout();
 
 		$page->addSubpages($subpages);
 
-		$layout->addCSSFile('../data/dyn/public/image_resize/backend.css');
+		$layout->addCSSFile('../data/dyn/public/'.$name.'/backend.'.$ext);
 		$layout->pageHeader(t('iresize_image_resize'), $subpages);
 	}
 
 	public function indexAction() {
 		$this->init();
-		print $this->render('index.phtml');
+		$this->render('index.phtml', array(), false);
 	}
 
 	public function updateAction() {
@@ -46,14 +49,16 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$recompress       = sly_request('recompress',          'boolean');
 
 		$service = sly_Service_Factory::getAddOnService();
+		$is06    = sly_Core::getVersion('X.Y') === '0.6';
+		$name    = $is06 ? 'image_resize' : 'sallycms/image-resize';
 
-		$service->setProperty('image_resize', 'max_cachefiles',    $max_cachefiles);
-		$service->setProperty('image_resize', 'max_filters',       $max_filters);
-		$service->setProperty('image_resize', 'max_resizekb',      $max_resizekb);
-		$service->setProperty('image_resize', 'max_resizepixel',   $max_resizepixel);
-		$service->setProperty('image_resize', 'jpg_quality',       $jpg_quality);
-		$service->setProperty('image_resize', 'upscaling_allowed', $upscalingAllowed);
-		$service->setProperty('image_resize', 'recompress',        $recompress);
+		$service->setProperty($name, 'max_cachefiles',    $max_cachefiles);
+		$service->setProperty($name, 'max_filters',       $max_filters);
+		$service->setProperty($name, 'max_resizekb',      $max_resizekb);
+		$service->setProperty($name, 'max_resizepixel',   $max_resizepixel);
+		$service->setProperty($name, 'jpg_quality',       $jpg_quality);
+		$service->setProperty($name, 'upscaling_allowed', $upscalingAllowed);
+		$service->setProperty($name, 'recompress',        $recompress);
 
 		print sly_Helper_Message::info(t('iresize_config_saved'));
 		$this->indexAction();
@@ -65,6 +70,6 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 	}
 
 	protected function getViewFolder() {
-		return SLY_ADDONFOLDER.'/image_resize/views/';
+		return dirname(__FILE__).'/../../../views/';
 	}
 }
