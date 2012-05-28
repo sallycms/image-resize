@@ -35,6 +35,13 @@ sly_Core::getLayout()->addCSS('
 
 $file = sly_Core::config()->get('INSTNAME').'.jpg';
 
+if (sly_Core::getVersion('X.Y') === '0.6') {
+	$isAvailable = sly_Service_Factory::getAddOnService()->isAvailable('image_resize');
+}
+else {
+	$isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
+}
+
 ?>
 <div class="iresize-help">
 	<p>Dieses AddOn erlaubt es, Bilder aus dem Medienpool über speziell präparierte
@@ -135,19 +142,24 @@ $file = sly_Core::config()->get('INSTNAME').'.jpg';
 	<h3>Beispiele</h3>
 
 	<?php
-	$examples = array(
-		'100w', '150h', '200a', '100w__200h', 'c100w__150h', '100w__c150h', 'c100w__c150h',
-		'c100w__150h__50o', 'c100w__150h__-50o', 'c100w__150h__50r', 'c100w__150h__50l',
-		'c100a', '200a__fblur__fsepia', '200a__u', '200a__n', '200a__t2'
-	);
+	if ($isAvailable) {
+		$examples = array(
+			'100w', '150h', '200a', '100w__200h', 'c100w__150h', '100w__c150h', 'c100w__c150h',
+			'c100w__150h__50o', 'c100w__150h__-50o', 'c100w__150h__50r', 'c100w__150h__50l',
+			'c100a', '200a__fblur__fsepia', '200a__u', '200a__n', '200a__t2'
+		);
 
-	foreach ($examples as $idx => $ex) {
-		?>
-		<div class="ex<?php if ($idx > 0 && ($idx+1) % 3 === 0) echo ' last'; ?>">
-			<div class="img"><img src="../imageresize/<?php echo $ex ?>__<?php echo $file ?>" alt="" /></div>
-			<div class="caption"><?php echo $ex ?>__imagefile</div>
-		</div>
-		<?php
+		foreach ($examples as $idx => $ex) {
+			?>
+			<div class="ex<?php if ($idx > 0 && ($idx+1) % 3 === 0) echo ' last'; ?>">
+				<div class="img"><img src="../imageresize/<?php echo $ex ?>__<?php echo $file ?>" alt="" /></div>
+				<div class="caption"><?php echo $ex ?>__imagefile</div>
+			</div>
+			<?php
+		}
+	}
+	else {
+		print sly_Helper_Message::info('Bitte aktivieren Sie das AddOn, um die Beispiele in Aktion zu sehen.');
 	}
 	?>
 	<div style="clear:left"></div>
