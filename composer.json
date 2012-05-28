@@ -3,20 +3,20 @@
 	"description": "AddOn for SallyCMS, providing URL-based resizing and cropping for images",
 	"authors": [{"name": "webvariants GbR"}],
 	"homepage": "http://www.sallycms.de/",
-	"version": "3.1-dev",
 	"license": "MIT",
 	"type": "sallycms-addon",
 	"require": {
 		"php": ">=5.2.0",
 		"ext-gd": "*",
 		"sallycms/composer-installer": "*",
-		"sallycms/sallycms": "0.6,0.7"
+		"sallycms/sallycms": "0.7.*"
 	},
 	"autoload": {
 		"psr-0": {"": "lib/"}
 	},
 	"extra": {
 		"sallycms": {
+			"version": "3.1-dev",
 			"page": "imageresize",
 			"name": "translate:iresize_image_resize",
 			"perm": "image_resize[]"
