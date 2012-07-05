@@ -210,7 +210,7 @@ class A2_Thumbnail {
 		}
 
 		$sameImageType        = $this->imageType == $this->thumbType;
-		$thumbLargerThanImage = $this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height;
+		$thumbLargerThanImage = $this->thumbWidth > $this->width || $this->thumbHeight > $this->height;
 		// compare image quality only for jpeg
 		$imageQualityTooLow   = $this->imageType != IMAGETYPE_JPEG || !$this->compressJPG || $this->thumbQuality >= $this->quality;
 		$noFilters            = empty($this->filters);
