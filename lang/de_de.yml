@@ -3,6 +3,7 @@ iresize_subpage_config: Konfiguration
 iresize_subpage_clear_cache: Cache löschen
 
 iresize_cache_files_removed: Cache wurde geleert.
+iresize_resized_images: Verkleinerte Bilder
 
 iresize_config_saved: Konfiguration wurde aktualisiert!
 

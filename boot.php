@@ -9,15 +9,16 @@
  */
 
 sly_Loader::addLoadPath(dirname(__FILE__).'/lib');
+$dispatcher = sly_Core::dispatcher();
+
+$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
 
 if (!sly_Core::isBackend()) {
-	$dispatcher = sly_Core::dispatcher();
-
 	$dispatcher->register(sly_Service_Asset::EVENT_PROCESS_ASSET, array('A2_Extensions', 'resizeListener'));
-	$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
-	$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
 	$dispatcher->register('SLY_ARTICLE_OUTPUT', array('A2_Extensions', 'articleOutput'));
 }
 else {
 	sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
+	$dispatcher->register('SLY_SYSTEM_CACHES', array('A2_Extensions', 'systemCacheList'));
+	$dispatcher->register('SLY_CACHE_CLEARED', array('A2_Extensions', 'cacheCleared'));
 }

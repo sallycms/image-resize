@@ -15,14 +15,14 @@ if (!extension_loaded('gd')) {
 $service = sly_Service_Factory::getAddOnService();
 
 if (sly_Core::getVersion('X.Y') === '0.6') {
-	$pubDir = $service->publicFolder('image_resize');
+	$internalDir = $service->internalFolder('image_resize');
 }
 else {
-	$pubDir = $service->publicDirectory('sallycms/image-resize');
+	$internalDir = $service->internalDirectory('sallycms/image-resize');
 }
 
-$state = is_writable($pubDir);
+$state = is_writable($internalDir);
 
 if ($state !== true) {
-	throw new Exception('The cache directory ('.$pubDir.') has no writing permissions.');
+	throw new Exception('The cache directory ('.$internalDir.') has no writing permissions.');
 }
