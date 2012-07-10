@@ -45,6 +45,9 @@ class A2_Extensions {
 	public static function resizeListener(array $params) {
 		$filename = $params['subject'];
 
+		if(!self::filePathOk($filename)) {
+			return $filename;
+		}
 		// c100w__c200h__20r__20t__filename.jpg
 
 		// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
@@ -52,8 +55,18 @@ class A2_Extensions {
 		if ($result === null) return $filename;
 
 		// get parts
-		$imageFile = $result['filename'];
+		$imageFile = self::getImageFile($result['filename']);
 		$params    = $result['params'];
+
+		$service  = sly_Service_Factory::getAddOnService();
+		$name     = A2_Util::getName();
+		$intDir   = A2_Util::getInternalDirectory();
+
+		$controlFile = self::getControlFile($imageFile);
+		$controlData = file_exists($controlFile) ? json_decode(file_get_contents($controlFile), true) : array();
+
+		if(count($controlData) >= $service->getProperty($name, 'max_cachefiles')
+				&& !isset($controlData[$filename])) return $filename;
 
 		// iterate parameters
 		$imgParams        = array();
@@ -153,14 +166,9 @@ class A2_Extensions {
 			}
 		}
 
-		$is06 = sly_Core::getVersion('X.Y') === '0.6';
-		$name = $is06 ? 'image_resize' : 'sallycms/image-resize';
-
-		if ($imageFile === self::getSpecialFile()) {
-			$imageFile = 'data/dyn/public/'.$name.'/testimage.jpg';
-		}
-		else {
-			$imageFile = SLY_MEDIAFOLDER.DIRECTORY_SEPARATOR.$imageFile;
+		//clean up tpm_
+		foreach (glob($intDir.'/tmp_*') as $filename) {
+			unlink ($filename);
 		}
 
 		try {
@@ -172,11 +180,12 @@ class A2_Extensions {
 			if (!$recompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);
 
-			$service  = sly_Service_Factory::getAddOnService();
-			$tmpFile  = $is06 ? $service->publicFolder($name) : $service->publicDirectory($name);
-			$tmpFile .= '/'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
+			$tmpFile = $intDir.'/tmp_'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
 
 			$thumb->generateImage($tmpFile);
+
+			$controlData[$filename] = true;
+			file_put_contents($controlFile, json_encode($controlData));
 		}
 		catch (Exception $e) {
 			switch ($e->getCode()) {
@@ -206,16 +215,8 @@ class A2_Extensions {
 		return $tmpFile;
 	}
 
-	public static function getSpecialFile() {
-		return sly_Core::config()->get('INSTNAME').'.jpg';
-	}
-
 	public static function translateListener(array $params) {
 		$files   = $params['subject'];
-		$pool    = 'data/mediapool/';
-		$special = self::getSpecialFile();
-		$is06    = sly_Core::getVersion('X.Y') === '0.6';
-		$name    = $is06 ? 'image_resize' : 'sallycms/image-resize';
 
 		// Check every file for "data/mediapool/100w_foo.jpg" and turn them
 		// into strings like "data/mediapool/foo.jpg", so that the asset cache
@@ -223,33 +224,70 @@ class A2_Extensions {
 
 		foreach ($files as $idx => $filename) {
 			$filename = str_replace(DIRECTORY_SEPARATOR, '/', $filename);
-
-			if (sly_Util_String::startsWith($filename, $pool)) {
-				$relname = mb_substr($filename, strlen($pool)); // "100w__foo.jpg"
-			}
-			elseif (sly_Util_string::endsWith($filename, $special)) {
-				$relname = basename($filename);
-			}
-			else {
+			//first check if this might be a resized file
+			if (!self::filePathOk($filename)) {
 				continue;
 			}
 
-			if (preg_match(self::$godRegex, $relname, $match)) {
-				$filename = $match[2];
+			//concrete check the filenames syntax
+			$result = self::parseFilename(basename($filename));
+			if($result === null || empty($result['params'])) {
+				continue;
+			}
 
-				// use the special test image
-				if ($filename === $special) {
-					$files[$idx] = 'data/dyn/public/'.$name.'/testimage.jpg';
-				}
-				else {
-					$files[$idx] = $pool.$filename;
-				}
+			$filename    = self::getImageFile($result['filename']);
+			$controlFile = self::getControlFile($filename);
+
+			/*
+			 * If no control file exists, return the control file.
+			 * Because it not exists the asset cachefile will be removed.
+			 * This is kind of a hack.
+			 */
+			if(!file_exists($controlFile)) {
+				$files[$idx] = $controlFile;
+			} else {
+				$files[$idx] = $filename;
 			}
 		}
 
 		return $files;
 	}
 
+	/**
+	 * Checks if this addon should handle this file
+	 * @param  string $filePath the files path
+	 * @return boolean   whether the files path is ok
+	 */
+	public static function filePathOk($filePath) {
+		$pool = 'data/mediapool/';
+		$special = self::getSpecialFile();
+		return (sly_Util_String::startsWith($filePath, $pool)
+				|| sly_Util_string::endsWith($filePath, $special));
+	}
+
+	public static function getSpecialFile() {
+		return sly_Core::config()->get('INSTNAME').'.jpg';
+	}
+
+	public static function getControlFile($realFile) {
+		return A2_Util::getInternalDirectory().'/control_'.md5($realFile).'.json';
+	}
+
+	public static function getImageFile($filename) {
+		// use the special test image
+		if ($filename === self::getSpecialFile()) {
+			return 'data/dyn/public/'.A2_Util::getName().'/testimage.jpg';
+		}
+		else {
+			return 'data/mediapool/'.$filename;
+		}
+	}
+
+	/**
+	 * SLY_ARTICLE_OUTPUT
+	 *
+	 * @param array $params
+	 */
 	public static function articleOutput(array $params) {
 		$content = $params['subject'];
 
@@ -267,7 +305,7 @@ class A2_Extensions {
 						$realsize = getimagesize($filename);
 
 						if ($realsize[0] != $width[1]) {
-							$newsrc   = 'imageresize/'.$width[1].'w__'.$matches[2][$key];
+							$newsrc   = 'data/mediapool/'.$width[1].'w__'.$matches[2][$key];
 							$newimage = str_replace($matches[1][$key], $newsrc, $var);
 							$content  = str_replace($var, $newimage, $content);
 						}
@@ -277,5 +315,45 @@ class A2_Extensions {
 		}
 
 		return $content;
+	}
+
+	/**
+	 * SLY_SYSTEM_CACHES
+	 *
+	 * @param array $params  event parameters
+	 */
+	public static function systemCacheList(array $params) {
+		$select     = $params['subject'];
+		$name       = A2_Util::getName();
+		$selected   = $select->getValue();
+		$selected[] = $name;
+
+		$select->addValue($name, t('iresize_resized_images'));
+		$select->setSelected($selected);
+
+		return $select;
+	}
+
+	/**
+	 * SLY_CACHE_CLEARED
+	 *
+	 * @param array $params
+	 */
+	public static function cacheCleared(array $params) {
+		$isSystem = sly_Core::getCurrentControllerName() === 'system';
+
+		// do nothing if requested
+		if ($isSystem) {
+			$controller = sly_Core::getCurrentController();
+
+			if (method_exists($controller, 'isCacheSelected') && !(
+					$controller->isCacheSelected('sly_asset')
+					|| $controller->isCacheSelected(A2_Util::getName()))
+			) {
+				return $params['subject'];
+			}
+		}
+		A2_Util::cleanPossiblyCachedFiles();
+		return isset($params['subject']) ? $params['subject'] : true;
 	}
 }

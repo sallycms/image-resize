@@ -8,4 +8,4 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-sly_Service_Factory::getAssetService()->clearCache(array());
+A2_Util::cleanPossiblyCachedFiles();
