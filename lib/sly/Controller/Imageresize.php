@@ -15,18 +15,16 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		if ($this->init) return;
 		$this->init = true;
 
-		$subpages = array(
-			array('imageresize',            t('iresize_subpage_config')),
-			array('imageresize_clearcache', t('iresize_subpage_clear_cache')),
-		);
+		$is06     = sly_Core::getVersion('X.Y') === '0.6';
+		$name     = $is06 ? 'image_resize' : 'sallycms/image-resize';
+		$ext      = $is06 ? 'css' : 'less';
+		$layout   = sly_Core::getLayout();
+		$page     = sly_Core::getNavigation()->find('imageresize');
+		$subpages = $page->getSubpages();
 
-		$is06   = sly_Core::getVersion('X.Y') === '0.6';
-		$name   = $is06 ? 'image_resize' : 'sallycms/image-resize';
-		$ext    = $is06 ? 'css' : 'less';
-		$page   = sly_Core::getNavigation()->find($name, 'addon');
-		$layout = sly_Core::getLayout();
-
-		$page->addSubpages($subpages);
+		foreach($subpages as $key => $subpage) {
+			$subpages[$key] = array($subpage->getPageParam(), $subpage->getTitle());
+		}
 
 		$layout->addCSSFile('../data/dyn/public/'.$name.'/backend.'.$ext);
 		$layout->pageHeader(t('iresize_image_resize'), $subpages);
@@ -66,7 +64,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 
 	public function checkPermission($action) {
 		$user = sly_Util_User::getCurrentUser();
-		return $user && ($user->isAdmin() || $user->hasRight('image_resize[]'));
+		return $user && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'));
 	}
 
 	protected function getViewFolder() {
