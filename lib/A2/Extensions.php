@@ -356,4 +356,18 @@ class A2_Extensions {
 		A2_Util::cleanPossiblyCachedFiles();
 		return isset($params['subject']) ? $params['subject'] : true;
 	}
+
+	public static function backendNavigation(array $params) {
+		$user = sly_Util_User::getCurrentUser();
+		if($user !== null && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'))) {
+			$is06  = sly_Core::getVersion('X.Y') === '0.6';
+			$nav   = sly_Core::getNavigation();
+			$group = $nav->getGroup('addons');
+			$page  = $is06 ? $nav->find('imageresize') : $nav->addPage($group, 'imageresize', t('iresize_image_resize'));
+
+			$page->addSubpage('imageresize',            t('iresize_subpage_config'));
+			$page->addSubpage('imageresize_clearcache', t('iresize_subpage_clear_cache'));
+		}
+		return $params['subject'];
+	}
 }

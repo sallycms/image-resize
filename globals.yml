@@ -1,0 +1,4 @@
+authorisation:
+  pages:
+    token:
+      imageresize: 'translate:iresize_image_resize'
