@@ -14,8 +14,8 @@ class A2_Filters_Brand {
 		$brand      = new A2_Thumbnail($brandImage);
 
 		// Abstand vom Rand
-		$paddX = -10;
-		$paddY = -10;
+		$paddX = 0;
+		$paddY = 0;
 
 		$hpos = 'right';  // horizontale Ausrichtung: left/center/right
 		$vpos = 'bottom'; // vertikale Ausrichtung: top/center/bottom
