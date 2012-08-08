@@ -169,10 +169,10 @@ class A2_Extensions {
 		$time = time();
 		
 		//clean up old tmp_ files
-		foreach (glob($intDir.'/tmp_*') as $filename) {
-			preg_match('#/tmp_(\d+)_[^/]+#', $filename, $matches);
+		foreach (glob($intDir.'/tmp_*') as $filename_i) {
+			preg_match('#/tmp_(\d+)_[^/]+#', $filename_i, $matches);
 			if ($matches && $matches[1] < ($time - 120)) {
-				@unlink ($filename);
+				@unlink ($filename_i);
 			}
 		}
 
