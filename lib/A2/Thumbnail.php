@@ -205,9 +205,9 @@ class A2_Thumbnail {
 	 */
 	private function imageGetsModified() {
 
-		if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
-			return false;
-		}
+		// if ($this->imageType == IMAGETYPE_GIF && self::isAnimatedGIF($this->fileName)) {
+		// 	return false;
+		// }
 
 		$sameImageType        = $this->imageType == $this->thumbType;
 		$thumbLargerThanImage = $this->thumbWidth > $this->width || $this->thumbHeight > $this->height;

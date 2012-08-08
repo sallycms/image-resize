@@ -174,23 +174,23 @@ class A2_GIF_Decoder {
 			$this->string = "GIF87a";
 		}
 
-		$this->putByte ( $this->screen );
-		if ( $GIF_colorF == 1 ) {
-			$this->getByte ( 3 * $GIF_size );
-			if ( $this->transparentI ) {
-				$this->transparentR = $this->buffer [ 3 * $this->transparentI + 0 ];
-				$this->transparentG = $this->buffer [ 3 * $this->transparentI + 1 ];
-				$this->transparentB = $this->buffer [ 3 * $this->transparentI + 2 ];
+		$this->putByte($this->screen);
+		if ($GIF_colorF == 1) {
+			$this->getByte(3 * $GIF_size);
+			if ($this->transparentI) {
+				if (isset($this->buffer[3 * $this->transparentI + 0])) $this->transparentR = $this->buffer[3 * $this->transparentI + 0];
+				if (isset($this->buffer[3 * $this->transparentI + 1])) $this->transparentG = $this->buffer[3 * $this->transparentI + 1];
+				if (isset($this->buffer[3 * $this->transparentI + 2])) $this->transparentB = $this->buffer[3 * $this->transparentI + 2];
 			}
-			$this->putByte ( $this->buffer );
+			$this->putByte($this->buffer);
 		}
 		else {
-			if ( $this->transparentI ) {
-				$this->transparentR = $this->global [ 3 * $this->transparentI + 0 ];
-				$this->transparentG = $this->global [ 3 * $this->transparentI + 1 ];
-				$this->transparentB = $this->global [ 3 * $this->transparentI + 2 ];
+			if ($this->transparentI) {
+				if (isset($this->global[3 * $this->transparentI + 0])) $this->transparentR = $this->global[3 * $this->transparentI + 0];
+				if (isset($this->global[3 * $this->transparentI + 1])) $this->transparentG = $this->global[3 * $this->transparentI + 1];
+				if (isset($this->global[3 * $this->transparentI + 2])) $this->transparentB = $this->global[3 * $this->transparentI + 2];
 			}
-			$this->putByte ( $this->global );
+			$this->putByte ($this->global);
 		}
 		if ( $this->transparentI ) {
 			$this->string .= "!\xF9\x04\x1\x0\x0". chr ( $this->transparentI ) . "\x0";
