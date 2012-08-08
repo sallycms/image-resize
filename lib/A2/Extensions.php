@@ -168,7 +168,7 @@ class A2_Extensions {
 
 		//clean up tpm_
 		foreach (glob($intDir.'/tmp_*') as $filename) {
-			unlink ($filename);
+			@unlink ($filename);
 		}
 
 		try {
