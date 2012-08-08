@@ -166,9 +166,14 @@ class A2_Extensions {
 			}
 		}
 
-		//clean up tpm_
+		$time = time();
+		
+		//clean up old tmp_ files
 		foreach (glob($intDir.'/tmp_*') as $filename) {
-			@unlink ($filename);
+			preg_match('#/tmp_(\d+)_[^/]+#', $filename, $matches);
+			if ($matches && $matches[1] < ($time - 120)) {
+				@unlink ($filename);
+			}
 		}
 
 		try {
@@ -180,7 +185,7 @@ class A2_Extensions {
 			if (!$recompress) $thumb->disableJpgCompress();
 			if ($type !== null) $thumb->setThumbType($type);
 
-			$tmpFile = $intDir.'/tmp_'.md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
+			$tmpFile = $intDir.'/tmp_' . $time . '_' .md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
 
 			$thumb->generateImage($tmpFile);
 
