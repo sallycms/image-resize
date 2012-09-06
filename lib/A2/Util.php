@@ -54,4 +54,10 @@ class A2_Util {
 		self::cleanInternalDirectory();
 		sly_Service_Factory::getAssetService()->validateCache();
 	}
+
+	public static function getProperty($key, $default = null) {
+		$name    = self::getName();
+		$service = sly_Service_Factory::getAddOnService();
+		return $service->getProperty($name, $key, $default);
+	}
 }
