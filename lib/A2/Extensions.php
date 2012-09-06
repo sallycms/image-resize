@@ -48,7 +48,7 @@ class A2_Extensions {
 		if(!self::filePathOk($filename)) {
 			return $filename;
 		}
-		// c100w__c200h__20r__20t__filename.jpg
+		// data/mediapool/c100w__c200h__20r__20t__filename.jpg
 
 		// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
 		$result = self::parseFilename($filename);
@@ -65,8 +65,21 @@ class A2_Extensions {
 		$controlFile = self::getControlFile($imageFile);
 		$controlData = file_exists($controlFile) ? json_decode(file_get_contents($controlFile), true) : array();
 
+		// handle max_cachefiles for this image
 		if(count($controlData) >= $service->getProperty($name, 'max_cachefiles')
-				&& !isset($controlData[$filename])) return $filename;
+			&& !in_array($filename, $controlData)) {
+			$assetService = sly_Service_Factory::getAssetService();
+			if(is_callable(array($assetService, 'removeCacheFiles'))) {
+				//remove first created rezized file from asset service
+				$assetService->removeCacheFiles(array_shift($controlData));
+			} else {
+				//this is a fallback for pre Sally 0.6.7 only
+				//remove all resized files
+				$controlData = array();
+				unlink($controlFile);
+				$assetService->validateCache();
+			}
+		}
 
 		// iterate parameters
 		$imgParams        = array();
@@ -189,7 +202,7 @@ class A2_Extensions {
 
 			$thumb->generateImage($tmpFile);
 
-			$controlData[$filename] = true;
+			$controlData[] = $filename;
 			file_put_contents($controlFile, json_encode($controlData));
 		}
 		catch (Exception $e) {
@@ -275,16 +288,15 @@ class A2_Extensions {
 	}
 
 	public static function getControlFile($realFile) {
-		return A2_Util::getInternalDirectory().'/control_'.md5($realFile).'.json';
+		return A2_Util::getInternalDirectory().DIRECTORY_SEPARATOR.'control_'.md5($realFile).'.json';
 	}
 
 	public static function getImageFile($filename) {
 		// use the special test image
-		if ($filename === self::getSpecialFile()) {
-			return 'data/dyn/public/'.A2_Util::getName().'/testimage.jpg';
-		}
-		else {
+		if ($filename !== self::getSpecialFile()) {
 			return 'data/mediapool/'.$filename;
+		} else {
+			return 'data/dyn/public/'.A2_Util::getName().'/testimage.jpg';
 		}
 	}
 
