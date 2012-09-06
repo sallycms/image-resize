@@ -93,9 +93,6 @@ class A2_Thumbnail {
 		$this->width      = $this->origWidth;
 		$this->height     = $this->origHeight;
 
-		$this->thumbQuality     = (int)  A2_Util::getProperty('jpg_quality', $this->thumbQuality);
-		$this->upscalingAllowed = (bool) A2_Util::getProperty('upscaling_allowed', $this->upscalingAllowed);
-		$this->compressJPG      = (bool) A2_Util::getProperty('recompress', $this->compressJPG);
 	}
 
 	/**
@@ -219,18 +216,42 @@ class A2_Thumbnail {
 		return true;
 	}
 
-	public function allowUpscaling($upscaling = true) {
-		if ((bool) $upscaling) $this->upscalingAllowed = true;
-		else $this->upscalingAllowed = false;
+	/**
+	 * set if image upscaling is allowed
+	 *
+	 * @param boolean $value
+	 */
+	public function setAllowUpscaling($value) {
+		$this->upscalingAllowed = (bool) $value;
 	}
 
-	public function disableJpgCompress() {
-		$this->compressJPG = false;
+	/**
+	 * set if jpeg files should be recompressed
+	 *
+	 * @param boolean $value
+	 */
+	public function setJpgCompress($value) {
+		$this->compressJPG = (bool) $value;
 	}
 
+	/**
+	 * set the jpeg quality for resampling
+	 *
+	 * @param int $value
+	 */
+	public function setJpegQuality($value) {
+		$this->thumbQuality = (int) $value;
+	}
+
+	/**
+	 * set the type of this thumnail
+	 *
+	 * @param int $type
+	 * @throws Exception
+	 */
 	public function setThumbType($type) {
 		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
-			return false;
+			throw new Exception('The Imagetype: '.$type.' is not supported by A2_Thumbnail.', 500);
 		}
 		$this->thumbType = $type;
 	}
@@ -695,30 +716,4 @@ class A2_Thumbnail {
 		return $imgInfo[2];
 	}
 
-	public static function scaleMediaImagesInHtml($html, $maxImageSize = 650) {
-		// use imageresize to scale images instead of style width and height
-		$html = preg_replace(
-			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="imageresize/\1w__\2h__\3"',
-			$html
-		);
-
-		// the same just height first
-		$html = preg_replace(
-			'~style="height\:[ ]*([0-9]+)px;[ ]*width\:[ ]*([0-9]+)px;?"[ \r\n]*src="data/mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="imageresize/\2w__\1h__\3"',
-			$html
-		);
-
-		// resize the rest of the images to max resize value
-		if ($maxImageSize) {
-			$html = preg_replace(
-				'~src="data/mediapool/([a-zA-Z0-9\.-_]+)(?<!\.bmp)"~',
-				'src="imageresize/'.$maxImageSize.'a__\1"',
-				$html
-			);
-		}
-
-		return $html;
-	}
 }

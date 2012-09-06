@@ -84,8 +84,9 @@ class A2_Extensions {
 		// iterate parameters
 		$imgParams        = array();
 		$filters          = array();
-		$upscalingAllowed = false;
-		$recompress       = true;
+		$upscalingAllowed = (bool) A2_Util::getProperty('upscaling_allowed', false);
+		$recompress       = (bool) A2_Util::getProperty('recompress', true);
+		$jpegQuality      = (int)  A2_Util::getProperty('jpg_quality', 85);
 		$type             = null;
 
 		foreach ($params as $param) {
@@ -180,7 +181,7 @@ class A2_Extensions {
 		}
 
 		$time = time();
-		
+
 		//clean up old tmp_ files
 		foreach (glob($intDir.'/tmp_*') as $filename_i) {
 			preg_match('#/tmp_(\d+)_[^/]+#', $filename_i, $matches);
@@ -191,11 +192,12 @@ class A2_Extensions {
 
 		try {
 			$thumb = new A2_Thumbnail($imageFile);
-			if ($upscalingAllowed) $thumb->allowUpscaling();
+			$thumb->setAllowUpscaling($upscalingAllowed);
 			$thumb->setImgParams($imgParams);
 			$thumb->setNewSize();
 			$thumb->addFilters($filters);
-			if (!$recompress) $thumb->disableJpgCompress();
+			$thumb->setJpgCompress($recompress);
+			$thumb->setJpegQuality($jpegQuality);
 			if ($type !== null) $thumb->setThumbType($type);
 
 			$tmpFile = $intDir.'/tmp_' . $time . '_' .md5($filename).'.'.sly_Util_String::getFileExtension($imageFile);
@@ -291,6 +293,12 @@ class A2_Extensions {
 		return A2_Util::getInternalDirectory().DIRECTORY_SEPARATOR.'control_'.md5($realFile).'.json';
 	}
 
+	/**
+	 * return the image file path
+	 *
+	 * @param  string $filename
+	 * @return string
+	 */
 	public static function getImageFile($filename) {
 		// use the special test image
 		if ($filename !== self::getSpecialFile()) {
