@@ -8,7 +8,7 @@ class A2_Filters_Monochrome {
 		$dst_y  = $src_y;
 		$dst_im = imagecreatetruecolor($dst_x, $dst_y);
 
-		imageantialias($dst_im, true); // PHP > 4.3.2
+		if(function_exists('imageantialias')) imageantialias($dst_im, true); // PHP compiled with gd and > 4.3.2
 		imagecopyresampled($dst_im, $src_im, 0, 0, 0, 0, $dst_x, $dst_y, $src_x, $src_y);
 
 		// Change style of image pixelwise
