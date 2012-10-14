@@ -45,7 +45,7 @@ class A2_Extensions {
 	public static function resizeListener(array $params) {
 		$filename = $params['subject'];
 
-		if(!self::filePathOk($filename)) {
+		if (!self::filePathOk($filename)) {
 			return $filename;
 		}
 		// data/mediapool/c100w__c200h__20r__20t__filename.jpg
@@ -69,7 +69,7 @@ class A2_Extensions {
 		if(count($controlData) >= $service->getProperty($name, 'max_cachefiles')
 			&& !in_array($filename, $controlData)) {
 			$assetService = sly_Service_Factory::getAssetService();
-			if(is_callable(array($assetService, 'removeCacheFiles'))) {
+			if (is_callable(array($assetService, 'removeCacheFiles'))) {
 				//remove first created rezized file from asset service
 				$assetService->removeCacheFiles(array_shift($controlData));
 			} else {
@@ -86,7 +86,7 @@ class A2_Extensions {
 		$filters          = array();
 		$upscalingAllowed = (bool) A2_Util::getProperty('upscaling_allowed', false);
 		$recompress       = (bool) A2_Util::getProperty('recompress', true);
-		$jpegQuality      = (int)  A2_Util::getProperty('jpg_quality', 85);
+		$jpegQuality      = (int) A2_Util::getProperty('jpg_quality', 85);
 		$type             = null;
 
 		foreach ($params as $param) {
@@ -251,7 +251,7 @@ class A2_Extensions {
 
 			//concrete check the filenames syntax
 			$result = self::parseFilename(basename($filename));
-			if($result === null || empty($result['params'])) {
+			if ($result === null || empty($result['params'])) {
 				continue;
 			}
 
@@ -263,7 +263,7 @@ class A2_Extensions {
 			 * Because it not exists the asset cachefile will be removed.
 			 * This is kind of a hack.
 			 */
-			if(!file_exists($controlFile)) {
+			if (!file_exists($controlFile)) {
 				$files[$idx] = $controlFile;
 			} else {
 				$files[$idx] = $filename;
@@ -384,7 +384,7 @@ class A2_Extensions {
 
 	public static function backendNavigation(array $params) {
 		$user = sly_Util_User::getCurrentUser();
-		if($user !== null && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'))) {
+		if ($user !== null && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'))) {
 			$is06  = sly_Core::getVersion('X.Y') === '0.6';
 			$nav   = sly_Core::getNavigation();
 			$group = $nav->getGroup('addons');

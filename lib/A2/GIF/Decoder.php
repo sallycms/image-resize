@@ -59,12 +59,12 @@ class A2_GIF_Decoder {
 		$this->colorS       = 2 << $this->colorC;     // Size of Global Color Table
 
 		// read global color table
-		if ( $this->colorF == 1 ) {
+		if ($this->colorF == 1) {
 			$this->getByte(3*$this->colorS);
 			$this->global = $this->buffer;
 		}
 
-		for ($cycle = 1; $cycle; ) {
+		for ($cycle = 1; $cycle;) {
 			if ($this->getByte( 1 )) {
 				switch ($this->buffer[0]) {
 					case 0x21:
@@ -88,8 +88,8 @@ class A2_GIF_Decoder {
 		$this->getByte(1);
 
 		// application extension
-		if ( $this->buffer [ 0 ] == 0xff ) {
-			for ( ; ; ) {
+		if ($this->buffer [ 0 ] == 0xff) {
+			for (; ;) {
 				$this->getByte(1);
 				// if byte size is zero, return
 				if (($u = $this->buffer[0]) == 0x00) return false;
@@ -106,7 +106,7 @@ class A2_GIF_Decoder {
 		}
 		// other applications
 		else {
-			for ( ; ; ) {
+			for (; ;) {
 				$this->getByte(1);
 				// if byte size is zero, return
 				if (($u = $this->buffer[0]) == 0x00) {
@@ -159,7 +159,7 @@ class A2_GIF_Decoder {
 		$this->screen [ 4 ] &= 0x70;
 		$this->screen [ 4 ] |= 0x80;
 		$this->screen [ 4 ] |= $GIF_code;
-		if ( $GIF_sort ) {
+		if ($GIF_sort) {
 			$this->screen [ 4 ] |= 0x08;
 		}
 		/*
@@ -167,7 +167,7 @@ class A2_GIF_Decoder {
 		 * GIF Data Begin
 		 *
 		 */
-		if ( $this->transparentI ) {
+		if ($this->transparentI) {
 			$this->string = "GIF89a";
 		}
 		else {
@@ -192,7 +192,7 @@ class A2_GIF_Decoder {
 			}
 			$this->putByte ($this->global);
 		}
-		if ( $this->transparentI ) {
+		if ($this->transparentI) {
 			$this->string .= "!\xF9\x04\x1\x0\x0". chr ( $this->transparentI ) . "\x0";
 		}
 		// \x1 == 000 000 0 1
@@ -201,7 +201,7 @@ class A2_GIF_Decoder {
 		$this->putByte ( $GIF_screen );
 		$this->getByte ( 1 );
 		$this->putByte ( $this->buffer );
-		for ( ; ; ) {
+		for (; ;) {
 			$this->getByte ( 1 );
 			$this->putByte ( $this->buffer );
 			if ( ( $u = $this->buffer [ 0 ] ) == 0x00 ) {
@@ -222,7 +222,7 @@ class A2_GIF_Decoder {
 	private function getByte($len) {
 		$this->buffer = array();
 
-		for ( $i = 0; $i < $len; $i++ ) {
+		for ($i = 0; $i < $len; $i++) {
 			if ( $this->bfseek > strlen ( $this->stream ) ) {
 				return 0;
 			}
@@ -262,4 +262,3 @@ class A2_GIF_Decoder {
 	public function getTransparentG() { return $this->transparentG; }
 	public function getTransparentB() { return $this->transparentB; }
 }
-

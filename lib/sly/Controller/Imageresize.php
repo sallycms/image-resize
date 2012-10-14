@@ -22,7 +22,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$page     = sly_Core::getNavigation()->find('imageresize');
 		$subpages = $page->getSubpages();
 
-		foreach($subpages as $key => $subpage) {
+		foreach ($subpages as $key => $subpage) {
 			$subpages[$key] = array($subpage->getPageParam(), $subpage->getTitle());
 		}
 

@@ -17,26 +17,25 @@
 
 class A2_GIF_Encoder {
 
-	var $GIF = "GIF89a";            // GIF header 6 bytes
-	var $VER = "GIFEncoder V3.00";  // Encoder version
+	public $GIF = "GIF89a";            // GIF header 6 bytes
+	public $VER = "GIFEncoder V3.00";  // Encoder version
 
-	var $BUF = array();
-	var $OFS = array();
-	var $SIG =  0;
-	var $LOP =  0;
-	var $DIS =  2;
-	var $COL = -1;
-	var $IMG = -1;
+	public $BUF = array();
+	public $OFS = array();
+	public $SIG =  0;
+	public $LOP =  0;
+	public $DIS =  2;
+	public $COL = -1;
+	public $IMG = -1;
 
-	var $ERR = array(
+	public $ERR = array(
 			'ERR00'=>"Does support animated GIF images only!",
 			'ERR01'=>"Source is not a GIF image!",
 			'ERR02'=>"Unintelligible flag",
 			'ERR03'=>"Does not make animation from animated GIF source",
 	);
 
-
-	function __construct($GIF_src, $GIF_dly, $GIF_lop, $GIF_dis,
+	public function __construct($GIF_src, $GIF_dly, $GIF_lop, $GIF_dis,
 						 $GIF_red, $GIF_grn, $GIF_blu,
 						 $GIF_ofs, $GIF_mod) {
 
@@ -93,7 +92,6 @@ class A2_GIF_Encoder {
 			$this->SIG = 1;
 			$this->OFS = $GIF_ofs;
 		}
-
 
 		$this->addHeader();
 		for ($i = 0; $i < count($this->BUF); $i++) {
@@ -281,4 +279,3 @@ class A2_GIF_Encoder {
 	}
 
 }
-

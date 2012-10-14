@@ -23,7 +23,7 @@ class A2_Util {
 	 * @return string Path to Internal Directory
 	 */
 	public static function getInternalDirectory() {
-		if(empty(self::$internalDir)) {
+		if (empty(self::$internalDir)) {
 			$service           = sly_Service_Factory::getAddOnService();
 			$is06              = sly_Core::getVersion('X.Y') === '0.6';
 			$name              = self::getName();
@@ -39,7 +39,7 @@ class A2_Util {
 	 * @return string Path to Internal Directory
 	 */
 	public static function getName() {
-		if(empty(self::$name)) {
+		if (empty(self::$name)) {
 			$is06        = sly_Core::getVersion('X.Y') === '0.6';
 			self::$name  = $is06 ? 'image_resize' : 'sallycms/image-resize';
 		}
