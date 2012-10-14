@@ -41,7 +41,6 @@ class A2_Filters_Sharpen {
 		//
 		//////////////////////////////////////////////////
 
-
 		if (function_exists('imageconvolution')) { // PHP >= 5.1
 			$matrix = array(
 				array(1, 2, 1),
