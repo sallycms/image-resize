@@ -22,7 +22,7 @@
     },
     "extra": {
         "sallycms": {
-            "version": "3.1.4",
+            "version": "3.1-dev",
             "page": "imageresize",
             "name": "translate:iresize_image_resize",
             "perm": "image_resize[]",
