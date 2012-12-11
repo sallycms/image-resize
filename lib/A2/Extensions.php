@@ -58,21 +58,19 @@ class A2_Extensions {
 		$imageFile = self::getImageFile($result['filename']);
 		$params    = $result['params'];
 
-		$service  = sly_Service_Factory::getAddOnService();
-		$name     = A2_Util::getName();
-		$intDir   = A2_Util::getInternalDirectory();
-
+		$intDir      = A2_Util::getInternalDirectory();
 		$controlFile = self::getControlFile($imageFile);
 		$controlData = file_exists($controlFile) ? json_decode(file_get_contents($controlFile), true) : array();
 
 		// handle max_cachefiles for this image
-		if(count($controlData) >= $service->getProperty($name, 'max_cachefiles')
-			&& !in_array($filename, $controlData)) {
+		if (count($controlData) >= A2_Util::getProperty('max_cachefiles') && !in_array($filename, $controlData)) {
 			$assetService = sly_Service_Factory::getAssetService();
+
 			if (is_callable(array($assetService, 'removeCacheFiles'))) {
 				//remove first created rezized file from asset service
 				$assetService->removeCacheFiles(array_shift($controlData));
-			} else {
+			}
+			else {
 				//this is a fallback for pre Sally 0.6.7 only
 				//remove all resized files
 				$controlData = array();
@@ -303,8 +301,9 @@ class A2_Extensions {
 		// use the special test image
 		if ($filename !== self::getSpecialFile()) {
 			return 'data/mediapool/'.$filename;
-		} else {
-			return 'data/dyn/public/'.A2_Util::getName().'/testimage.jpg';
+		}
+		else {
+			return 'data/dyn/public/sallycms/image-resize/testimage.jpg';
 		}
 	}
 
@@ -349,7 +348,7 @@ class A2_Extensions {
 	 */
 	public static function systemCacheList(array $params) {
 		$select     = $params['subject'];
-		$name       = A2_Util::getName();
+		$name       = 'sallycms/image-resize';
 		$selected   = $select->getValue();
 		$selected[] = $name;
 
@@ -373,26 +372,29 @@ class A2_Extensions {
 
 			if (method_exists($controller, 'isCacheSelected') && !(
 					$controller->isCacheSelected('sly_asset')
-					|| $controller->isCacheSelected(A2_Util::getName()))
+					|| $controller->isCacheSelected('sallycms/image-resize')
+				)
 			) {
 				return $params['subject'];
 			}
 		}
+
 		A2_Util::cleanPossiblyCachedFiles();
 		return isset($params['subject']) ? $params['subject'] : true;
 	}
 
 	public static function backendNavigation(array $params) {
 		$user = sly_Util_User::getCurrentUser();
+
 		if ($user !== null && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'))) {
-			$is06  = sly_Core::getVersion('X.Y') === '0.6';
-			$nav   = sly_Core::getNavigation();
+			$nav   = sly_Core::getLayout()->getNavigation();
 			$group = $nav->getGroup('addons');
-			$page  = $is06 ? $nav->find('imageresize') : $nav->addPage($group, 'imageresize', t('iresize_image_resize'));
+			$page  = $nav->addPage($group, 'imageresize', t('iresize_image_resize'));
 
 			$page->addSubpage('imageresize',            t('iresize_subpage_config'));
 			$page->addSubpage('imageresize_clearcache', t('iresize_subpage_clear_cache'));
 		}
+
 		return $params['subject'];
 	}
 }

@@ -33,14 +33,8 @@ sly_Core::getLayout()->addCSS('
 }
 ');
 
-$file = sly_Core::config()->get('INSTNAME').'.jpg';
-
-if (sly_Core::getVersion('X.Y') === '0.6') {
-	$isAvailable = sly_Service_Factory::getAddOnService()->isAvailable('image_resize');
-}
-else {
-	$isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
-}
+$file        = sly_Core::config()->get('INSTNAME').'.jpg';
+$isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 
 ?>
 <div class="iresize-help">

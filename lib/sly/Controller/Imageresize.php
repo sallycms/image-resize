@@ -15,18 +15,15 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		if ($this->init) return;
 		$this->init = true;
 
-		$is06     = sly_Core::getVersion('X.Y') === '0.6';
-		$name     = $is06 ? 'image_resize' : 'sallycms/image-resize';
-		$ext      = $is06 ? 'css' : 'less';
 		$layout   = sly_Core::getLayout();
-		$page     = sly_Core::getNavigation()->find('imageresize');
+		$page     = $layout->getNavigation()->find('imageresize');
 		$subpages = $page->getSubpages();
 
 		foreach ($subpages as $key => $subpage) {
 			$subpages[$key] = array($subpage->getPageParam(), $subpage->getTitle());
 		}
 
-		$layout->addCSSFile('../data/dyn/public/'.$name.'/backend.'.$ext);
+		$layout->addCSSFile('../data/dyn/public/sallycms/image-resize/backend.less');
 		$layout->pageHeader(t('iresize_image_resize'), $subpages);
 	}
 
@@ -47,8 +44,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$recompress       = sly_request('recompress',          'boolean');
 
 		$service = sly_Service_Factory::getAddOnService();
-		$is06    = sly_Core::getVersion('X.Y') === '0.6';
-		$name    = $is06 ? 'image_resize' : 'sallycms/image-resize';
+		$name    = 'sallycms/image-resize';
 
 		$service->setProperty($name, 'max_cachefiles',    $max_cachefiles);
 		$service->setProperty($name, 'max_filters',       $max_filters);
