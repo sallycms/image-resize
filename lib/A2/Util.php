@@ -109,4 +109,71 @@ class A2_Util {
 
 		return $html;
 	}
+
+	/**
+	 *
+	 * @param sly_Model_Medium $medium
+	 * @param array $options (width, height, width_crop, height_crop, width_primary, height_primary, extra)
+	 * @param bool $path null - with data/medium, false - no path, true - absolute path
+	 * @return string
+	 * @throws Exception
+	 */
+	public static function resize($medium, $options, $path = null) {
+		if (!$medium instanceof sly_Model_Medium) {
+			$options = $medium['arguments'][0];
+			$path = (array_key_exists(1, $medium['arguments'])) ? $medium['arguments'][1] : null;
+			$medium = $medium['object'];
+			if (!$medium instanceof sly_Model_Medium) {
+				throw new Exception('wrong arguments');
+			}
+		}
+
+		$options = array_merge(array(
+			'width' => null,
+			'height' => null,
+			'width_crop' => false,
+			'height_crop' => false,
+			'width_primary' => false,
+			'height_primary' => false,
+			'extra' => ''
+		), $options);
+
+		$filename = $medium->getFilename();
+		$params = array();
+
+		$width = $options['width'] ? (($options['width_crop'] ? 'c' : '') . $options['width'] . 'w' ) : '';
+		$height = $options['height'] ? (($options['height_crop'] ? 'c' : '') . $options['height'] . 'h' ) : '';
+
+		$width_first = $options['width_primary'] || !$options['height_primary'];
+		if ($width_first) {
+			if ($width) {
+				$params[] = $width;
+			}
+			if ($height) {
+				$params[] = $height;
+			}
+		} else {
+			if ($height) {
+				$params[] = $height;
+			}
+			if ($width) {
+				$params[] = $width;
+			}
+		}
+
+		if ($options['extra']) {
+			$params[] = $options['extra'];
+		}
+
+		$result = implode('__', $params) . '__' . $filename;
+
+		if ($path === null) {
+			return 'data/mediapool/' . $result;
+		}
+		if ($path) {
+			return sly_Util_HTTP::getBaseUrl(true) . '/data/mediapool/' . $result;
+		} else {
+			return $result;
+		}
+	}
 }
