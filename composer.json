@@ -12,7 +12,7 @@
     "require": {
         "php": ">=5.2.0",
         "ext-gd": "*",
-        "sallycms/composer-installer": "*",
+        "sallycms/composer-installer": "~1.1",
         "sallycms/sallycms": "0.7.*"
     },
     "autoload": {
@@ -22,14 +22,14 @@
     },
     "extra": {
         "sallycms": {
-            "version": "3.1-dev",
+            "version": "3.1.x-dev",
             "page": "imageresize",
             "name": "translate:iresize_image_resize",
             "perm": "image_resize[]",
             "imex-ignore": true
         },
         "branch-alias": {
-            "dev-default": "3.1.x-dev"
+            "dev-default": "3.x-dev"
         }
     }
 }
