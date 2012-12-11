@@ -18,8 +18,7 @@ class A2_Util {
 	/**
 	 * Used to receive the Path to the internal directory of this addon
 	 *
-	 * @staticvar string $internalDir
-	 * @return string Path to Internal Directory
+	 * @return string  path to Internal Directory
 	 */
 	public static function getInternalDirectory() {
 		if (empty(self::$internalDir)) {
@@ -28,6 +27,17 @@ class A2_Util {
 		}
 
 		return self::$internalDir;
+	}
+
+	/**
+	 * Used to receive the addon name
+	 *
+	 * @deprecated since 3.2, will be removed in 4.0
+	 *
+	 * @return string  always 'sallycms/image-resize'
+	 */
+	public static function getName() {
+		return 'sallycms/image-resize';
 	}
 
 	/**
