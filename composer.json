@@ -13,19 +13,17 @@
         "php": ">=5.2.0",
         "ext-gd": "*",
         "sallycms/composer-installer": "~1.1",
-        "sallycms/sallycms": "0.7.*"
+        "sallycms/sallycms": ">=0.7,<0.9"
     },
     "autoload": {
         "psr-0": {
-            "": "lib/"
+            "A2_": "lib/",
+            "sly_Controller_": "lib/"
         }
     },
     "extra": {
         "sallycms": {
             "version": "3.1.x-dev",
-            "page": "imageresize",
-            "name": "translate:iresize_image_resize",
-            "perm": "image_resize[]",
             "imex-ignore": true
         },
         "branch-alias": {

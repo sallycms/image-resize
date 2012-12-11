@@ -19,10 +19,10 @@ if (!sly_Core::isBackend()) {
 }
 else {
 	sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
-	$dispatcher->register('SLY_SYSTEM_CACHES',      array('A2_Extensions', 'systemCacheList'));
-	$dispatcher->register('SLY_CACHE_CLEARED',      array('A2_Extensions', 'cacheCleared'));
-	$dispatcher->register('SLY_ADDONS_LOADED',      array('A2_Extensions', 'backendNavigation'));
-	$dispatcher->register('ADDONS_INCLUDED',        array('A2_Extensions', 'backendNavigation')); // compat for sally 0.6
+
+	$dispatcher->register('SLY_SYSTEM_CACHES', array('A2_Extensions', 'systemCacheList'));
+	$dispatcher->register('SLY_CACHE_CLEARED', array('A2_Extensions', 'cacheCleared'));
+	$dispatcher->register('SLY_ADDONS_LOADED', array('A2_Extensions', 'backendNavigation'));
 }
 
 $dispatcher->register('SLY_MODEL_MEDIUM_RESIZE', array('A2_Util', 'resize'));

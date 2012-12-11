@@ -12,7 +12,6 @@
  * @author zozi@webvariants.de
  */
 class A2_Util {
-
 	private static $name;
 	private static $internalDir;
 
@@ -25,25 +24,10 @@ class A2_Util {
 	public static function getInternalDirectory() {
 		if (empty(self::$internalDir)) {
 			$service           = sly_Service_Factory::getAddOnService();
-			$is06              = sly_Core::getVersion('X.Y') === '0.6';
-			$name              = self::getName();
-			self::$internalDir = $is06 ? $service->internalFolder($name) : $service->internalDirectory($name);
+			self::$internalDir = $service->internalDirectory('sallycms/image-resize');
 		}
-		return self::$internalDir;
-	}
 
-	/**
-	 * Used to receive the addon name
-	 *
-	 * @staticvar string $internalDir
-	 * @return string Path to Internal Directory
-	 */
-	public static function getName() {
-		if (empty(self::$name)) {
-			$is06        = sly_Core::getVersion('X.Y') === '0.6';
-			self::$name  = $is06 ? 'image_resize' : 'sallycms/image-resize';
-		}
-		return self::$name;
+		return self::$internalDir;
 	}
 
 	/**
@@ -70,9 +54,8 @@ class A2_Util {
 	 * @return mixed          the config value
 	 */
 	public static function getProperty($key, $default = null) {
-		$name    = self::getName();
 		$service = sly_Service_Factory::getAddOnService();
-		return $service->getProperty($name, $key, $default);
+		return $service->getProperty('sallycms/image-resize', $key, $default);
 	}
 
 	/**
