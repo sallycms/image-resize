@@ -118,7 +118,7 @@ class A2_Util {
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function resize($medium, $options, $path = null) {
+	public static function resize($medium, $options = array(), $path = null) {
 		if (!$medium instanceof sly_Model_Medium) {
 			$options = $medium['arguments'][0];
 			$path = (array_key_exists(1, $medium['arguments'])) ? $medium['arguments'][1] : null;
