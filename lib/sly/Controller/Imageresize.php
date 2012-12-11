@@ -9,22 +9,13 @@
  */
 
 class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_Controller_Interface {
-	private $init = false;
-
+	/**
+	 * @deprecated  since 3.2, will be removed in 4.0
+	 */
 	protected function init() {
-		if ($this->init) return;
-		$this->init = true;
-
-		$layout   = sly_Core::getLayout();
-		$page     = $layout->getNavigation()->find('imageresize');
-		$subpages = $page->getSubpages();
-
-		foreach ($subpages as $key => $subpage) {
-			$subpages[$key] = array('page' => $subpage->getPageParam(), 'label' => $subpage->getTitle());
-		}
-
+		$layout = sly_Core::getLayout();
 		$layout->addCSSFile('../data/dyn/public/sallycms/image-resize/backend.less');
-		$layout->pageHeader(t('iresize_image_resize'), $subpages);
+		$layout->pageHeader(t('iresize_image_resize'));
 	}
 
 	public function indexAction() {
