@@ -20,7 +20,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$subpages = $page->getSubpages();
 
 		foreach ($subpages as $key => $subpage) {
-			$subpages[$key] = array($subpage->getPageParam(), $subpage->getTitle());
+			$subpages[$key] = array('page' => $subpage->getPageParam(), 'label' => $subpage->getTitle());
 		}
 
 		$layout->addCSSFile('../data/dyn/public/sallycms/image-resize/backend.less');
@@ -33,7 +33,9 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 	}
 
 	public function updateAction() {
-		$this->init();
+		if (sly_Core::getVersion('X.Y') !== '0.7') {
+			sly_Util_Csrf::checkToken();
+		}
 
 		$max_cachefiles   = sly_request('max_cachefiles',      'int');
 		$max_filters      = sly_request('max_filters',         'int');
@@ -54,8 +56,8 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$service->setProperty($name, 'upscaling_allowed', $upscalingAllowed);
 		$service->setProperty($name, 'recompress',        $recompress);
 
-		print sly_Helper_Message::info(t('iresize_config_saved'));
-		$this->indexAction();
+		sly_Core::getFlashMessage()->appendInfo(t('iresize_config_saved'));
+		return $this->redirectResponse();
 	}
 
 	public function checkPermission($action) {

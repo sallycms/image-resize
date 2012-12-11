@@ -8,11 +8,14 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
+print sly_Helper_Message::renderFlashMessage();
+
+$is07    = sly_Core::getVersion('X.Y') === '0.7';
 $service = sly_Service_Factory::getAddOnService();
 $name    = 'sallycms/image-resize';
 $version = $service->getPackageService()->getVersion($name);
 
-$form = new sly_Form('index.php', 'POST', 'Image Resize (v'.$version.')');
+$form = new sly_Form($is07 ? 'index.php' : $_router->getPlainUrl(null), 'POST', 'Image Resize (v'.$version.')');
 $form->addHiddenValue('page', 'imageresize');
 $form->addHiddenValue('func', 'update');
 

@@ -10,10 +10,8 @@
 
 class sly_Controller_Imageresize_Clearcache extends sly_Controller_Imageresize {
 	public function indexAction() {
-		$this->init();
-
 		A2_Util::cleanPossiblyCachedFiles();
-		print sly_Helper_Message::info(t('iresize_cache_files_removed'));
-		parent::indexAction();
+		sly_Core::getFlashMessage()->appendInfo(t('iresize_cache_files_removed'));
+		return $this->redirectResponse(array(), 'imageresize');
 	}
 }
