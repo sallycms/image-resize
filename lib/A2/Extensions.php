@@ -181,12 +181,14 @@ class A2_Extensions {
 		$time = time();
 
 		//clean up old tmp_ files
-		foreach (glob($intDir.'/tmp_*') as $filename_i) {
-			preg_match('#/tmp_(\d+)_[^/]+#', $filename_i, $matches);
-			if ($matches && $matches[1] < ($time - 120)) {
-				@unlink ($filename_i);
+		$tmp_files = glob($intDir.'/tmp_*');
+		if ($tmp_files)
+			foreach ($tmp_files as $filename_i) {
+				preg_match('#/tmp_(\d+)_[^/]+#', $filename_i, $matches);
+				if ($matches && $matches[1] < ($time - 120)) {
+					@unlink ($filename_i);
+				}
 			}
-		}
 
 		try {
 			$thumb = new A2_Thumbnail($imageFile);
