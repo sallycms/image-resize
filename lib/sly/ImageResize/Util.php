@@ -116,4 +116,44 @@ abstract class Util {
 			return $result;
 		}
 	}
+
+ 	/**
+	 * return the image types supported by this PHP build
+	 *
+	 * @return array  list of IMAGETYPE_* constants
+	 */
+	public static function getSupportedTypes() {
+		$types     = imagetypes();
+		$supported = array();
+		$mapping   = array(
+			// imagetypes() returns IMG_* constants, but getimagesize() and other
+			// functions use the IMAGETYPE_* constants. They are almost the same,
+			// except for PNG. So we properly map them here.
+			IMAGETYPE_GIF  => IMG_GIF,
+			IMAGETYPE_JPEG => IMG_JPG,
+			IMAGETYPE_PNG  => IMG_PNG,
+			IMAGETYPE_WBMP => IMG_WBMP
+		);
+
+		foreach ($mapping as $realType => $bit) {
+			if ($types & $bit) {
+				$supported[] = $realType;
+			}
+		}
+
+		return $supported;
+	}
+
+	/**
+	 * @return int  IMAGETYPE_* constant or false if no (supported) type was detected
+	 */
+	public static function getSupportedImageType($filename) {
+		$supported = self::getSupportedTypes();
+		if (empty($supported)) return false;
+
+		$imgInfo = getimagesize(filename);
+		if ($imgInfo === false) return false;
+
+		return in_array($imgInfo[2], $supported) ? $imgInfo[2] : false;
+	}
 }

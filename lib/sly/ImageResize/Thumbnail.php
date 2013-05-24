@@ -8,18 +8,15 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
+namespace sly\ImageResize;
+
 /**
- * Image-Resize AddOn
+ * Image Thumbnail
  *
- * @author office[at]vscope[dot]at Wolfgang Hutteger
- * @author <a href="http://www.vscope.at">www.vscope.at</a>
- *
- * @author markus[dot]staab[at]redaxo[dot]de Markus Staab
  * @author zozi@webvariants.de
- *
  * @author memento@webvariants.de
  */
-class A2_Thumbnail {
+class Thumbnail {
 	private $fileName = '';
 
 	private $imgsrc   = null;
@@ -138,7 +135,6 @@ class A2_Thumbnail {
 			$this->width,
 			$this->height
 		);
-//		var_dump($this->imgthumb);
 	}
 
 	/**
@@ -641,30 +637,6 @@ class A2_Thumbnail {
 		return true;
 	}
 
- 	/**
-	 * return the image types supported by this PHP build
-	 *
-	 * @return array  supported types as strings
-	 */
-	public static function getSupportedTypes() {
-		$aSupportedTypes = array();
-
-		$aPossibleImageTypeBits = array(
-			'GIF'  => IMAGETYPE_GIF,
-			'JPEG' => IMAGETYPE_JPEG,
-			'PNG'  => IMAGETYPE_PNG,
-			'WBMP' => IMAGETYPE_WBMP
-		);
-
-		foreach ($aPossibleImageTypeBits as $sImageTypeString => $iImageTypeBits) {
-			if (imagetypes() & $iImageTypeBits) {
-				$aSupportedTypes[$sImageTypeString] = $iImageTypeBits;
-			}
-		}
-
-		return $aSupportedTypes;
-	}
-
 	/**
 	 * Thanks to ZeBadger for original example, and Davide Gualano for pointing me to it
 	 * Original at http://it.php.net/manual/en/function.imagecreatefromgif.php#59787
@@ -698,22 +670,4 @@ class A2_Thumbnail {
 
 		return $frames > 1;
 	}
-
-	/**
-	 * @return string  image type
-	 */
-	private function getImageType() {
-		$allowedTypes = self::getSupportedTypes();
-
-		if (!is_array($allowedTypes) || empty($allowedTypes)) {
-			return false;
-		}
-
-		$imgInfo = getimagesize($this->fileName);
-		if ($imgInfo === false) return false;
-
-		if (!in_array($imgInfo[2], $allowedTypes)) return false;
-		return $imgInfo[2];
-	}
-
 }
