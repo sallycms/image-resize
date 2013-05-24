@@ -115,8 +115,18 @@ class Extensions implements \sly_ContainerAwareInterface {
 	 * SLY_MODEL_MEDIUM_RESIZE
 	 */
 	public function resizeMedium($result, array $params) {
+		// someone has already done the job
+		if (is_string($result)) {
+			return $result;
+		}
+
+		// signature is $medium->resize($options, $path)
+
 		$medium  = $params['object'];
 		$options = $params['arguments'][0];
 		$path    = array_key_exists(1, $medium['arguments']) ? $medium['arguments'][1] : null;
+		$request = $this->container['sly-request'];
+
+		return Util::resize($medium, $options, $path, $request);
 	}
 }

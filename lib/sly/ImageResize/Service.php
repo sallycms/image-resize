@@ -46,6 +46,8 @@ class Service implements \sly_ContainerAwareInterface {
 	 * @return mixed            the config value
 	 */
 	public function getConfig($key, $default = null) {
+		if ($key === null) return $this->config;
+
 		return isset($this->config[$key]) ? $this->config[$key] : $default;
 	}
 

@@ -9,35 +9,41 @@
  */
 
 class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_Controller_Interface {
-	/**
-	 * @deprecated  since 3.2, will be removed in 4.0
-	 */
-	protected function init() {
-		$layout = sly_Core::getLayout();
-		$layout->addCSSFile('../data/dyn/public/sallycms/image-resize/backend.less');
-		$layout->pageHeader(t('iresize_image_resize'));
-	}
-
 	public function indexAction() {
-		$this->init();
-		$this->render('index.phtml', array(), false);
+		$name      = 'sallycms/image-resize';
+		$container = $this->getContainer();
+		$layout    = $container['sly-layout'];
+		$service   = $container['sly-service-addon'];
+		$config    = $container['sly-imageresize-service']->getConfig(null);
+		$version   = $service->getPackageService()->getVersion($name);
+
+		$layout->addCSSFile(sly\Assets\Util::addOnUri($name, 'backend.less'));
+		$layout->pageHeader(t('iresize_image_resize'));
+
+		print sly_Helper_Message::renderFlashMessage($container['sly-flash-message']);
+
+		$this->render('index.phtml', array(
+			'version' => $version,
+			'config'  => $config
+		), false);
 	}
 
 	public function updateAction() {
-		if (sly_Core::getVersion('X.Y') !== '0.7') {
-			sly_Util_Csrf::checkToken();
-		}
+		sly_Util_Csrf::checkToken();
 
-		$max_cachefiles   = sly_request('max_cachefiles',      'int');
-		$max_filters      = sly_request('max_filters',         'int');
-		$max_resizekb     = sly_request('max_resizekb',        'int');
-		$max_resizepixel  = sly_request('max_resizepixel',     'int');
-		$jpg_quality      = min(abs(sly_request('jpg_quality', 'int')), 100);
-		$upscalingAllowed = sly_request('upscaling_allowed',   'boolean');
-		$recompress       = sly_request('recompress',          'boolean');
+		$request          = $this->getRequest();
+		$max_cachefiles   = $request->post('max_cachefiles',    'int');
+		$max_filters      = $request->post('max_filters',       'int');
+		$max_resizekb     = $request->post('max_resizekb',      'int');
+		$max_resizepixel  = $request->post('max_resizepixel',   'int');
+		$jpg_quality      = $request->post('jpg_quality',       'int');
+		$upscalingAllowed = $request->post('upscaling_allowed', 'boolean');
+		$recompress       = $request->post('recompress',        'boolean');
 
-		$service = sly_Service_Factory::getAddOnService();
-		$name    = 'sallycms/image-resize';
+		$container   = $this->getContainer();
+		$jpg_quality = min(abs($jpg_quality), 100);
+		$service     = $container['sly-service-addon'];
+		$name        = 'sallycms/image-resize';
 
 		$service->setProperty($name, 'max_cachefiles',    $max_cachefiles);
 		$service->setProperty($name, 'max_filters',       $max_filters);
@@ -47,16 +53,18 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$service->setProperty($name, 'upscaling_allowed', $upscalingAllowed);
 		$service->setProperty($name, 'recompress',        $recompress);
 
-		sly_Core::getFlashMessage()->appendInfo(t('iresize_config_saved'));
+		$container['sly-flash-message']->appendInfo(t('iresize_config_saved'));
+
 		return $this->redirectResponse();
 	}
 
 	public function checkPermission($action) {
-		$user = sly_Util_User::getCurrentUser();
+		$user = $this->getContainer()->get('sly-service-user')->getCurrentUser();
+
 		return $user && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'));
 	}
 
 	protected function getViewFolder() {
-		return dirname(__FILE__).'/../../../views/';
+		return __DIR__.'/../../../views/';
 	}
 }

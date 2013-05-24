@@ -54,64 +54,65 @@ abstract class Util {
 	 * @throws Exception
 	 * @param  sly_Model_Medium $medium
 	 * @param  array            $options  (width, height, width_crop, height_crop, width_primary, height_primary, extra)
-	 * @param  bool             $path     null - with data/medium, false - no path, true - absolute path
+	 * @param  bool             $path     null = with data/medium; false = no path; true = absolute path
 	 * @return string
 	 */
-	public static function resize($medium, $options = array(), $path = null) {
-		if (!$medium instanceof sly_Model_Medium) {
-			$options = $medium['arguments'][0];
-			$path = (array_key_exists(1, $medium['arguments'])) ? $medium['arguments'][1] : null;
-			$medium = $medium['object'];
-			if (!$medium instanceof sly_Model_Medium) {
-				throw new Exception('wrong arguments');
-			}
-		}
-
+	public static function resize(\sly_Model_Medium $medium, array $options = array(), $path = null, \sly_Request $request = null) {
 		$options = array_merge(array(
-			'width' => null,
-			'height' => null,
-			'width_crop' => false,
-			'height_crop' => false,
-			'width_primary' => false,
+			'width'          => null,
+			'height'         => null,
+			'width_crop'     => false,
+			'height_crop'    => false,
+			'width_primary'  => false,
 			'height_primary' => false,
-			'extra' => ''
+			'extra'          => ''
 		), $options);
 
-		$filename = $medium->getFilename();
+		// handle width/height params
+
 		$params = array();
+		$width  = '';
+		$height = '';
 
-		$width = $options['width'] ? (($options['width_crop'] ? 'c' : '') . $options['width'] . 'w' ) : '';
-		$height = $options['height'] ? (($options['height_crop'] ? 'c' : '') . $options['height'] . 'h' ) : '';
+		if ($options['width']) {
+			$width = ($options['width_crop'] ? 'c' : '').$options['width'].'w';
+		}
 
-		$width_first = $options['width_primary'] || !$options['height_primary'];
-		if ($width_first) {
-			if ($width) {
-				$params[] = $width;
-			}
-			if ($height) {
-				$params[] = $height;
-			}
-		} else {
-			if ($height) {
-				$params[] = $height;
-			}
-			if ($width) {
-				$params[] = $width;
-			}
+		if ($options['height']) {
+			$height = ($options['height_crop'] ? 'c' : '').$options['height'].'h';
+		}
+
+		// build param list
+
+		$widthFirst = $options['width_primary'] || !$options['height_primary'];
+
+		if ($widthFirst) {
+			if ($width)  $params[] = $width;
+			if ($height) $params[] = $height;
+		}
+		else {
+			if ($height) $params[] = $height;
+			if ($width)  $params[] = $width;
 		}
 
 		if ($options['extra']) {
 			$params[] = $options['extra'];
 		}
 
-		$result = implode('__', $params) . '__' . $filename;
+		// get virtual filename
+
+		$filename = $medium->getFilename();
+		$result   = implode('__', $params).'__'.$filename;
 
 		if ($path === null) {
-			return 'data/mediapool/' . $result;
+			return 'imageresize/'.$result;
 		}
-		if ($path) {
-			return sly_Util_HTTP::getBaseUrl(true) . '/data/mediapool/' . $result;
-		} else {
+		elseif ($path === true) {
+			$request = $request ?: \sly_Core::getContainer()->get('sly-request');
+
+			return $request->getBaseUrl(true).'/imageresize/'.$result;
+		}
+		else {
 			return $result;
 		}
 	}
