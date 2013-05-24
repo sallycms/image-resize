@@ -9,13 +9,5 @@
  */
 
 if (!extension_loaded('gd')) {
-	throw new Exception('GD-LIB-extension not available! See <a href="http://www.php.net/gd">http://www.php.net/gd</a>');
-}
-
-$service     = sly_Service_Factory::getAddOnService();
-$internalDir = $service->internalDirectory('sallycms/image-resize');
-$state       = is_writable($internalDir);
-
-if ($state !== true) {
-	throw new Exception('The cache directory ('.$internalDir.') has no writing permissions.');
+	throw new Exception('GD-LIB-extension not available!');
 }

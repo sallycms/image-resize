@@ -8,33 +8,36 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-/**
- * @author Robert
- */
-class A2_Extensions {
+namespace sly\Assets\Controller;
+
+use Gaufrette\Util\Path;
+use sly_Response;
+
+class Imageresize extends Base {
+
 	// c=crop before w=width|h=heigth|a=both followed by o=offset|r=right|l=left|t=top|b=bottom
 	// followed by f=filter followed by u=upscaling
 	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:u[01]?__)?(?:n__)?(?:t[0-9]+__)?)(.*)$@';
 
-	/**
-	 * Try to parse a file as an imageresize request
-	 *
-	 * This method can be used by other addOns to determine whether a given file
-	 * is likely to be a virtual filename, used by this addOn.
-	 *
-	 * @param  string $filename  the filename (like "600w__foo.jpg")
-	 * @return mixed             null if invalid, else an array with the filename and the params
-	 */
-	public static function parseFilename($filename) {
-		// separate filename and parameters (x and c in whaxc are just for backwards compatibility)
-		preg_match(self::$godRegex, $filename, $params);
-		if (!isset($params[1]) || empty($params[2])) return null;
 
-		return array(
-			'filename' => $params[2],
-			'params'   => explode('__', trim($params[1], '_'))
-		);
+	public function resizeAction() {
+		$request = $this->getRequest();
+		$file    = $this->normalizePath(urldecode($request->get('file', 'string', null)));
+
+		// validate the filename
+
+		if (mb_strlen($file) === 0) {
+			return new sly_Response('no file given', 400);
+		}
+
+		// and send the file
+
+		return $this->sendFile('sly://media/'.$file, false, true, true);
 	}
+
+
+
+
 
 	/**
 	 * Verarbeitet ein vom Asset Cache angegebene Bild
@@ -233,170 +236,5 @@ class A2_Extensions {
 		}
 
 		return $tmpFile;
-	}
-
-	public static function translateListener(array $params) {
-		$files   = $params['subject'];
-
-		// Check every file for "data/mediapool/100w_foo.jpg" and turn them
-		// into strings like "data/mediapool/foo.jpg", so that the asset cache
-		// can check whether they have changed and remove the cached version.
-
-		foreach ($files as $idx => $filename) {
-			$filename = str_replace(DIRECTORY_SEPARATOR, '/', $filename);
-			//first check if this might be a resized file
-			if (!self::filePathOk($filename)) {
-				continue;
-			}
-
-			//concrete check the filenames syntax
-			$result = self::parseFilename(basename($filename));
-			if ($result === null || empty($result['params'])) {
-				continue;
-			}
-
-			$filename    = self::getImageFile($result['filename']);
-			$controlFile = self::getControlFile($filename);
-
-			/*
-			 * If no control file exists, return the control file.
-			 * Because it not exists the asset cachefile will be removed.
-			 * This is kind of a hack.
-			 */
-			if (!file_exists($controlFile)) {
-				$files[$idx] = $controlFile;
-			} else {
-				$files[$idx] = $filename;
-			}
-		}
-
-		return $files;
-	}
-
-	/**
-	 * Checks if this addon should handle this file
-	 * @param  string $filePath the files path
-	 * @return boolean   whether the files path is ok
-	 */
-	public static function filePathOk($filePath) {
-		$pool = 'data/mediapool/';
-		$special = self::getSpecialFile();
-		return (sly_Util_String::startsWith($filePath, $pool)
-				|| sly_Util_string::endsWith($filePath, $special));
-	}
-
-	public static function getSpecialFile() {
-		return sly_Core::config()->get('INSTNAME').'.jpg';
-	}
-
-	public static function getControlFile($realFile) {
-		return A2_Util::getInternalDirectory().DIRECTORY_SEPARATOR.'control_'.md5($realFile).'.json';
-	}
-
-	/**
-	 * return the image file path
-	 *
-	 * @param  string $filename
-	 * @return string
-	 */
-	public static function getImageFile($filename) {
-		// use the special test image
-		if ($filename !== self::getSpecialFile()) {
-			return 'data/mediapool/'.$filename;
-		}
-		else {
-			return 'data/dyn/public/sallycms/image-resize/testimage.jpg';
-		}
-	}
-
-	/**
-	 * SLY_ARTICLE_OUTPUT
-	 *
-	 * @param array $params
-	 */
-	public static function articleOutput(array $params) {
-		$content = $params['subject'];
-
-		preg_match_all('#<img [^\>]*src="(data/mediapool/([^"]*))[^\>]*>#is', $content, $matches);
-
-		if (is_array($matches[0])) {
-			foreach ($matches[0] as $key => $var) {
-				preg_match('/width="(.*?)"/is', $var, $width);
-				if (!$width) preg_match('/width: (.*?)px/is', $var, $width);
-
-				if ($width) {
-					$filename = SLY_MEDIAFOLDER.'/'.$matches[2][$key];
-
-					if (file_exists($filename)) {
-						$realsize = getimagesize($filename);
-
-						if ($realsize[0] != $width[1]) {
-							$newsrc   = 'data/mediapool/'.$width[1].'w__'.$matches[2][$key];
-							$newimage = str_replace($matches[1][$key], $newsrc, $var);
-							$content  = str_replace($var, $newimage, $content);
-						}
-					}
-				}
-			}
-		}
-
-		return $content;
-	}
-
-	/**
-	 * SLY_SYSTEM_CACHES
-	 *
-	 * @param array $params  event parameters
-	 */
-	public static function systemCacheList(array $params) {
-		$select     = $params['subject'];
-		$name       = 'sallycms/image-resize';
-		$selected   = $select->getValue();
-		$selected[] = $name;
-
-		$select->addValue($name, t('iresize_resized_images'));
-		$select->setSelected($selected);
-
-		return $select;
-	}
-
-	/**
-	 * SLY_CACHE_CLEARED
-	 *
-	 * @param array $params
-	 */
-	public static function cacheCleared(array $params) {
-		$isSystem = sly_Core::getCurrentControllerName() === 'system';
-
-		// do nothing if requested
-		if ($isSystem) {
-			$controller = sly_Core::getCurrentController();
-
-			if (method_exists($controller, 'isCacheSelected') && !(
-					$controller->isCacheSelected('sly_asset')
-					|| $controller->isCacheSelected('sallycms/image-resize')
-				)
-			) {
-				return $params['subject'];
-			}
-		}
-
-		A2_Util::cleanPossiblyCachedFiles();
-		return isset($params['subject']) ? $params['subject'] : true;
-	}
-
-	public static function backendNavigation(array $params) {
-		$user = sly_Util_User::getCurrentUser();
-
-		if ($user !== null && ($user->isAdmin() || $user->hasRight('pages', 'imageresize'))) {
-			$nav   = sly_Core::getLayout()->getNavigation();
-			$group = $nav->getGroup('addons');
-			$page  = $nav->addPage($group, 'imageresize', t('iresize_image_resize'));
-
-			$page->addSubpage('imageresize',            t('iresize_subpage_config'));
-			$page->addSubpage('imageresize_clearcache', t('iresize_subpage_clear_cache'));
-		}
-
-		return $params['subject'];
 	}
 }

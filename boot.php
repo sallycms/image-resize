@@ -8,21 +8,24 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-sly_Loader::addLoadPath(dirname(__FILE__).'/lib');
-$dispatcher = sly_Core::dispatcher();
+$container['sly-classloader']->add('', __DIR__.'/lib');
+$container['sly-i18n']->appendFile(__DIR__.'/lang');
 
-$dispatcher->register(sly_Service_Asset::EVENT_REVALIDATE_ASSETS, array('A2_Extensions', 'translateListener'));
+$container['sly-imageresize-service'] = $container->share(function($container) {
+	$cacheDir = $container['sly-service-addon']->getTempDirectory('sallycms/image-resize');
+	$config   = $container['sly-service-addon']->getProperty('sallycms/image-resize', '', array());
 
-if (!sly_Core::isBackend()) {
-	$dispatcher->register(sly_Service_Asset::EVENT_PROCESS_ASSET, array('A2_Extensions', 'resizeListener'));
-	$dispatcher->register('SLY_ARTICLE_OUTPUT',                   array('A2_Extensions', 'articleOutput'));
-}
-else {
-	sly_Core::getI18N()->appendFile(dirname(__FILE__).'/lang');
+	return new sly\ImageResize\Service($cacheDir, $config);
+});
 
-	$dispatcher->register('SLY_SYSTEM_CACHES', array('A2_Extensions', 'systemCacheList'));
-	$dispatcher->register('SLY_CACHE_CLEARED', array('A2_Extensions', 'cacheCleared'));
-	$dispatcher->register('SLY_ADDONS_LOADED', array('A2_Extensions', 'backendNavigation'));
-}
+$container['sly-imageresize-extensions'] = $container->share(function($container) {
+	return new sly\ImageResize\Extensions();
+});
 
-$dispatcher->register('SLY_MODEL_MEDIUM_RESIZE', array('A2_Util', 'resize'));
+$dispatcher = $container['sly-dispatcher'];
+
+$dispatcher->addListener('SLY_ARTICLE_OUTPUT',          array('%sly-imageresize-extensions%', 'articleOutput'));
+$dispatcher->addListener('SLY_SYSTEM_CACHES',           array('%sly-imageresize-extensions%', 'systemCacheList'));
+$dispatcher->addListener('SLY_CACHE_CLEARED',           array('%sly-imageresize-extensions%', 'cacheCleared'));
+$dispatcher->addListener('SLY_BACKEND_NAVIGATION_INIT', array('%sly-imageresize-extensions%', 'backendNavigation'));
+$dispatcher->addListener('SLY_MODEL_MEDIUM_RESIZE',     array('%sly-imageresize-extensions%', 'resizeMedium'));
