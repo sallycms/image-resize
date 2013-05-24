@@ -8,38 +8,31 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-print sly_Helper_Message::renderFlashMessage();
-
-$is07    = sly_Core::getVersion('X.Y') === '0.7';
-$service = sly_Service_Factory::getAddOnService();
-$name    = 'sallycms/image-resize';
-$version = $service->getPackageService()->getVersion($name);
-
-$form = new sly_Form($is07 ? 'index.php' : $_router->getPlainUrl(null), 'POST', 'Image Resize (v'.$version.')');
+$form = new sly_Form($_router->getPlainUrl(null), 'POST', 'Image Resize ('.$version.')');
 $form->addHiddenValue('page', 'imageresize');
 $form->addHiddenValue('func', 'update');
 
-$form->add(new sly_Form_Input_Text('max_cachefiles', t('iresize_max_cache_files'), $service->getProperty($name, 'max_cachefiles')));
-$form->add(new sly_Form_Input_Text('max_filters', t('iresize_max_filters'), $service->getProperty($name, 'max_filters')));
+$form->add(new sly_Form_Input_Text('max_cachefiles', t('iresize_max_cache_files'), $config['max_cachefiles']));
+$form->add(new sly_Form_Input_Text('max_filters', t('iresize_max_filters'), $config['max_filters']));
 
-$bytes = new sly_Form_Input_Text('max_resizekb', t('iresize_max_resizekb'), $service->getProperty($name, 'max_resizekb'));
+$bytes = new sly_Form_Input_Text('max_resizekb', t('iresize_max_resizekb'), $config['max_resizekb']);
 $bytes->setAnnotation('KB');
 $form->add($bytes);
 
-$pixel = new sly_Form_Input_Text('max_resizepixel', t('iresize_max_resizepx'), $service->getProperty($name, 'max_resizepixel'));
+$pixel = new sly_Form_Input_Text('max_resizepixel', t('iresize_max_resizepx'), $config['max_resizepixel']);
 $pixel->setAnnotation('Pixel');
 $form->add($pixel);
 
-$quality = new sly_Form_Input_Text('jpg_quality', t('iresize_jpg_quality'), $service->getProperty($name, 'jpg_quality'));
+$quality = new sly_Form_Input_Text('jpg_quality', t('iresize_jpg_quality'), $config['jpg_quality']);
 $quality->setAnnotation('(1 - 100)');
 $form->add($quality);
 
 $upscaling = new sly_Form_Input_Checkbox('upscaling_allowed', t('iresize_upscaling'), 1, t('allowed'));
-$upscaling->setChecked($service->getProperty($name, 'upscaling_allowed'));
+$upscaling->setChecked($config['upscaling_allowed']);
 $form->add($upscaling);
 
 $recompress = new sly_Form_Input_Checkbox('recompress', t('iresize_recompress'), 1, t('allowed'));
-$recompress->setChecked($service->getProperty($name, 'recompress'));
+$recompress->setChecked($config['recompress']);
 $form->add($recompress);
 
 $form->setResetButton(null);
