@@ -26,7 +26,7 @@ class Extensions implements \sly_ContainerAwareInterface {
 	 * @param string $content
 	 */
 	public function articleOutput($content) {
-		preg_match_all('#<img [^\>]*src="(data/mediapool/([^"]+))[^\>]*>#is', $content, $matches, PREG_SET_ORDER);
+		preg_match_all('#<img [^\>]*src="((data/)?mediapool/([^"]+))[^\>]*>#is', $content, $matches, PREG_SET_ORDER);
 		if (!$matches) return $content;
 
 		$mediumService = $this->container['sly-service-medium'];
@@ -34,7 +34,7 @@ class Extensions implements \sly_ContainerAwareInterface {
 		foreach ($matches as $match) {
 			$tag      = $match[0];
 			$uri      = $match[1];
-			$filename = basename(urldecode($match[2]));
+			$filename = basename(urldecode($match[3]));
 
 			// determine width from attribute or CSS style
 			preg_match('/\bwidth="(.+?)"/is', $tag, $width);
