@@ -18,14 +18,15 @@ $container['sly-imageresize-service'] = $container->share(function($container) {
 	return new sly\ImageResize\Service($cacheDir, $config);
 });
 
-$container['sly-imageresize-extensions'] = $container->share(function($container) {
-	return new sly\ImageResize\Extensions();
+$container['sly-imageresize-listeners'] = $container->share(function($container) {
+	return new sly\ImageResize\Listeners();
 });
 
 $dispatcher = $container['sly-dispatcher'];
 
-$dispatcher->addListener('SLY_ARTICLE_OUTPUT',          array('%sly-imageresize-extensions%', 'articleOutput'));
-$dispatcher->addListener('SLY_SYSTEM_CACHES',           array('%sly-imageresize-extensions%', 'systemCacheList'));
-$dispatcher->addListener('SLY_CACHE_CLEARED',           array('%sly-imageresize-extensions%', 'cacheCleared'));
-$dispatcher->addListener('SLY_BACKEND_NAVIGATION_INIT', array('%sly-imageresize-extensions%', 'backendNavigation'));
-$dispatcher->addListener('SLY_MODEL_MEDIUM_RESIZE',     array('%sly-imageresize-extensions%', 'resizeMedium'));
+$dispatcher->addListener('SLY_ASSETS_ROUTER',           array('%sly-imageresize-listeners%', 'assetsRouter'));
+$dispatcher->addListener('SLY_ARTICLE_OUTPUT',          array('%sly-imageresize-listeners%', 'articleOutput'));
+$dispatcher->addListener('SLY_SYSTEM_CACHES',           array('%sly-imageresize-listeners%', 'systemCacheList'));
+$dispatcher->addListener('SLY_CACHE_CLEARED',           array('%sly-imageresize-listeners%', 'cacheCleared'));
+$dispatcher->addListener('SLY_BACKEND_NAVIGATION_INIT', array('%sly-imageresize-listeners%', 'backendNavigation'));
+$dispatcher->addListener('SLY_MODEL_MEDIUM_RESIZE',     array('%sly-imageresize-listeners%', 'resizeMedium'));
