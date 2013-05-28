@@ -151,7 +151,7 @@ abstract class Util {
 		$supported = self::getSupportedTypes();
 		if (empty($supported)) return false;
 
-		$imgInfo = getimagesize(filename);
+		$imgInfo = getimagesize($filename);
 		if ($imgInfo === false) return false;
 
 		return in_array($imgInfo[2], $supported) ? $imgInfo[2] : false;
