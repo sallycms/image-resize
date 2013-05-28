@@ -152,4 +152,41 @@ class Listeners implements \sly_ContainerAwareInterface {
 
 		return Util::resize($medium, $options, $path, $request);
 	}
+
+	/**
+	 * SLY_ASSET_PROCESS
+	 */
+	public function processAsset($inputFile, array $params) {
+		$filename    = $params['filename'];
+		$service     = $this->container['sly-imageresize-service'];
+		$jsonService = $this->container['sly-service-json'];
+		$controlFile = $service->getControlFile($filename->getFilename());
+		$controlData = file_exists($controlFile) ? $jsonService->load($controlFile, false, true) : array();
+
+		error_reporting(E_ALL);
+
+		// prepare the thumbnail
+
+		$config    = $service->getConfig(null);
+		$thumbnail = $filename->getThumbnail($config, $inputFile);
+		$realName  = $filename->getFilename();
+
+		// remove old cache files
+
+		if (count($controlData) >= $config['max_cachefiles'] && !in_array($realName, $controlData)) {
+			// TODO
+		}
+
+		// process the image
+
+		$tmpDir  = $service->getCacheDir();
+		$tmpFile = $tmpDir.'/tmp_'.sha1($filename->getVirtualFilename()).'.'.$filename->getExtension();
+
+		$thumbnail->generateImage($tmpFile);
+
+		$controlData[] = $realName;
+		$jsonService->dump($controlFile, $controlData);
+
+		return $tmpFile;
+	}
 }
