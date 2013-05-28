@@ -30,6 +30,10 @@ class Service implements \sly_ContainerAwareInterface {
 		$this->container = $container;
 	}
 
+	public function getCacheDir() {
+		return $this->cacheDir;
+	}
+
 	/**
 	 * delete all files in the internal directory
 	 */
@@ -53,6 +57,10 @@ class Service implements \sly_ContainerAwareInterface {
 
 	public function getSpecialFile() {
 		return $this->container['sly-config']->get('INSTNAME').'.jpg';
+	}
+
+	public function getControlFile($realFile) {
+		return $this->cacheDir.DIRECTORY_SEPARATOR.'control_'.sha1($realFile).'.json';
 	}
 
 	/**

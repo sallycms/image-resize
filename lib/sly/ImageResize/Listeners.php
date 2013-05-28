@@ -28,45 +28,15 @@ class Listeners implements \sly_ContainerAwareInterface {
 	 * @param sly_Router_Base $router
 	 */
 	public function assetsRouter($router) {
-		$params = array();
-
-		// resize params
-
-		/*    timestamp */ $params[] = '(c?[0-9]{1,4}[whaxc])';
-		/* uncompressed */ $params[] = '(?P<uncompressed>n)';
-		/*    upscaling */ $params[] = '(?P<upscaling>u[01]?)';
-		/*       filter */ $params[] = '(?P<filter>f[a-z0-9]+)';
-
-		// offset options ('24o', '150r', ...)
-		$offset       = '(?P<offset>-?[0-9]{1,4}[orltb])';
-		$offsetRight  = '(?P<oright>-?[0-9]{1,4}r)';
-		$offsetLeft   = '(?P<oleft>-?[0-9]{1,4}l)';
-		$offsetTop    = '(?P<otop>-?[0-9]{1,4}t)';
-		$offsetBottom = '(?P<obottom>-?[0-9]{1,4}b)';
-
-		// misc options
-
-		/*    timestamp */ $params[] = '(?:t[0-9]+)';
-		/* uncompressed */ $params[] = 'n';
-		/*    upscaling */ $params[] = 'u[01]?';
-		/*       filter */ $params[] = 'f[a-z0-9]+';
-
-		$params   = '('.implode('__)|(', $params).')';
-		$godRegex = "($params)+__(?P<filename>.+)";
-			''.
-			$filter.'*'.
-			$upscaling.'?'.
-			$uncompressed.'?'.
-			$timestamp.'?'.
-			$filename
-		;
-
-		// c=crop before w=width|h=heigth|a=both followed by o=offset|r=right|l=left|t=top|b=bottom
-		// followed by f=filter followed by u=upscaling
-		$godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}F*U?N?T?)(.*)$@';
+		// add our custom routes
 
 		$router->prependRoute(
-			'/mediapool/resize/(?P<file>.+?)',
+			'/mediapool/(?P<file>.+?)', // this will overrule the core asset rule
+			array(App::CONTROLLER_PARAM => 'imageresize', App::ACTION_PARAM => 'resize')
+		);
+
+		$router->prependRoute(
+			'/imageresize/(?P<file>.+?)',
 			array(App::CONTROLLER_PARAM => 'imageresize', App::ACTION_PARAM => 'resize')
 		);
 
