@@ -19,10 +19,11 @@ class Filename {
 	protected $filename     = null;
 	protected $resizes      = array();
 	protected $timestamp    = null;
-	protected $uncompressed = false;
+	protected $uncompressed = null;
 	protected $upscaling    = null;
 	protected $filters      = array();
 	protected $offsets      = array();
+	protected $type         = null;
 
 	public function __construct($filename) {
 		$this->filename = $filename;
@@ -82,6 +83,10 @@ class Filename {
 					$file->setTimestamp((int) $match['timestamp']);
 				}
 
+				if (isset($match['type'])) {
+					$file->setType($match['type']);
+				}
+
 				$found = true;
 			}
 			elseif (!$found) {
@@ -119,8 +124,19 @@ class Filename {
 		return $file;
 	}
 
+	public function hasModifications() {
+		return
+			!empty($this->resizes) || !empty($this->filters) || !empty($this->offsets) ||
+			$this->upscaling !== null || $this->uncompressed !== null || $this->timestamp !== null
+		;
+	}
+
 	public function getFilename() {
 		return $this->filename;
+	}
+
+	public function getExtension() {
+		return \sly_Util_File::getExtension($this->getFilename());
 	}
 
 	public function getResizes() {
@@ -145,6 +161,10 @@ class Filename {
 
 	public function getOffsets() {
 		return $this->offsets;
+	}
+
+	public function getType() {
+		return $this->type;
 	}
 
 	public function setFilename($filename) {
@@ -178,7 +198,7 @@ class Filename {
 	}
 
 	public function setUncompressed($uncompressed) {
-		$this->uncompressed = !!$uncompressed;
+		$this->uncompressed = ($uncompressed === null) ? null : (!!$uncompressed);
 
 		return $this;
 	}
@@ -215,6 +235,28 @@ class Filename {
 		return $this;
 	}
 
+	public function setType($type) {
+		$types = array(
+			'jpg'  => IMAGETYPE_JPEG,
+			'jpeg' => IMAGETYPE_JPEG,
+			'png'  => IMAGETYPE_PNG,
+			'gif'  => IMAGETYPE_GIF,
+			'bmp'  => IMAGETYPE_WBMP,
+			'wbmp' => IMAGETYPE_WBMP
+		);
+
+		// support imagetype constants as $type
+		if (is_int($type) && in_array($type, $types)) {
+			$this->type = $type;
+		}
+		// support image name has $type
+		elseif (is_string($type) && isset($types[$type])) {
+			$this->type = $types[$type];
+		}
+
+		return $this;
+	}
+
 	public function getVirtualFilename() {
 		$params = $this->resizes;
 
@@ -230,12 +272,23 @@ class Filename {
 			$params[] = 'u'.($this->upscaling ? 1 : 0);
 		}
 
-		if ($this->uncompressed) {
+		if ($this->uncompressed === true) {
 			$params[] = 'n';
 		}
 
 		if ($this->timestamp !== null) {
 			$params[] = 't'.$this->timestamp;
+		}
+
+		if ($this->type !== null) {
+			$types = array(
+				IMAGETYPE_JPEG => 'jpg',
+				IMAGETYPE_PNG  => 'png',
+				IMAGETYPE_GIF  => 'gif',
+				IMAGETYPE_WBMP => 'bmp'
+			);
+
+			$params[] = 't'.$types[$this->type];
 		}
 
 		if (empty($params)) {
@@ -267,6 +320,95 @@ class Filename {
 		return $baseUri.'/'.$this->getUri();
 	}
 
+	public function getThumbnail(array $config, $filename = null) {
+		$thumb       = new Thumbnail($filename === null ? ('sly://media/'.$this->filename) : $filename);
+		$upscaling   = $this->upscaling    === null ? $config['upscaling_allowed'] : $this->upscaling;
+		$recompress  = $this->uncompressed === null ? $config['recompress']        : !$this->uncompressed;
+		$jpegQuality = $config['jpg_quality'] ?: 85;
+
+		$thumb->setAllowUpscaling($upscaling);
+		$thumb->addFilters($this->filters);
+		$thumb->setJpgCompress($recompress);
+		$thumb->setJpegQuality($jpegQuality);
+
+		if ($this->type !== null) {
+			$thumb->setThumbType($this->type);
+		}
+
+		// construct image parameters
+
+		$imgParams = array();
+
+		foreach ($this->resizes as $resizeParam) {
+			// check crop option
+			$crop   = false;
+			$prefix = substr($resizeParam, 0, 1);
+
+			if ($prefix === 'c') {
+				$crop        = true;
+				$resizeParam = substr($resizeParam, 1);
+			}
+
+			$suffix = $resizeParam[strlen($resizeParam)-1];
+			$value  = substr($resizeParam, 0, -1);
+
+			switch ($suffix) {
+				case 'w':
+					$suffix = 'width';
+					break;
+
+				case 'h':
+					$suffix = 'height';
+					break;
+
+				case 'a':
+					$suffix = 'auto';
+					break;
+
+				case 'x':
+				case 'c':
+					$suffix = 'width';
+					$crop   = true;
+					break;
+			}
+
+			$imgParams[$suffix] = array('value' => $value, 'crop' => $crop);
+		}
+
+		foreach ($this->offsets as $offsetParam) {
+			$suffix = $offsetParam[strlen($offsetParam)-1];
+			$value  = substr($offsetParam, 0, -1);
+
+			switch ($suffix) {
+				case 'o':
+					$imgParams['width']['offset']['left'] = $value;
+					$imgParams['height']['offset']['top'] = $value;
+					break;
+
+				case 'r':
+					$imgParams['width']['offset']['right'] = $value;
+					break;
+
+				case 'l':
+					$imgParams['width']['offset']['left'] = $value;
+					break;
+
+				case 't':
+					$imgParams['height']['offset']['top'] = $value;
+					break;
+
+				case 'b':
+					$imgParams['height']['offset']['bottom'] = $value;
+					break;
+			}
+		}
+
+		$thumb->setImgParams($imgParams);
+		$thumb->setNewSize();
+
+		return $thumb;
+	}
+
 	protected static function buildRegex() {
 		$params = array(
 			/*      resizes */ '(?P<resize>c?[0-9]{1,4}[whaxc])',
@@ -274,7 +416,8 @@ class Filename {
 			/*      offsets */ '(?P<offset>-?[0-9]{1,4}[orltb])',
 			/*    upscaling */ '(?P<upscaling>u[01]?)',
 			/* uncompressed */ '(?P<uncompressed>n)',
-			/*    timestamp */ '(t(?P<timestamp>[0-9]+))'
+			/*    timestamp */ '(t(?P<timestamp>[0-9]+))',
+			/*   thumb type */ '(t(?P<type>jpg|jpeg|gif|png|bmp|wbmp))'
 		);
 
 		return '/^('.implode('|', $params).')$/';
