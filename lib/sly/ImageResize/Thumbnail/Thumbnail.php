@@ -203,7 +203,7 @@ class Thumbnail {
 
 		// export animated GIF frame by frame
 		if ($animated) {
-			$this->processAnimatedGif($file);
+			$this->processAnimatedGif($gif, $resampler, $image, $sizes, $outputFile);
 		}
 		// process normal file
 		else {
