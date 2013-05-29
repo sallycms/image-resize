@@ -163,8 +163,6 @@ class Listeners implements \sly_ContainerAwareInterface {
 		$controlFile = $service->getControlFile($filename->getFilename());
 		$controlData = file_exists($controlFile) ? $jsonService->load($controlFile, false, true) : array();
 
-		error_reporting(E_ALL);
-
 		// prepare the thumbnail
 
 		$config    = $service->getConfig(null);
