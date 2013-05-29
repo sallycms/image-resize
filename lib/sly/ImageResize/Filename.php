@@ -11,6 +11,7 @@
 namespace sly\ImageResize;
 
 use sly_Core;
+use sly\ImageResize\Thumbnail\Thumbnail;
 
 /**
  * Helper class for building/parsing virtual imageresize filenames
@@ -327,8 +328,8 @@ class Filename {
 		$jpegQuality = $config['jpg_quality'] ?: 85;
 
 		$thumb->setAllowUpscaling($upscaling);
-		$thumb->addFilters($this->filters);
-		$thumb->setJpgCompress($recompress);
+		$thumb->setFilters($this->filters);
+		$thumb->setJpegCompress($recompress);
 		$thumb->setJpegQuality($jpegQuality);
 
 		if ($this->type !== null) {
