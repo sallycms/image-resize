@@ -171,19 +171,56 @@ class Listeners implements \sly_ContainerAwareInterface {
 
 		// remove old cache files
 
-		if (count($controlData) >= $config['max_cachefiles'] && !in_array($realName, $controlData)) {
-			// TODO
-		}
+		$tmpDir      = $service->getCacheDir();
+		$controlData = $this->removeOutdatedCacheFiles($controlData, $config, $tmpDir);
 
 		// process the image
 
-		$tmpDir  = $service->getCacheDir();
 		$tmpFile = $tmpDir.'/tmp_'.sha1($filename->getVirtualFilename()).'.'.$filename->getExtension();
 		$tmpFile = $thumbnail->generate($tmpFile);
 
-		$controlData[] = $realName;
+		// remember the new file so we can kill it in some next request
+		// make sure the tmp file is added/moved to the last spot in the list,
+		// as it serves as a freshness queue.
+
+		$controlData = $this->addCacheFile($controlData, $tmpFile);
 		$jsonService->dump($controlFile, $controlData);
 
 		return $tmpFile;
+	}
+
+	protected function removeOutdatedCacheFiles(array $controlData, array $config, $tmpDir) {
+		$max = $config['max_cachefiles'];
+
+		if (count($controlData) >= $max) {
+			$max    = $max - 1; // -1 to make room for the requested file's cache file
+			$oldest = array_slice($controlData, 0, -$max);
+
+			foreach ($oldest as $basename) {
+				$cacheFile = $tmpDir.'/'.$basename;
+
+				if (file_exists($cacheFile)) {
+					@unlink($cacheFile);
+				}
+			}
+
+			$controlData = array_slice($controlData, -$max);
+		}
+
+		return $controlData;
+	}
+
+	protected function addCacheFile(array $controlData, $cacheFile) {
+		$cacheFile = basename($cacheFile);
+		$idx       = array_search($cacheFile, $controlData);
+
+		if ($idx !== false) {
+			unset($controlData[$idx]);
+			$controlData = array_values($controlData);
+		}
+
+		$controlData[] = basename($cacheFile);
+
+		return $controlData;
 	}
 }
