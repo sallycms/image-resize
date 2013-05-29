@@ -405,7 +405,6 @@ class Filename {
 		}
 
 		$thumb->setImgParams($imgParams);
-		$thumb->setNewSize();
 
 		return $thumb;
 	}

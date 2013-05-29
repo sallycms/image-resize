@@ -8,7 +8,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-namespace sly\ImageResize;
+namespace sly\ImageResize\Thumbnail;
 
 /**
  * Calculate image sizes
@@ -64,6 +64,7 @@ class Resizer {
 		if (isset($imageParams['auto'])) {
 			$this->resizeBoth($imageParams['auto'], $imageParams['auto']);
 		}
+
 		// resize width
 		elseif (isset($imageParams['width'])) {
 			// and resize height
@@ -75,10 +76,29 @@ class Resizer {
 				$this->resizeWidth($imageParams['width']);
 			}
 		}
+
 		// resize height
 		elseif (isset($imageParams['height'])) {
 			$this->resizeHeight($imageParams['height']);
 		}
+
+		// return a strut containing all size values
+		$result = new \stdClass();
+
+		$result->origWidth  = $this->origWidth;
+		$result->origHeight = $this->origHeight;
+		$result->width      = $this->width;
+		$result->height     = $this->height;
+
+		$result->widthOffset  = $this->widthOffset;
+		$result->heightOffset = $this->heightOffset;
+
+		$result->thumbWidth        = $this->thumbWidth;
+		$result->thumbHeight       = $this->thumbHeight;
+		$result->thumbWidthOffset  = $this->thumbWidthOffset;
+		$result->thumbHeightOffset = $this->thumbHeightOffset;
+
+		return $result;
 	}
 
 	/**
@@ -87,13 +107,13 @@ class Resizer {
 	 * @param array $heightParams  {value: 42}
 	 */
 	private function resizeHeight(array $heightParams) {
-		if (!is_array($size) || !isset($size['value'])) {
+		if (!is_array($heightParams) || !isset($heightParams['value'])) {
 			return false;
 		}
 
 		$size = (int) $heightParams['value'];
 
-		if ($this->origHeight < $size['value'] && !$this->upscale) {
+		if ($this->origHeight < $size && !$this->upscale) {
 			$size = $this->origHeight;
 		}
 
@@ -160,9 +180,10 @@ class Resizer {
 							// set crop window width to resize width
 							$this->width = $width['value'];
 						}
+
 						// else do not crop width
 						else {
-							$this->width = $this->origWidth;
+							$this->width      = $this->origWidth;
 							$this->thumbWidth = $this->width;
 						}
 					}
@@ -172,20 +193,24 @@ class Resizer {
 				if (isset($width['offset']['right']) && is_numeric($width['offset']['right'])) {
 					$this->widthOffset = (int) ($this->origWidth - $this->width - ($this->origHeight / $this->thumbHeight * $width['offset']['right']));
 				}
+
 				// left offset
 				elseif (isset($width['offset']['left']) && is_numeric($width['offset']['left'])) {
 					$this->widthOffset = (int) $width['offset']['left'];
 				}
+
 				// set offset to center image
 				else {
 					$this->widthOffset = (int) (floor($this->origWidth - $this->width) / 2);
 				}
 			}
+
 			// else resize into bounding box
 			else {
 				$this->resizeWidth($width);
 			}
 		}
+
 		// else image ratio is less wide than thumb ratio
 		else {
 			// if image should be cropped
@@ -210,9 +235,10 @@ class Resizer {
 							// set crop window height to resize height
 							$this->height = $height['value'];
 						}
+
 						// else do not crop height
 						else {
-							$this->height = $this->origHeight;
+							$this->height      = $this->origHeight;
 							$this->thumbHeight = $this->height;
 						}
 					}
@@ -222,16 +248,19 @@ class Resizer {
 				if (isset($height['offset']['bottom']) && is_numeric($height['offset']['bottom'])) {
 					$this->heightOffset = (int) ($this->origHeight - $this->height - ($this->origWidth / $this->thumbWidth * $height['offset']['bottom']));
 				}
+
 				// top offset
 				elseif (isset($height['offset']['top']) && is_numeric($height['offset']['top'])) {
 					$this->heightOffset = (int) $height['offset']['top'];
 				}
+
 				// set offset to center image
 				else {
 					$this->heightOffset = (int) (floor($this->origHeight - $this->height) / 2);
 				}
 
 			}
+
 			// else resize into bounding box
 			else {
 				$this->resizeHeight($height);
