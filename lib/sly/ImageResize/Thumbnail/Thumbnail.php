@@ -13,6 +13,7 @@ namespace sly\ImageResize\Thumbnail;
 use sly\ImageResize\Exception;
 use sly\ImageResize\GIF\Decoder;
 use sly\ImageResize\GIF\Encoder;
+use sly\ImageResize\Util;
 
 /**
  * Image Thumbnail
@@ -215,12 +216,12 @@ class Thumbnail {
 	 *
 	 * @param Resampler $resampler
 	 * @param resource  $image
-	 * @param array     $sizes
+	 * @param stdClass  $sizes
 	 * @param string    $outputFile
 	 */
-	protected function processImage(Resampler $resampler, $image, array $sizes, $outputFile) {
-		$thumbnail = $resampler->resample($image, $sizes);
-		$thumbnail = $this->applyFilters($thubmnail);
+	protected function processImage(Resampler $resampler, $image, \stdClass $sizes, $outputFile) {
+		$thumbnail = $resampler->resample($image, $sizes, $this->imageType);
+		$thumbnail = $this->applyFilters($thumbnail);
 
 		switch ($this->thumbType) {
 			case IMAGETYPE_JPEG:
@@ -250,10 +251,10 @@ class Thumbnail {
 	 * @param Decoder   $gif
 	 * @param Resampler $resampler
 	 * @param resource  $image
-	 * @param array     $sizes
+	 * @param stdClass  $sizes
 	 * @param string    $outputFile
 	 */
-	public function processAnimatedGif(Decoder $gif, Resampler $resampler, $image, array $sizes, $outputFile) {
+	public function processAnimatedGif(Decoder $gif, Resampler $resampler, $image, \stdClass $sizes, $outputFile) {
 		$gifDelays   = $gif->getDelays();
 		$gifFrames   = $gif->getFrames();
 		$gifLoop     = $gif->getLoop();
@@ -293,12 +294,13 @@ class Thumbnail {
 
 			// if layer has an offset relative to gif canvas, set image offsets to zero
 			if ($gifOffset && ($sLWidth < $sizes->origWidth || $sLHeight < $sizes->origHeight)) {
-				$frame = $this->copyImageArea($resampler, $frame,
+				$frame = $resampler->copyImageArea($resampler, $frame,
 					/*   width */ $sLThumbWidth,
 					/*  height */ $sLThumbHeight,
 					/*  destXY */ $gifOffset[0], $gifOffset[1],
 					/*   srcXY */ 0, 0,
 					/*   srcWH */ $sLWidth, $sLHeight,
+					/*    type */ $this->imageType,
 					/* destroy */ true
 				);
 
@@ -332,12 +334,13 @@ class Thumbnail {
 					$gifOffset[1] = max(0, $gifOffset[1] - $heightOffset);
 				}
 
-				$frame = $this->copyImageArea($resampler, $frame,
+				$frame = $resampler->copyImageArea($resampler, $frame,
 					/*   width */ $sLThumbWidth,
 					/*  height */ $sLThumbHeight,
 					/*  destXY */ 0, 0,
 					/*   srcXY */ $gifOffset[0], $gifOffset[1],
 					/*   srcWH */ $sLThumbWidth, $sLThumbHeight,
+					/*    type */ $this->imageType,
 					/* destroy */ true
 				);
 
@@ -396,7 +399,7 @@ class Thumbnail {
 	 *
 	 * @return boolean
 	 */
-	protected function hasModifications(array $sizes) {
+	protected function hasModifications(\stdClass $sizes) {
 		$sameImageType        = $this->imageType == $this->thumbType;
 		$thumbLargerThanImage = $sizes->thumbWidth > $sizes->width || $sizes->thumbHeight > $sizes->height;
 

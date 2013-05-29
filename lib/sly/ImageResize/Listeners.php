@@ -180,7 +180,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 		$tmpDir  = $service->getCacheDir();
 		$tmpFile = $tmpDir.'/tmp_'.sha1($filename->getVirtualFilename()).'.'.$filename->getExtension();
 
-		$thumbnail->generateImage($tmpFile);
+		$thumbnail->generate($tmpFile);
 
 		$controlData[] = $realName;
 		$jsonService->dump($controlFile, $controlData);

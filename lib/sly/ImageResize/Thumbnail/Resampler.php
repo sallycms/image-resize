@@ -8,7 +8,9 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-namespace sly\ImageResize;
+namespace sly\ImageResize\Thumbnail;
+
+use sly\ImageResize\Exception;
 
 /**
  * Calculate image sizes
@@ -34,8 +36,8 @@ class Resampler {
 		return $newImage;
 	}
 
-	protected function copyImageArea($image, $width, $height, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $detroySourceImage = false) {
-		$target = $this->getNewImage($width, $height, $image, $this->imageType);
+	protected function copyImageArea($image, $width, $height, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $imageType, $detroySourceImage = false) {
+		$target = $this->getNewImage($width, $height, $image, $imageType);
 
 		// copy layer part of resized image into empty image
 		imagecopy($target, $image, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH);
@@ -47,34 +49,23 @@ class Resampler {
 	/**
 	 * Execute the resizing based on image params
 	 *
-	 * @param array $sizes  width, height, crop and offset parameters
+	 * @param stdClass $sizes  width, height, crop and offset parameters
 	 */
-	public function resample($image, array $sizes) {
-		// if we would upscale the image but upscaling is disabled, send the original file size
-
-		if (!$this->upscalingAllowed && ($this->thumbWidth >= $this->width || $this->thumbHeight >= $this->height)) {
-			$this->thumbWidth  = $this->width;
-			$this->thumbHeight = $this->height;
-		}
-
-		// force thumb size to be in range [1...n]
-		$this->thumbWidth  = max(1, $this->thumbWidth);
-		$this->thumbHeight = max(1, $this->thumbHeight);
-
+	public function resample($image, \stdClass $sizes, $imageType) {
 		// create a fresh image
-		$output = $resampler->getNewImage($this->thumbWidth, $this->thumbHeight, $image, $this->imageType);
+		$output = $this->getNewImage($sizes->thumbWidth, $sizes->thumbHeight, $image, $imageType);
 
 		imagecopyresampled(
-			$this->imgthumb,
-			$this->imgsrc,
-			$this->thumbWidthOffset,
-			$this->thumbHeightOffset,
-			$this->widthOffset,
-			$this->heightOffset,
-			$this->thumbWidth,
-			$this->thumbHeight,
-			$this->width,
-			$this->height
+			$output,
+			$image,
+			$sizes->thumbWidthOffset,
+			$sizes->thumbHeightOffset,
+			$sizes->widthOffset,
+			$sizes->heightOffset,
+			$sizes->thumbWidth,
+			$sizes->thumbHeight,
+			$sizes->width,
+			$sizes->height
 		);
 
 		return $output;
