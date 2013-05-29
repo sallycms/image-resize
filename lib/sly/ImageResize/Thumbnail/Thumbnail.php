@@ -157,7 +157,8 @@ class Thumbnail {
 	/**
 	 * Generate the thumbnail
 	 *
-	 * @param string $outputFile  full path to the output file
+	 * @param  string $outputFile  full path to the output file
+	 * @return string
 	 */
 	public function generate($outputFile) {
 		// detemine whether we need to handle an animated GIF or can go the easy route
@@ -196,7 +197,7 @@ class Thumbnail {
 		// NOP
 		if (!$this->hasModifications($sizes)) {
 			copy($this->fileName, $outputFile);
-			return;
+			return $outputFile;
 		}
 
 		$resampler = new Resampler();
@@ -207,42 +208,52 @@ class Thumbnail {
 		}
 		// process normal file
 		else {
-			$this->processImage($resampler, $image, $sizes, $outputFile);
+			$outputFile = $this->processImage($resampler, $image, $sizes, $outputFile);
 		}
+
+		return $outputFile;
 	}
 
 	/**
 	 * Resample and filter a regular, non animated image
 	 *
-	 * @param Resampler $resampler
-	 * @param resource  $image
-	 * @param stdClass  $sizes
-	 * @param string    $outputFile
+	 * @param  Resampler $resampler
+	 * @param  resource  $image
+	 * @param  stdClass  $sizes
+	 * @param  string    $outputFile
+	 * @return string
 	 */
 	protected function processImage(Resampler $resampler, $image, \stdClass $sizes, $outputFile) {
 		$thumbnail = $resampler->resample($image, $sizes, $this->imageType);
 		$thumbnail = $this->applyFilters($thumbnail);
+		$ext       = \sly_Util_File::getExtension($outputFile);
 
 		switch ($this->thumbType) {
 			case IMAGETYPE_JPEG:
+				if ($ext !== 'jpg' && $ext !== 'jpeg') $outputFile .= '.jpg';
 				imageinterlace($thumbnail, true); // set to progressive mode
 				imagejpeg($thumbnail, $outputFile, $this->thumbQuality);
 				break;
 
 			case IMAGETYPE_PNG:
+				if ($ext !== 'png') $outputFile .= '.png';
 				imagepng($thumbnail, $outputFile);
 				break;
 
-				case IMAGETYPE_GIF:
+			case IMAGETYPE_GIF:
+				if ($ext !== 'gif') $outputFile .= '.gif';
 				imagegif($thumbnail, $outputFile);
 				break;
 
 			case IMAGETYPE_WBMP:
+				if ($ext !== 'bmp') $outputFile .= '.bmp';
 				imagewbmp($thumbnail, $outputFile);
 				break;
 		}
 
 		imagedestroy($thumbnail);
+
+		return $outputFile;
 	}
 
 	/**
