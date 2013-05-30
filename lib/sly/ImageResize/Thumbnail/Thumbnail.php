@@ -388,16 +388,24 @@ class Thumbnail {
 	/**
 	 * apply all requested filters to the image
 	 *
-	 * @param resource $image
+	 * @param  resource $image
+	 * @return resource
 	 */
 	protected function applyFilters($image) {
-		foreach ($this->filters as $filter) {
-			$filter      = preg_replace('#[^a-z0-9]#i', '', $filter);
-			$filterClass = 'sly\ImageResize\Filter\\'.ucfirst($filter);
+		$container = sly_Core::getContainer();
 
-			if (method_exists($filterClass, 'filter')) {
-				$return = call_user_func(array($filterClass, 'filter'), $image);
-				if ($return) $image = $return;
+		foreach ($this->filters as $filter) {
+			$filter = preg_replace('#[^a-z0-9-]#i', '', $filter);
+			$filter = 'sly-imageresize-filter-'.str_replace('_', '-', $filter);
+
+			if (isset($container[$filter])) {
+				$filter = $container[$filter];
+				$return = $filter->filter($image);
+
+				if ($return) {
+					$image = $return;
+				}
+
 				unset($return);
 			}
 		}
