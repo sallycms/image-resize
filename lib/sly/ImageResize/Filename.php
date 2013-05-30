@@ -327,8 +327,15 @@ class Filename {
 		$recompress  = $this->uncompressed === null ? $config['recompress']        : !$this->uncompressed;
 		$jpegQuality = $config['jpg_quality'] ?: 85;
 
+		if (count($this->filters) > $config['max_filters']) {
+			$filters = array_slice($this->filters, 0, $config['max_filters']);
+		}
+		else {
+			$filters = $this->filters;
+		}
+
 		$thumb->setAllowUpscaling($upscaling);
-		$thumb->setFilters($this->filters);
+		$thumb->setFilters($filters);
 		$thumb->setJpegCompress($recompress);
 		$thumb->setJpegQuality($jpegQuality);
 
