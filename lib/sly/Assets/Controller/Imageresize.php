@@ -10,10 +10,8 @@
 
 namespace sly\Assets\Controller;
 
-use Gaufrette\Util\Path;
 use sly_Response;
 use sly\ImageResize\Filename;
-use sly\ImageResize\Service;
 use sly\Assets\Service as AssetService;
 
 class Imageresize extends Base {
