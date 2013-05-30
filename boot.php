@@ -8,6 +8,8 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
+use sly\ImageResize\Filter;
+
 $container['sly-classloader']->add('', __DIR__.'/lib');
 $container['sly-i18n']->appendFile(__DIR__.'/lang');
 
@@ -21,6 +23,14 @@ $container['sly-imageresize-service'] = $container->share(function($container) {
 $container['sly-imageresize-listeners'] = $container->share(function($container) {
 	return new sly\ImageResize\Listeners();
 });
+
+$container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur();       };
+$container['sly-imageresize-filter-brand']      = function() { return new Filter\Brand();      };
+$container['sly-imageresize-filter-monochrome'] = function() { return new Filter\Monochrome(); };
+$container['sly-imageresize-filter-sepia']      = function() { return new Filter\Sepia();      };
+$container['sly-imageresize-filter-sharpen']    = function() { return new Filter\Sharpen();    };
+
+$container['sly-imageresize-filter-grey'] = $container->raw('sly-imageresize-filter-monochrome'); // just an alias
 
 $dispatcher = $container['sly-dispatcher'];
 

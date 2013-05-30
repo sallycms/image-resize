@@ -1,14 +1,37 @@
 <?php
+/*
+ * Copyright (c) 2013, webvariants GbR, http://www.webvariants.de
+ *
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
+ *
+ * http://www.opensource.org/licenses/mit-license.php
+ */
 
-class A2_Filters_Monochrome {
-	public static function filter($src_im, $rFactor = 1.0, $gFactor = 1.0, $bFactor = 1.0) {
+namespace sly\ImageResize\Filter;
+
+class Monochrome {
+	protected $rFactor;
+	protected $gFactor;
+	protected $bFactor;
+
+	public function __construct($rFactor = 1, $gFactor = 1, $bFactor = 1) {
+		$this->rFactor = $rFactor;
+		$this->gFactor = $gFactor;
+		$this->bFactor = $bFactor;
+	}
+
+	public function filter($src_im) {
 		$src_x  = ceil(imagesx($src_im));
 		$src_y  = ceil(imagesy($src_im));
 		$dst_x  = $src_x;
 		$dst_y  = $src_y;
 		$dst_im = imagecreatetruecolor($dst_x, $dst_y);
 
-		if(function_exists('imageantialias')) imageantialias($dst_im, true); // PHP compiled with gd and > 4.3.2
+		if (function_exists('imageantialias')) {
+			imageantialias($dst_im, true); // PHP compiled with bundled version of GD
+		}
+
 		imagecopyresampled($dst_im, $src_im, 0, 0, 0, 0, $dst_x, $dst_y, $src_x, $src_y);
 
 		// Change style of image pixelwise
@@ -34,25 +57,15 @@ class A2_Filters_Monochrome {
 					$boostborder -= 10;
 				}
 
-				// Set sepia palette
+				// Set palette
 
-				$r = $grey * $rFactor;
-				$g = $grey * $gFactor;
-				$b = $grey * $bFactor;
+				$r = min(abs(round($grey * $this->rFactor)), 255);
+				$g = min(abs(round($grey * $this->gFactor)), 255);
+				$b = min(abs(round($grey * $this->bFactor)), 255);
 
-				// round to positive int values
+				// set pixel color
 
-				$r = abs(round($r));
-				$g = abs(round($g));
-				$b = abs(round($b));
-
-				// Correct max values
-
-				$r   = min($r, 255);
-				$g   = min($g, 255);
-				$b   = min($b, 255);
 				$col = imagecolorallocate($dst_im, $r, $g, $b);
-
 				imagesetpixel($dst_im, $x, $y, $col);
 			}
 		}

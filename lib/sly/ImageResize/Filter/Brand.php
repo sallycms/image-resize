@@ -1,12 +1,23 @@
 <?php
+/*
+ * Copyright (c) 2013, webvariants GbR, http://www.webvariants.de
+ *
+ * This file is released under the terms of the MIT license. You can find the
+ * complete text in the attached LICENSE file or online at:
+ *
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+namespace sly\ImageResize\Filter;
+
 /**
  * Branded ein Bild mit einem Wasserzeichen
  *
  * Der Filter sucht im Medienpool nach einem Bild mit dem Dateinamen "branding.*"
  * und verwendet den 1. Treffer
  */
-class A2_Filters_Brand {
-	public static function filter($src_im) {
+class Brand {
+	public function filter($src_im) {
 		$files = glob(SLY_MEDIAFOLDER.'/branding.*');
 		if (empty($files)) return;
 
