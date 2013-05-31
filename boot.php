@@ -24,7 +24,7 @@ $container['sly-imageresize-listeners'] = $container->share(function($container)
 	return new sly\ImageResize\Listeners();
 });
 
-$container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur();                       };
+$container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur(2);                      };
 $container['sly-imageresize-filter-brand']      = function() { return new Filter\Brand();                      };
 $container['sly-imageresize-filter-monochrome'] = function() { return new Filter\Monochrome();                 };
 $container['sly-imageresize-filter-sepia']      = function() { return new Filter\Monochrome(1.01, 0.98, 0.90); };
