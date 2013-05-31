@@ -10,66 +10,78 @@
 
 namespace sly\ImageResize\Filter;
 
+use sly\ImageResize\Exception;
+
 /**
- * Branded ein Bild mit einem Wasserzeichen
- *
- * Der Filter sucht im Medienpool nach einem Bild mit dem Dateinamen "branding.*"
- * und verwendet den 1. Treffer
+ * Brands an image by adding a brand image to it
  */
 class Brand {
-	public function filter($src_im) {
-		$files = glob(SLY_MEDIAFOLDER.'/branding.*');
-		if (empty($files)) return;
+	protected $brandImage;
+	protected $hPos;
+	protected $vPos;
+	protected $hPadding;
+	protected $vPadding;
 
-		$brandImage = $files[0];
-		$brand      = new A2_Thumbnail($brandImage);
+	public function __construct($brandImage, $hPos = 'right', $vPos = 'bottom', $hPadding = 0, $vPadding = 0) {
+		if (!file_exists($brandImage)) {
+			throw new Exception('The branding image "'.$brandImage.'" could not be found.');
+		}
 
-		// Abstand vom Rand
-		$paddX = 0;
-		$paddY = 0;
+		if (!in_array($hPos, array('left', 'center', 'right'))) {
+			throw new Exception('Unexpected value "'.$hPos.'" for the horizontal position.');
+		}
 
-		$hpos = 'right';  // horizontale Ausrichtung: left/center/right
-		$vpos = 'bottom'; // vertikale Ausrichtung: top/center/bottom
+		if (!in_array($vPos, array('top', 'center', 'bottom'))) {
+			throw new Exception('Unexpected value "'.$vPos.'" for the vertical position.');
+		}
 
-		switch ($hpos) {
+		$this->brandImage = $brandImage;
+		$this->hPos       = $hPos;
+		$this->vPos       = $vPos;
+		$this->hPadding   = (int) $hPadding;
+		$this->vPadding   = (int) $vPadding;
+	}
+
+	public function filter($image) {
+		// open image file and determine dimentions
+		$brandImage  = file_get_contents($this->brandImage);
+		$brandImage  = imagecreatefromstring($brandImage);
+		$brandWidth  = imagesx($brandImage);
+		$brandHeight = imagesy($brandImage);
+
+		switch ($this->hPos) {
 			case 'left':
 				$dstX = 0;
 				break;
 
 			case 'center':
-				$dstX = (int) ((imagesx($src_im) - $brand->getImageWidth()) / 2);
+				$dstX = (int) ((imagesx($image) - $brandWidth) / 2);
 				break;
 
 			case 'right':
-				$dstX = imagesx($src_im) - $brand->getImageWidth();
+				$dstX = imagesx($image) - $brandWidth;
 				break;
-
-			default:
-				trigger_error('Unexpected value for "hpos"!', E_USER_ERROR);
 		}
 
-		switch ($vpos) {
+		switch ($this->vPos) {
 			case 'top':
 				$dstY = 0;
 				break;
 
 			case 'center':
-				$dstY = (int) ((imagesy($src_im) - $brand->getImageHeight()) / 2);
+				$dstY = (int) ((imagesy($image) - $brandHeight) / 2);
 				break;
 
 			case 'bottom':
-				$dstY = imagesy($src_im) - $brand->getImageHeight();
+				$dstY = imagesy($image) - $brandHeight;
 				break;
-
-			default:
-				trigger_error('Unexpected value for "vpos"!', E_USER_ERROR);
 		}
 
-		imagealphablending($src_im, true);
-		imagecopy($src_im, $brand->getImage(), $dstX + $paddX, $dstY + $paddY, 0, 0, $brand->getImageWidth(), $brand->getImageHeight());
+		imagealphablending($image, true);
+		imagecopy($image, $brandImage, $dstX + $this->hPadding, $dstY + $this->yPadding, 0, 0, $brandWidth, $brandHeight);
 
-		$brand->destroyImage();
+		imagedestroy($brandImage);
 
-		return $src_im;
+		return $image;
 	}
 }
