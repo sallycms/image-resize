@@ -73,7 +73,7 @@ class Sharpen {
 			array(1, 2, 1)
 		);
 
-		imagecopy($sharpened, $img, 0, 0, 0, 0, $width, $height);
+		imagecopy($sharpened, $image, 0, 0, 0, 0, $width, $height);
 		imageconvolution($sharpened, $matrix, 16, 0);
 
 		return $sharpened;
