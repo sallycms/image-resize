@@ -55,27 +55,11 @@ class Service implements \sly_ContainerAwareInterface {
 		return isset($this->config[$key]) ? $this->config[$key] : $default;
 	}
 
-	public function getSpecialFile() {
-		return $this->container['sly-config']->get('INSTNAME').'.jpg';
-	}
-
 	public function getControlFile($realFile) {
 		return $this->cacheDir.DIRECTORY_SEPARATOR.'control_'.sha1($realFile).'.json';
 	}
 
-	/**
-	 * return the image file path
-	 *
-	 * @param  string $filename
-	 * @return string
-	 */
-	public function getImageFile($filename) {
-		// use the special test image
-		if ($filename !== self::getSpecialFile()) {
-			return 'data/mediapool/'.$filename;
-		}
-		else {
-			return 'data/dyn/public/sallycms/image-resize/testimage.jpg';
-		}
+	public function getSpecialImage() {
+		return SLY_ADDONFOLDER.'/sallycms/image-resize/assets/testimage.jpg';
 	}
 }

@@ -392,7 +392,7 @@ class Thumbnail {
 	 * @return resource
 	 */
 	protected function applyFilters($image) {
-		$container = sly_Core::getContainer();
+		$container = \sly_Core::getContainer();
 
 		foreach ($this->filters as $filter) {
 			$filter = preg_replace('#[^a-z0-9-]#i', '', $filter);

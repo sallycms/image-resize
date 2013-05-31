@@ -27,12 +27,14 @@ class Imageresize extends Base {
 
 		// add our process listener (do it here to remember the requested filename)
 
-		$filename = Filename::parse($file);
+		$container = $this->getContainer();
+		$service   = $container['sly-imageresize-service'];
+		$filename  = Filename::parse($file);
+		$fullName  = $filename->isSpecial() ? $service->getSpecialImage() : 'sly://media/'.$filename->getFilename();
 
 		if ($filename->hasModifications()) {
-			$container  = $this->getContainer();
 			$dispatcher = $container->getDispatcher();
-			$listeners  = $container->get('sly-imageresize-listeners');
+			$listeners  = $container['sly-imageresize-listeners'];
 
 			$dispatcher->addListener(AssetService::EVENT_PROCESS_ASSET, array($listeners, 'processAsset'), compact('filename'));
 		}
@@ -40,6 +42,6 @@ class Imageresize extends Base {
 		// send the requested file, we will perform the manipulations later in the
 		// process event from the asset service
 
-		return $this->sendFile('sly://media/'.$filename->getFilename(), true, true, true);
+		return $this->sendFile($fullName, true, true, true);
 	}
 }

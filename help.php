@@ -44,10 +44,10 @@ $isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 	<h3>Anwendung</h3>
 
 	<p>Eine Datei namens <strong>test.jpg</strong> muss, um von ImageResize verarbeitet
-	zu werden, über <strong>/imageresize/XXX__test.jpg</strong> aufgerufen werden.
+	zu werden, über <strong>/mediapool/resize/XXX__test.jpg</strong> aufgerufen werden.
 	<strong>XXX</strong> wird mit den gewünschten Verarbeitungsparametern ersetzt,
 	wie zum Beispiel <strong>100w</strong>, um das Bild auf 100px zu verkleinern:
-	</strong>/imageresize/100w__test.jpg</strong>.<br />
+	</strong>/mediapool/resize/100w__test.jpg</strong>.<br />
 	Mehrere Aktionen und Filter können über <strong>__</strong> getrennt werden.</p>
 
 	<h3>Aktionen</h3>
@@ -130,7 +130,7 @@ $isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 		foreach ($examples as $idx => $ex) {
 			?>
 			<div class="ex<?php if ($idx > 0 && ($idx+1) % 3 === 0) echo ' last'; ?>">
-				<div class="img"><img src="../imageresize/<?php echo $ex ?>__<?php echo $file ?>" alt="" /></div>
+				<div class="img"><img src="../mediapool/resize/<?php echo $ex ?>__<?php echo $file ?>" alt="" /></div>
 				<div class="caption"><?php echo $ex ?>__imagefile</div>
 			</div>
 			<?php
@@ -141,4 +141,6 @@ $isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 	}
 	?>
 	<div style="clear:left"></div>
+
+	<p class="center">&quot;Gatling Kitty&quot; &copy; 2011 <a href="http://www.theoatmeal.com/" class="sly-blank">The Oatmeal</a></p>
 </div>
