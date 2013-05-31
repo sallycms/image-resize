@@ -20,29 +20,18 @@ namespace sly\ImageResize\Filter;
  *                           up to 15% faster with same results)
  * @author Torstein Hønsi    (2003-07, thoensi_at_netcom_dot_no)
  */
-class Blur extends Sharpen {
-	public function __construct($amount = 80, $radius = 8, $threshold = 3) {
-		parent::__construct($amount, $radius, $threshold);
+class Blur {
+	protected $amount;
+
+	public function __construct($amount = 1) {
+		$this->amount = (int) $amount;
 	}
 
-	protected function filterImage($img, $width, $height) {
-		$blurred = imagecreatetruecolor($width, $height);
-
-		// Move copies of the image around one pixel at the time and merge them with weight
-		// according to the matrix. The same matrix is simply repeated for higher radii.
-
-		for ($i = 0; $i < $this->radius; ++$i) {
-			imagecopy     ($blurred, $img, 0, 0, 1, 1, $width-1, $height-1);            // up left
-			imagecopymerge($blurred, $img, 1, 1, 0, 0, $width,   $height,   50);        // down right
-			imagecopymerge($blurred, $img, 0, 1, 1, 0, $width-1, $height,   33.33333);  // down left
-			imagecopymerge($blurred, $img, 1, 0, 0, 1, $width,   $height-1, 25);        // up right
-			imagecopymerge($blurred, $img, 0, 0, 1, 0, $width-1, $height,   33.33333);  // left
-			imagecopymerge($blurred, $img, 1, 0, 0, 0, $width,   $height,   25);        // right
-			imagecopymerge($blurred, $img, 0, 0, 0, 1, $width,   $height-1, 20);        // up
-			imagecopymerge($blurred, $img, 0, 1, 0, 0, $width,   $height,   16.666667); // down
-			imagecopymerge($blurred, $img, 0, 0, 0, 0, $width,   $height,   50);        // center
+	public function filter($img) {
+		for ($i = 0; $i < $this->amount; ++$i) {
+			imagefilter($img, IMG_FILTER_GAUSSIAN_BLUR);
 		}
 
-		return $blurred;
+		return $img;
 	}
 }
