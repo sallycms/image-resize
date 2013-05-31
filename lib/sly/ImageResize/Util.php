@@ -26,14 +26,14 @@ abstract class Util {
 		// use imageresize to scale images instead of style width and height
 		$html = preg_replace(
 			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="imageresize/\1w__\2h__\4"',
+			'src="mediapool/resize/\1w__\2h__\4"',
 			$html
 		);
 
 		// the same just height first
 		$html = preg_replace(
 			'~style="height\:[ ]*([0-9]+)px;[ ]*width\:[ ]*([0-9]+)px;?"[ \r\n]*src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="imageresize/\2w__\1h__\4"',
+			'src="mediapool/resize/\2w__\1h__\4"',
 			$html
 		);
 
@@ -41,7 +41,7 @@ abstract class Util {
 		if ($maxImageSize) {
 			$html = preg_replace(
 				'~src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)(?<!\.bmp)"~',
-				'src="imageresize/'.$maxImageSize.'a__\2"',
+				'src="mediapool/resize/'.$maxImageSize.'a__\2"',
 				$html
 			);
 		}
@@ -105,12 +105,12 @@ abstract class Util {
 		$result   = implode('__', $params).'__'.$filename;
 
 		if ($path === null) {
-			return 'imageresize/'.$result;
+			return 'mediapool/resize/'.$result;
 		}
 		elseif ($path === true) {
 			$request = $request ?: \sly_Core::getContainer()->get('sly-request');
 
-			return $request->getBaseUrl(true).'/imageresize/'.$result;
+			return $request->getBaseUrl(true).'/mediapool/resize/'.$result;
 		}
 		else {
 			return $result;

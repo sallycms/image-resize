@@ -125,6 +125,14 @@ class Filename {
 		return $file;
 	}
 
+	public function isSpecial() {
+		$filename = $this->getFilename();
+		$id       = sly_Core::getContainer()->get('sly-config')->get('instname');
+		$ext      = \sly_Util_File::getExtension($filename);
+
+		return $filename === $id.'.'.$ext;
+	}
+
 	public function hasModifications() {
 		return
 			!empty($this->resizes) || !empty($this->filters) || !empty($this->offsets) ||
@@ -311,7 +319,7 @@ class Filename {
 	}
 
 	public function getUri() {
-		return 'mediapool/'.$this->getVirtualFilename();
+		return 'mediapool/resize/'.$this->getVirtualFilename();
 	}
 
 	public function getAbsoluteUri() {

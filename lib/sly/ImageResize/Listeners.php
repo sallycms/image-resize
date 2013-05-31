@@ -31,7 +31,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 		// add our custom routes
 
 		$router->prependRoute(
-			'/mediapool/(?P<file>.+?)', // this will overrule the core asset rule
+			'/mediapool/resize/(?P<file>.+?)', // this will overrule the core asset rule
 			array(App::CONTROLLER_PARAM => 'imageresize', App::ACTION_PARAM => 'resize')
 		);
 
@@ -75,7 +75,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 				$realWidth = $medium->getWidth();
 
 				if ($realWidth != $htmlWidth) {
-					$newSrc  = 'imageresize/'.$htmlWidth.'w__'.urlencode($filename);
+					$newSrc  = 'mediapool/resize/'.$htmlWidth.'w__'.urlencode($filename);
 					$content = str_replace($uri, $newSrc, $content);
 				}
 			}
@@ -157,6 +157,8 @@ class Listeners implements \sly_ContainerAwareInterface {
 	 * SLY_ASSET_PROCESS
 	 */
 	public function processAsset($inputFile, array $params) {
+		error_reporting(E_ALL);
+
 		$filename    = $params['filename'];
 		$service     = $this->container['sly-imageresize-service'];
 		$jsonService = $this->container['sly-service-json'];
