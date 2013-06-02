@@ -153,6 +153,26 @@ class Listeners implements \sly_ContainerAwareInterface {
 		return Util::resize($medium, $options, $path, $request);
 	}
 
+	public function mediapoolThumbnail($tag, array $params) {
+		$medium  = $params['medium'];
+		$width   = $params['width'];
+		$height  = $params['height'];
+		$isImage = $params['isImage'];
+
+		if (!$medium->exists() || !$isImage) {
+			return $tag;
+		}
+
+		$filename = Filename::fromMedium($medium, true);
+		$filename->addResize($width.'w');
+		$filename->addResize($height.'h');
+
+		$uri = '../'.$filename->getUri();
+		$tag = preg_replace('/(?<=\b)src="[^"]+"/', 'src="'.$uri.'"', $tag);
+
+		return $tag;
+	}
+
 	/**
 	 * SLY_ASSET_PROCESS
 	 */
