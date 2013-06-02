@@ -24,11 +24,11 @@ $container['sly-imageresize-listeners'] = $container->share(function($container)
 	return new sly\ImageResize\Listeners();
 });
 
-$container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur(2);                      };
-$container['sly-imageresize-filter-brand']      = function() { return new Filter\Brand();                      };
-$container['sly-imageresize-filter-monochrome'] = function() { return new Filter\Monochrome();                 };
-$container['sly-imageresize-filter-sepia']      = function() { return new Filter\Monochrome(1.01, 0.98, 0.90); };
-$container['sly-imageresize-filter-sharpen']    = function() { return new Filter\Sharpen();                    };
+$container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur(2);                    };
+$container['sly-imageresize-filter-brand']      = function() { return new Filter\Brand();                    };
+$container['sly-imageresize-filter-monochrome'] = function() { return new Filter\Colorize(0, 0, 0, true);    };
+$container['sly-imageresize-filter-sepia']      = function() { return new Filter\Colorize(80, 50, 25, true); };
+$container['sly-imageresize-filter-sharpen']    = function() { return new Filter\Sharpen();                  };
 
 $container['sly-imageresize-filter-grey'] = $container->raw('sly-imageresize-filter-monochrome'); // just an alias
 
