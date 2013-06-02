@@ -46,8 +46,8 @@ class Resizer {
 		$this->widthOffset  = null;
 		$this->heightOffset = null;
 
-		$this->thumbWidth        = null;
-		$this->thumbHeight       = null;
+		$this->thumbWidth        = $this->origWidth;
+		$this->thumbHeight       = $this->origHeight;
 		$this->thumbWidthOffset  = null;
 		$this->thumbHeightOffset = null;
 	}
