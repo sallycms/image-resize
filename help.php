@@ -124,7 +124,7 @@ $isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 		$examples = array(
 			'100w', '150h', '200a', '100w__200h', 'c100w__150h', '100w__c150h', 'c100w__c150h',
 			'c100w__150h__50o', 'c100w__150h__-50o', 'c100w__150h__50r', 'c100w__150h__50l',
-			'c100a', '200a__fblur__fsepia', '200a__u', '200a__n', '200a__t2'
+			'c100a', '200a__fblur__fsepia'
 		);
 
 		foreach ($examples as $idx => $ex) {
@@ -142,5 +142,7 @@ $isAvailable = sly_Util_AddOn::isAvailable('sallycms/image-resize');
 	?>
 	<div style="clear:left"></div>
 
+	<?php if ($isAvailable): ?>
 	<p class="center">&quot;Gatling Kitty&quot; &copy; 2011 <a href="http://www.theoatmeal.com/" class="sly-blank">The Oatmeal</a></p>
+	<?php endif ?>
 </div>
