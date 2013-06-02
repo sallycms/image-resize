@@ -34,9 +34,13 @@ $container['sly-imageresize-filter-grey'] = $container->raw('sly-imageresize-fil
 
 $dispatcher = $container['sly-dispatcher'];
 
-$dispatcher->addListener('SLY_ASSETS_ROUTER',           array('%sly-imageresize-listeners%', 'assetsRouter'));
-$dispatcher->addListener('SLY_ARTICLE_OUTPUT',          array('%sly-imageresize-listeners%', 'articleOutput'));
-$dispatcher->addListener('SLY_SYSTEM_CACHES',           array('%sly-imageresize-listeners%', 'systemCacheList'));
-$dispatcher->addListener('SLY_CACHE_CLEARED',           array('%sly-imageresize-listeners%', 'cacheCleared'));
-$dispatcher->addListener('SLY_BACKEND_NAVIGATION_INIT', array('%sly-imageresize-listeners%', 'backendNavigation'));
-$dispatcher->addListener('SLY_MODEL_MEDIUM_RESIZE',     array('%sly-imageresize-listeners%', 'resizeMedium'));
+$dispatcher->addListener('SLY_ASSETS_ROUTER',               array('%sly-imageresize-listeners%', 'assetsRouter'));
+$dispatcher->addListener('SLY_ARTICLE_OUTPUT',              array('%sly-imageresize-listeners%', 'articleOutput'));
+$dispatcher->addListener('SLY_SYSTEM_CACHES',               array('%sly-imageresize-listeners%', 'systemCacheList'));
+$dispatcher->addListener('SLY_CACHE_CLEARED',               array('%sly-imageresize-listeners%', 'cacheCleared'));
+$dispatcher->addListener('SLY_BACKEND_NAVIGATION_INIT',     array('%sly-imageresize-listeners%', 'backendNavigation'));
+$dispatcher->addListener('SLY_BACKEND_MEDIAPOOL_THUMBNAIL', array('%sly-imageresize-listeners%', 'mediapoolThumbnail'));
+$dispatcher->addListener('SLY_MODEL_MEDIUM_RESIZE',         array('%sly-imageresize-listeners%', 'resizeMedium'));
+
+// notify other addOns that we have set our listeners
+$dispatcher->notify('SLY_IMAGERESIZE_INIT', $container);
