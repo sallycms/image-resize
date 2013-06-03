@@ -403,18 +403,19 @@ class Thumbnail {
 	 * @return boolean
 	 */
 	protected function hasModifications(\stdClass $sizes) {
-		$sameImageType        = $this->imageType == $this->thumbType;
-		$thumbLargerThanImage = $sizes->thumbWidth > $sizes->width || $sizes->thumbHeight > $sizes->height;
+		// image type changes
+		if ($this->imageType !== $this->thumbType) return true;
 
-		// compare image quality only for JPEGs
-		$imageQualityTooLow   = $this->imageType != IMAGETYPE_JPEG || !$this->compressJPG || $this->thumbQuality >= $this->quality;
-		$noFilters            = empty($this->filters);
+		// has filters?
+		if (!empty($this->filters)) return true;
 
-		// if no filter are applied, size is smaller or equal and quality is lower than desired
-		if ($sameImageType && $noFilters && (!$this->upscalingAllowed && $thumbLargerThanImage) && $imageQualityTooLow) {
-			return false;
-		}
+		// resizing something?
+		if ($sizes->thumbWidth != $sizes->width || $sizes->thumbHeight != $sizes->height) return true;
 
-		return true;
+		// re-compressing a JPEG?
+		if ($this->imageType === IMAGETYPE_JPEG && $this->compressJPG && $this->thumbQuality < $this->quality) return true;
+
+		// no changes
+		return false;
 	}
 }
