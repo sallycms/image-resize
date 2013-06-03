@@ -15,3 +15,4 @@ iresize_jpg_quality: 'JPEG-Ausgabe-Qualität'
 
 iresize_upscaling: Vergrößern von kleinen Bildern
 iresize_recompress: 'Neukomprimieren von JPGs, die nicht verkleinert wurden'
+iresize_append_hash: 'Füge einen Anti-Cache-Hash an alle Bilder im Content an'

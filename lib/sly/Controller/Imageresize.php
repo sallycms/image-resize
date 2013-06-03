@@ -39,6 +39,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$jpg_quality      = $request->post('jpg_quality',       'int');
 		$upscalingAllowed = $request->post('upscaling_allowed', 'boolean');
 		$recompress       = $request->post('recompress',        'boolean');
+		$appendHash       = $request->post('append_hash',       'boolean');
 
 		$container   = $this->getContainer();
 		$jpg_quality = min(abs($jpg_quality), 100);
@@ -52,6 +53,7 @@ class sly_Controller_Imageresize extends sly_Controller_Backend implements sly_C
 		$service->setProperty($name, 'jpg_quality',       $jpg_quality);
 		$service->setProperty($name, 'upscaling_allowed', $upscalingAllowed);
 		$service->setProperty($name, 'recompress',        $recompress);
+		$service->setProperty($name, 'append_hash',       $appendHash);
 
 		$container['sly-flash-message']->appendInfo(t('iresize_config_saved'));
 
