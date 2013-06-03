@@ -14,37 +14,50 @@ namespace sly\ImageResize;
  * @author zozi@webvariants.de
  */
 abstract class Util {
-	/**
-	 * find <img> tags with width and heigth style attrs and translate it to the
-	 * image resize syntax
-	 *
-	 * @param  string $html
-	 * @param  int    $maxImageSize
-	 * @return string
-	 */
-	public static function scaleMediaImagesInHtml($html, $maxImageSize = 650) {
-		// use imageresize to scale images instead of style width and height
-		$html = preg_replace(
-			'~style="width\:[ ]*([0-9]+)px;[ ]*height\:[ ]*([0-9]+)px;?"[ \r\n]*src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="mediapool/resize/\1w__\2h__\4"',
-			$html
-		);
+	public static function scaleMediaImagesInHtml($html, array $options = array()) {
+		$mediumService = sly_Core::getContainer()->get('sly-service-medium');
+		$options       = array_merge(array(
+			'max_width'     => null,
+			'max_height'    => null,
+			'resize'        => true,
+			'disable_hash'  => false,
+			'absolute_uris' => false
+		), $options);
 
-		// the same just height first
-		$html = preg_replace(
-			'~style="height\:[ ]*([0-9]+)px;[ ]*width\:[ ]*([0-9]+)px;?"[ \r\n]*src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)"~',
-			'src="mediapool/resize/\2w__\1h__\4"',
-			$html
-		);
+		// TODO: This is not yet finished.
 
-		// resize the rest of the images to max resize value
-		if ($maxImageSize) {
-			$html = preg_replace(
-				'~src="(data/)?mediapool/([a-zA-Z0-9\.-_]+)(?<!\.bmp)"~',
-				'src="mediapool/resize/'.$maxImageSize.'a__\2"',
-				$html
-			);
-		}
+		$callback = function($matches) use ($options, $mediumService) {
+			$before    = $matches[1];
+			$filepath  = $matches[2];
+			$filename  = $matches[4];
+			$after     = $matches[5];
+			$resizeOpt = $options;
+			$medium    = $mediumService->findByFilename($filename);
+
+			if ($medium instanceof sly_Model_Medium) {
+				$attrs = $before.' '.$after;
+
+				if ($options['resize']) {
+					// determine width from attribute or CSS style
+					preg_match('/\bwidth\s*=\s*"([0-9]+)"/is', $attrs, $width);
+					if (!$width) preg_match('/\bwidth\s*:\s*([0-9]+)\s*px/is', $attrs, $width);
+
+					// determine height from attribute or CSS style
+					preg_match('/\bheight\s*=\s*"([0-9]+)"/is', $attrs, $height);
+					if (!$height) preg_match('/\bheight\s*:\s*([0-9]+)\s*px/is', $attrs, $height);
+
+					// prepare resize options
+					if ($width)  $resizeOpt['width']  = (int) $width[1];
+					if ($height) $resizeOpt['height'] = (int) $height[1];
+				}
+
+				$filepath = $medium->resize($options, $forceRelative ? null : (sly_Core::isBackend() ? true : null));
+			}
+
+			return sprintf('<img %ssrc="%s"%s>', $before, $filepath, $after);
+		};
+
+		$html = preg_replace_callback('#<img ([^<>]*)src="((data/)?mediapool/(?!resize/)([^?&;"]+))[a-zA-Z0-9?&;=]*"([^>]*)>#', $callback, $html);
 
 		return $html;
 	}
@@ -54,10 +67,28 @@ abstract class Util {
 	 * @throws Exception
 	 * @param  sly_Model_Medium $medium
 	 * @param  array            $options  (width, height, width_crop, height_crop, width_primary, height_primary, extra)
-	 * @param  bool             $path     null = with data/medium; false = no path; true = absolute path
+	 * @param  bool             $path     null = relative file URI; false = virtual filename; true = absolute file URI
 	 * @return string
 	 */
-	public static function resize(\sly_Model_Medium $medium, array $options = array(), $path = null, \sly_Request $request = null) {
+	public static function resize(\sly_Model_Medium $medium, array $options = array(), $path = null) {
+		// if no width_primary or height_primary option is given, first width or height is primary
+
+		if (!array_key_exists('width_primary', $options) && !array_key_exists('height_primary', $options)) {
+			foreach ($options as $key => $value) {
+				switch ($key) {
+					case 'width':
+						$options['width_primary'] = true;
+						break 2;
+
+					case 'height':
+						$options['height_primary'] = true;
+						break 2;
+				}
+			}
+		}
+
+		// set default options
+
 		$options = array_merge(array(
 			'width'          => null,
 			'height'         => null,
@@ -65,14 +96,14 @@ abstract class Util {
 			'height_crop'    => false,
 			'width_primary'  => false,
 			'height_primary' => false,
+			'disable_hash'   => false,
 			'extra'          => ''
 		), $options);
 
 		// handle width/height params
 
-		$params = array();
-		$width  = '';
-		$height = '';
+		$width  = null;
+		$height = null;
 
 		if ($options['width']) {
 			$width = ($options['width_crop'] ? 'c' : '').$options['width'].'w';
@@ -82,38 +113,28 @@ abstract class Util {
 			$height = ($options['height_crop'] ? 'c' : '').$options['height'].'h';
 		}
 
-		// build param list
+		// build filename
 
 		$widthFirst = $options['width_primary'] || !$options['height_primary'];
+		$filename   = Filename::fromMedium($medium);
+		$resizes    = array_filter($widthFirst ? array($width, $height) : array($height, $width));
 
-		if ($widthFirst) {
-			if ($width)  $params[] = $width;
-			if ($height) $params[] = $height;
-		}
-		else {
-			if ($height) $params[] = $height;
-			if ($width)  $params[] = $width;
-		}
+		$filename->setResizes($resizes);
 
 		if ($options['extra']) {
-			$params[] = $options['extra'];
+			$filename->addOffset($options['extra']);
 		}
 
 		// get virtual filename
 
-		$filename = $medium->getFilename();
-		$result   = implode('__', $params).'__'.$filename;
-
 		if ($path === null) {
-			return 'mediapool/resize/'.$result;
+			return $filename->getUri();
 		}
 		elseif ($path === true) {
-			$request = $request ?: \sly_Core::getContainer()->get('sly-request');
-
-			return $request->getBaseUrl(true).'/mediapool/resize/'.$result;
+			return $filename->getAbsoluteUri();
 		}
 		else {
-			return $result;
+			return $filename->getVirtualFilename();
 		}
 	}
 
