@@ -13,6 +13,9 @@ use sly\ImageResize\Filter;
 $container['sly-classloader']->add('', __DIR__.'/lib');
 $container['sly-i18n']->appendFile(__DIR__.'/lang');
 
+////////////////////////////////////////////////////////////////////////////////
+// services
+
 $container['sly-imageresize-service'] = $container->share(function($container) {
 	$cacheDir = $container['sly-service-addon']->getTempDirectory('sallycms/image-resize');
 	$config   = $container['sly-service-addon']->getProperty('sallycms/image-resize', '', array());
@@ -24,6 +27,16 @@ $container['sly-imageresize-listeners'] = $container->share(function($container)
 	return new sly\ImageResize\Listeners();
 });
 
+$container['sly-imageresize-hasher'] = $container->share(function($container) {
+	$instID = $container['sly-config']->get('instname');
+	$cache  = $container['sly-cache'];
+
+	return new sly\ImageResize\FileHasher($cache, $instID);
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// filter services
+
 $container['sly-imageresize-filter-blur']       = function() { return new Filter\Blur(2);                    };
 $container['sly-imageresize-filter-brand']      = function() { return new Filter\Brand();                    };
 $container['sly-imageresize-filter-monochrome'] = function() { return new Filter\Colorize(0, 0, 0, true);    };
@@ -31,6 +44,9 @@ $container['sly-imageresize-filter-sepia']      = function() { return new Filter
 $container['sly-imageresize-filter-sharpen']    = function() { return new Filter\Sharpen();                  };
 
 $container['sly-imageresize-filter-grey'] = $container->raw('sly-imageresize-filter-monochrome'); // just an alias
+
+////////////////////////////////////////////////////////////////////////////////
+// event listeners
 
 $dispatcher = $container['sly-dispatcher'];
 

@@ -82,7 +82,7 @@ class FileHasher {
 
 		// remember the current state
 
-		$hash = base_convert($hash, 16, 36);
+		$hash = substr(base_convert($hash, 16, 36), 0, 10);
 		$data = array('mtime' => $mtime, 'hash' => $hash);
 
 		$this->cache->set(self::CACHE_NAMESPACE, $key, $data);
