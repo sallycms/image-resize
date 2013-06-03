@@ -65,8 +65,8 @@ abstract class Util {
 					$htmlWidth  = $getPixels($attrs, 'width');
 					$htmlHeight = $getPixels($attrs, 'height');
 
-					$width  = ($maxWidth  !== null && $htmlWidth  > $maxWidth)  ? $maxWidth  : $htmlWidth;
-					$height = ($maxHeight !== null && $htmlHeight > $maxHeight) ? $maxHeight : $htmlHeight;
+					$width  = ($maxWidth  !== null && ($htmlWidth  === null || $htmlWidth  > $maxWidth))  ? $maxWidth  : $htmlWidth;
+					$height = ($maxHeight !== null && ($htmlHeight === null || $htmlHeight > $maxHeight)) ? $maxHeight : $htmlHeight;
 
 					// prepare resize options
 					if ($width  !== null) $resizeOpt['width']  = $width;
