@@ -12,8 +12,15 @@ $form = new sly_Form($_router->getPlainUrl(null), 'POST', 'Image Resize ('.$vers
 $form->addHiddenValue('page', 'imageresize');
 $form->addHiddenValue('func', 'update');
 
-$form->add(new sly_Form_Input_Text('max_cachefiles', t('iresize_max_cache_files'), $config['max_cachefiles']));
-$form->add(new sly_Form_Input_Text('max_filters', t('iresize_max_filters'), $config['max_filters']));
+$maxCacheFiles = new sly_Form_Input_Number('max_cachefiles', t('iresize_max_cache_files'), $config['max_cachefiles']);
+$maxCacheFiles->setBounds(0, 100, 1);
+$maxCacheFiles->addStyle('width:40px');
+$form->add($maxCacheFiles);
+
+$maxFilters = new sly_Form_Input_Number('max_filters', t('iresize_max_filters'), $config['max_filters']);
+$maxFilters->setBounds(0, 100, 1);
+$maxFilters->addStyle('width:40px');
+$form->add($maxFilters);
 
 $bytes = new sly_Form_Input_Text('max_resizekb', t('iresize_max_resizekb'), $config['max_resizekb']);
 $bytes->setAnnotation('KB');
@@ -23,8 +30,10 @@ $pixel = new sly_Form_Input_Text('max_resizepixel', t('iresize_max_resizepx'), $
 $pixel->setAnnotation('Pixel');
 $form->add($pixel);
 
-$quality = new sly_Form_Input_Text('jpg_quality', t('iresize_jpg_quality'), $config['jpg_quality']);
-$quality->setAnnotation('(1 - 100)');
+$quality = new sly_Form_Input_Number('jpg_quality', t('iresize_jpg_quality'), $config['jpg_quality']);
+$quality->setBounds(1, 100, 1);
+$quality->addStyle('width:40px');
+$quality->setAnnotation('%');
 $form->add($quality);
 
 $upscaling = new sly_Form_Input_Checkbox('upscaling_allowed', t('iresize_upscaling'), 1, t('allowed'));
