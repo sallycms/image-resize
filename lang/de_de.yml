@@ -14,5 +14,5 @@ iresize_max_resizepx: 'Maximale Größe der langen Seite, die umgewandelt werden
 iresize_jpg_quality: 'JPEG-Ausgabe-Qualität'
 
 iresize_upscaling: Vergrößern von kleinen Bildern
-iresize_recompress: 'Neukomprimieren von JPGs, die nicht verkleinert wurden'
+iresize_recompress: 'Neukomprimieren von JPEGs, die nicht verkleinert wurden'
 iresize_append_hash: 'Füge einen Anti-Cache-Hash an alle Bilder im Content an'
