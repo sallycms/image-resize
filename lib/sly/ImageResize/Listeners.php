@@ -44,47 +44,6 @@ class Listeners implements \sly_ContainerAwareInterface {
 	}
 
 	/**
-	 * SLY_ARTICLE_OUTPUT
-	 *
-	 * @param string $content
-	 */
-	public function articleOutput($content) {
-		preg_match_all('#<img [^\>]*src="((data/)?mediapool/([^"]+))[^\>]*>#is', $content, $matches, PREG_SET_ORDER);
-		if (!$matches) return $content;
-
-		$mediumService = $this->container['sly-service-medium'];
-
-		foreach ($matches as $match) {
-			$tag      = $match[0];
-			$uri      = $match[1];
-			$filename = basename(urldecode($match[3]));
-
-			// determine width from attribute or CSS style
-			preg_match('/\bwidth="(.+?)"/is', $tag, $width);
-			if (!$width) preg_match('/\bwidth: ?(.+?)px/is', $tag, $width);
-
-			if ($width && $mediumService->fileExists($filename)) {
-				$medium = $mediumService->findByFilename($filename);
-
-				// this *should* never happen...
-				if (!$medium) {
-					continue;
-				}
-
-				$htmlWidth = (int) $width[1];
-				$realWidth = $medium->getWidth();
-
-				if ($realWidth != $htmlWidth) {
-					$newSrc  = 'mediapool/resize/'.$htmlWidth.'w__'.urlencode($filename);
-					$content = str_replace($uri, $newSrc, $content);
-				}
-			}
-		}
-
-		return $content;
-	}
-
-	/**
 	 * SLY_SYSTEM_CACHES
 	 *
 	 * @param sly_Form_Select_Base $select  list of caches
@@ -117,6 +76,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 		}
 
 		$this->container['sly-imageresize-service']->flushCache();
+		$this->container['sly-imageresize-hashes']->flushCache();
 	}
 
 	/**
@@ -146,7 +106,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 		// signature is $medium->resize($options, $path)
 
 		$medium  = $params['object'];
-		$options = $params['arguments'][0];
+		$options = array_key_exists(0, $medium['arguments']) ? $medium['arguments'][0] : array();
 		$path    = array_key_exists(1, $medium['arguments']) ? $medium['arguments'][1] : null;
 		$request = $this->container['sly-request'];
 

@@ -25,6 +25,7 @@ class Filename {
 	protected $filters      = array();
 	protected $offsets      = array();
 	protected $type         = null;
+	protected $medium       = null;
 
 	public function __construct($filename) {
 		$this->filename = $filename;
@@ -32,6 +33,7 @@ class Filename {
 
 	public static function fromMedium(\sly_Model_Medium $medium, $addUpdatedate = false) {
 		$instance = new self($medium->getFilename());
+		$instance->medium = $medium;
 
 		if ($addUpdatedate) {
 			$instance->setTimestamp($medium->getUpdateDate());
@@ -109,8 +111,10 @@ class Filename {
 
 			do {
 				$filename = implode('__', $fnStack);
+				$medium   = $mediumService->findByFilename($filename);
 
-				if ($mediumService->findByFilename($filename)) {
+				if ($medium) {
+					$file->medium = $medium;
 					break;
 				}
 
@@ -185,6 +189,12 @@ class Filename {
 	public function addResize($resizeCode) {
 		$this->resizes[] = $resizeCode;
 		$this->resizes   = array_unique($this->resizes);
+
+		return $this;
+	}
+
+	public function setResizes(array $resizeCodes) {
+		$this->resizes = array_unique($resizeCodes);
 
 		return $this;
 	}
@@ -266,7 +276,7 @@ class Filename {
 		return $this;
 	}
 
-	public function getVirtualFilename() {
+	public function getVirtualFilename($appendHash = null) {
 		$params = $this->resizes;
 
 		foreach ($this->filters as $filter) {
@@ -301,7 +311,7 @@ class Filename {
 		}
 
 		if (empty($params)) {
-			return $this->getFilename();
+			return $this->appendHash($this->getFilename(), $appendHash);
 		}
 
 		$params = implode('__', $params);
@@ -315,18 +325,18 @@ class Filename {
 
 		$parts[$last] = $params.'__'.$parts[$last];
 
-		return implode('/', $parts);
+		return $this->appendHash(implode('/', $parts), $appendHash);
 	}
 
-	public function getUri() {
-		return 'mediapool/resize/'.$this->getVirtualFilename();
+	public function getUri($appendHash = null) {
+		return 'mediapool/resize/'.$this->getVirtualFilename($appendHash);
 	}
 
-	public function getAbsoluteUri() {
+	public function getAbsoluteUri($appendHash = null) {
 		$request = sly_Core::getContainer()->get('sly-request');
 		$baseUri = $request->getBaseUrl(true);
 
-		return $baseUri.'/'.$this->getUri();
+		return $baseUri.'/'.$this->getUri($appendHash);
 	}
 
 	public function getThumbnail(array $config, $filename = null) {
@@ -436,5 +446,23 @@ class Filename {
 		);
 
 		return '/^('.implode('|', $params).')$/';
+	}
+
+	protected function appendHash($filename, $flag = null) {
+		// if this filename instance is not assigned to any medium model, we can't do squat
+		if (!$this->medium) return $filename;
+
+		$container = sly_Core::getContainer();
+
+		if ($flag === null) {
+			$flag = $container['sly-imageresize-service']->getConfig('append_hash', false);
+		}
+
+		if ($flag && $this->medium->exists()) {
+			$hasher    = $container['sly-imageresize-hasher'];
+			$filename .= '?t='.$hasher->hash($this->medium->getFullPath());
+		}
+
+		return $filename;
 	}
 }

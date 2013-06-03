@@ -35,25 +35,9 @@ class Thumbnail {
 	protected $compressJPG      = true;
 	protected $upscalingAllowed = false;
 
-	// internal objects
-	protected $imgsrc    = null;
-	protected $imgthumb  = null;
-
-	// dimensions
-	protected $origWidth    = 0;
-	protected $origHeight   = 0;
-	protected $width        = 0;
-	protected $height       = 0;
-	protected $widthOffset  = 0;
-	protected $heightOffset = 0;
-
-	// thumbnail dimensions and stuff
-	protected $thumbWidth        = 0;
-	protected $thumbHeight       = 0;
-	protected $thumbWidthOffset  = 0;
-	protected $thumbHeightOffset = 0;
-	protected $thumbQuality      = 85;
-	protected $thumbType         = null;
+	// thumbnail stuff
+	protected $thumbQuality = 85;
+	protected $thumbType    = null;
 
 	public function __construct($imgfile) {
 		$this->fileName = $imgfile;

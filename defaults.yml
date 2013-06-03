@@ -8,3 +8,4 @@ addons:
     jpg_quality: 75
     upscaling_allowed: 0
     recompress: 1
+    append_hash: 0
