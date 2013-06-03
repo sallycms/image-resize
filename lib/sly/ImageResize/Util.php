@@ -17,15 +17,41 @@ use sly_Model_Medium;
  * @author zozi@webvariants.de
  */
 abstract class Util {
+	/**
+	 * Scale media inside of HTML
+	 *
+	 * This method will find all mediapool images in the given HTML and apply
+	 * resizing to them, altering their URI. The $options can contain values for
+	 * ::resize(), as ::resize() is going to be called by this.
+	 *
+	 * Possible options are:
+	 *
+	 *   - max_width:     apply this max width to all images
+	 *   - max_height:    same as for max_width
+	 *   - resize:        if false, no resizing will be done, but the filehash
+	 *                    will be appended (if enabled in the backend)
+	 *   - absolute_uris: true to generate absolute URIs (great if you're in the
+	 *                    backen) or false for relative URIs
+	 *   - replace_old:   set this to true to automatically call replaceOldUris
+	 *                    on the $html
+	 *
+	 * @param  string $html
+	 * @param  array  $options
+	 * @return string
+	 */
 	public static function scaleMediaImagesInHtml($html, array $options = array()) {
 		$mediumService = sly_Core::getContainer()->get('sly-service-medium');
 		$options       = array_merge(array(
 			'max_width'     => null,
 			'max_height'    => null,
 			'resize'        => true,
-			'disable_hash'  => false,
-			'absolute_uris' => false
+			'absolute_uris' => false,
+			'replace_old'   => false
 		), $options);
+
+		if ($options['replace_old']) {
+			$html = self::replaceOldUris($html);
+		}
 
 		if (!preg_match_all('#<img ([^<>]*)src="((data/)?mediapool/(?!resize/)([^?&;"]+))([a-zA-Z0-9?&;=]*)"([^>]*)>#', $html, $matches, PREG_SET_ORDER)) {
 			return $html;
@@ -102,6 +128,25 @@ abstract class Util {
 			// replace the match
 			$html = str_replace($match[0], $newTag, $html);
 		}
+
+		return $html;
+	}
+
+	/**
+	 * Replace old, 3.x URIs with their new pattern
+	 *
+	 * This will replace all image URIs starting with 'imageresize/' by them
+	 * starting with 'mediapool/resize'. Use this to migrate old content.
+	 *
+	 * @param  string $html
+	 * @return string
+	 */
+	public static function replaceOldUris($html) {
+		$html = preg_replace(
+			'#<img ([^<>]*)src="imageresize/([^"]+)"([^>]*)>#',
+			'<img $1src="mediapool/resize/$2"$3>',
+			$html
+		);
 
 		return $html;
 	}
