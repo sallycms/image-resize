@@ -35,6 +35,10 @@ $recompress = new sly_Form_Input_Checkbox('recompress', t('iresize_recompress'),
 $recompress->setChecked($config['recompress']);
 $form->add($recompress);
 
+$appendHash = new sly_Form_Input_Checkbox('append_hash', t('iresize_append_hash'), 1, t('enabled'));
+$appendHash->setChecked(!empty($config['append_hash']));
+$form->add($appendHash);
+
 $form->setResetButton(null);
 $form->getSubmitButton()->setAttribute('value', t('update'));
 print $form->render();
