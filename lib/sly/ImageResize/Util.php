@@ -10,6 +10,9 @@
 
 namespace sly\ImageResize;
 
+use sly_Core;
+use sly_Model_Medium;
+
 /**
  * @author zozi@webvariants.de
  */
@@ -24,40 +27,81 @@ abstract class Util {
 			'absolute_uris' => false
 		), $options);
 
-		// TODO: This is not yet finished.
+		if (!preg_match_all('#<img ([^<>]*)src="((data/)?mediapool/(?!resize/)([^?&;"]+))([a-zA-Z0-9?&;=]*)"([^>]*)>#', $html, $matches, PREG_SET_ORDER)) {
+			return $html;
+		}
 
-		$callback = function($matches) use ($options, $mediumService) {
-			$before    = $matches[1];
-			$filepath  = $matches[2];
-			$filename  = $matches[4];
-			$after     = $matches[5];
+		$maxWidth  = $options['max_width'];
+		$maxHeight = $options['max_height'];
+		$pathStyle = $options['absolute_uris'] ? 'abs' : 'rel';
+		$getPixels = function($attrs, $name) {
+			// CSS property
+			if (preg_match("/\b$name\s*:\s*([0-9]+)\s*px/is", $attrs, $match)) {
+				return (int) $match[1];
+			}
+
+			// HTML attribute
+			if (preg_match("/\b$name\s*=\s*\"([0-9]+)\"/is", $attrs, $match)) {
+				return (int) $match[1];
+			}
+
+			return null;
+		};
+
+		foreach ($matches as $match) {
+			$before    = $match[1];
+			$filePath  = $match[2];
+			$fileName  = $match[4];
+			$queryStr  = $match[5];
+			$after     = $match[6];
+			$fileUri   = $filePath.$queryStr;
 			$resizeOpt = $options;
-			$medium    = $mediumService->findByFilename($filename);
+			$medium    = $mediumService->findByFilename($fileName);
 
 			if ($medium instanceof sly_Model_Medium) {
 				$attrs = $before.' '.$after;
 
 				if ($options['resize']) {
-					// determine width from attribute or CSS style
-					preg_match('/\bwidth\s*=\s*"([0-9]+)"/is', $attrs, $width);
-					if (!$width) preg_match('/\bwidth\s*:\s*([0-9]+)\s*px/is', $attrs, $width);
+					$htmlWidth  = $getPixels($attrs, 'width');
+					$htmlHeight = $getPixels($attrs, 'height');
 
-					// determine height from attribute or CSS style
-					preg_match('/\bheight\s*=\s*"([0-9]+)"/is', $attrs, $height);
-					if (!$height) preg_match('/\bheight\s*:\s*([0-9]+)\s*px/is', $attrs, $height);
+					$width  = ($maxWidth  !== null && $htmlWidth  > $maxWidth)  ? $maxWidth  : $htmlWidth;
+					$height = ($maxHeight !== null && $htmlHeight > $maxHeight) ? $maxHeight : $htmlHeight;
 
 					// prepare resize options
-					if ($width)  $resizeOpt['width']  = (int) $width[1];
-					if ($height) $resizeOpt['height'] = (int) $height[1];
+					if ($width  !== null) $resizeOpt['width']  = $width;
+					if ($height !== null) $resizeOpt['height'] = $height;
 				}
 
-				$filepath = $medium->resize($options, $forceRelative ? null : (sly_Core::isBackend() ? true : null));
+				$filePath = self::resize($medium, $resizeOpt, $pathStyle);
+
+				// $filePath may now have a trailing '?t=...' at the end, so be
+				// careful when appending the original query string to it (or else
+				// we end up with 'poop.jpg?t=1234?paramx=valuey').
+
+				if ($queryStr) {
+					if (strpos($filePath, '?') !== false) {
+						// temporarily un-htmlencode the link, so we can easily trim it
+						$queryStr = str_replace('&amp;', '&', $queryStr);
+						$queryStr = ltrim($queryStr, '?&');
+						$fileUri  = $filePath.'&amp;'.str_replace('&', '&amp;', $queryStr);
+					}
+					else {
+						$fileUri = $filePath.$queryStr;
+					}
+				}
+				else {
+					$fileUri = $filePath;
+				}
 			}
 
-			return sprintf('<img %ssrc="%s"%s>', $before, $filepath, $after);
-		};
+			// remove any trailing bad chars
+			$fileUri = rtrim($fileUri, '?&');
+			$newTag  = sprintf('<img %ssrc="%s"%s>', $before, $fileUri, $after);
 
-		$html = preg_replace_callback('#<img ([^<>]*)src="((data/)?mediapool/(?!resize/)([^?&;"]+))[a-zA-Z0-9?&;=]*"([^>]*)>#', $callback, $html);
+			// replace the match
+			$html = str_replace($match[0], $newTag, $html);
+		}
 
 		return $html;
 	}
@@ -67,10 +111,10 @@ abstract class Util {
 	 * @throws Exception
 	 * @param  sly_Model_Medium $medium
 	 * @param  array            $options  (width, height, width_crop, height_crop, width_primary, height_primary, extra)
-	 * @param  bool             $path     null = relative file URI; false = virtual filename; true = absolute file URI
+	 * @param  bool             $path     'rel' = relative file URI; 'virt' = virtual filename; 'abs' = absolute file URI
 	 * @return string
 	 */
-	public static function resize(\sly_Model_Medium $medium, array $options = array(), $path = null) {
+	public static function resize(sly_Model_Medium $medium, array $options = array(), $path = 'rel') {
 		// if no width_primary or height_primary option is given, first width or height is primary
 
 		if (!array_key_exists('width_primary', $options) && !array_key_exists('height_primary', $options)) {
@@ -127,15 +171,15 @@ abstract class Util {
 
 		// get virtual filename
 
-		if ($path === null) {
-			return $filename->getUri();
+		$appendFlag = $options['disable_hash'] === true ? false : null;
+
+		switch ($path) {
+			case 'rel':  return $filename->getUri($appendFlag);
+			case 'abs':  return $filename->getAbsoluteUri($appendFlag);
+			case 'virt': return $filename->getVirtualFilename($appendFlag);
 		}
-		elseif ($path === true) {
-			return $filename->getAbsoluteUri();
-		}
-		else {
-			return $filename->getVirtualFilename();
-		}
+
+		throw new \InvalidArgumentException('Unknown path style "'.$path.'" given. Must be one of [rel, abs, virt].');
 	}
 
  	/**
