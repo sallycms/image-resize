@@ -10,7 +10,7 @@
 
 namespace sly\ImageResize;
 
-use BabelCache_Interface;
+use wv\BabelCache\CacheInterface;
 
 class FileHasher {
 	protected $cache;
@@ -19,7 +19,7 @@ class FileHasher {
 
 	const CACHE_NAMESPACE = 'sly.imageresize';
 
-	public function __construct(BabelCache_Interface $cache, $cachePrefix) {
+	public function __construct(CacheInterface $cache, $cachePrefix) {
 		$this->cache  = $cache;
 		$this->hashes = array();
 		$this->prefix = $cachePrefix;
