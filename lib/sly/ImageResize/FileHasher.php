@@ -28,11 +28,11 @@ class FileHasher {
 	public function flushCache($filename = null) {
 		if ($filename === null) {
 			$this->hashes = array();
-			$this->cache->flush(self::CACHE_NAMESPACE);
+			$this->cache->clear(self::CACHE_NAMESPACE);
 		}
 		else {
 			unset($this->hashes[$filename]);
-			$this->cache->delete(self::CACHE_NAMESPACE, $this->key($filename));
+			$this->cache->remove(self::CACHE_NAMESPACE, $this->key($filename));
 		}
 	}
 
