@@ -91,6 +91,19 @@ class FileHasher {
 		return $hash;
 	}
 
+	public function hashUrlWithParameter($filename, $absolute = false, $param_name = 't', $silent = true) {
+		$hash = $this->hash($filename, $silent);
+		if ($hash) {
+			$filename = $filename . '?' . $param_name . '=' . $hash;
+		}
+
+		if ($absolute) {
+			$filename = sly_Util_HTTP::getBaseUrl(true) . '/' . $filename;
+		}
+
+		return $filename;
+	}
+
 	protected function key($filename) {
 		return substr(sha1($this->prefix.sha1($filename)), 0, 12);
 	}
