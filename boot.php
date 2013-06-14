@@ -27,7 +27,7 @@ $container['sly-imageresize-listeners'] = $container->share(function($container)
 	return new sly\ImageResize\Listeners();
 });
 
-$container['sly-imageresize-hasher'] = $container->share(function($container) {
+$container['sly-imageresize-hashes'] = $container->share(function($container) {
 	$instID = $container['sly-config']->get('instname');
 	$cache  = $container['sly-cache'];
 
