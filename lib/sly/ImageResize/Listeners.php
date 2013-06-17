@@ -106,11 +106,10 @@ class Listeners implements \sly_ContainerAwareInterface {
 		// signature is $medium->resize($options, $path)
 
 		$medium  = $params['object'];
-		$options = array_key_exists(0, $medium['arguments']) ? $medium['arguments'][0] : array();
-		$path    = array_key_exists(1, $medium['arguments']) ? $medium['arguments'][1] : null;
-		$request = $this->container['sly-request'];
+		$options = array_key_exists(0, $params['arguments']) ? $params['arguments'][0] : array();
+		$path    = array_key_exists(1, $params['arguments']) ? $params['arguments'][1] : 'rel';
 
-		return Util::resize($medium, $options, $path, $request);
+		return Util::resize($medium, $options, $path, $path);
 	}
 
 	public function mediapoolThumbnail($tag, array $params) {
