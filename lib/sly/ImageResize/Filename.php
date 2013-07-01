@@ -459,7 +459,7 @@ class Filename {
 		}
 
 		if ($flag && $this->medium->exists()) {
-			$hasher    = $container['sly-imageresize-hasher'];
+			$hasher    = $container['sly-filehasher'];
 			$filename .= '?t='.$hasher->hash($this->medium->getFullPath());
 		}
 
