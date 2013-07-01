@@ -76,7 +76,6 @@ class Listeners implements \sly_ContainerAwareInterface {
 		}
 
 		$this->container['sly-imageresize-service']->flushCache();
-		$this->container['sly-imageresize-hasher']->flushCache();
 	}
 
 	/**

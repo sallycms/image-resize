@@ -46,7 +46,7 @@ class Imageresize extends Base {
 
 		$hash = $request->get('t', 'string');
 		if ($hash) {
-			$filehasher = $container->get('sly-imageresize-hasher'); /* @var $filehasher \sly\ImageResize\FileHasher */
+			$filehasher = $container->get('sly-filehasher'); /* @var $filehasher \sly_Service_FileHasher */
 			if ($filehasher->hash($fullName) === $hash) {
 				$response->addCacheControlDirective('max-age', 60 * 60 * 24 * 7); // cache 1 week if hash matching
 			} else {
