@@ -42,19 +42,6 @@ class Imageresize extends Base {
 		// send the requested file, we will perform the manipulations later in the
 		// process event from the asset service
 
-		$response = $this->sendFile($fullName, true, true, true);
-
-		$hash = $request->get('t', 'string');
-		if ($hash) {
-			$filehasher = $container->get('sly-filehasher'); /* @var $filehasher \sly_Service_FileHasher */
-			if ($filehasher->hash($fullName) === $hash) {
-				$response->addCacheControlDirective('max-age', 60 * 60 * 24 * 7); // cache 1 week if hash matching
-			} else {
-				$response->addCacheControlDirective('max-age', 10); // cache short time if hash not matching
-			}
-		}
-
-		return $response;
-
+		return $this->sendFile($fullName, true, true, true);
 	}
 }
