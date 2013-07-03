@@ -459,8 +459,8 @@ class Filename {
 		}
 
 		if ($flag && $this->medium->exists()) {
-			$hasher    = $container['sly-filehasher'];
-			$filename .= '?t='.$hasher->hash($this->medium->getFullPath());
+			$hasher    = $container->getFilehasher();
+			$filename .= '?t='.$hasher->hash($this->medium->getFullPath(), true, $this->getTimestamp());
 		}
 
 		return $filename;
