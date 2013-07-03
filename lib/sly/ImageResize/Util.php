@@ -205,7 +205,7 @@ abstract class Util {
 		// build filename
 
 		$widthFirst = $options['width_primary'] || !$options['height_primary'];
-		$filename   = Filename::fromMedium($medium);
+		$filename   = Filename::fromMedium($medium, true);
 		$resizes    = array_filter($widthFirst ? array($width, $height) : array($height, $width));
 
 		$filename->setResizes($resizes);
