@@ -15,7 +15,9 @@
  *
 */
 
-class A2_GIF_Encoder {
+namespace sly\ImageResize\GIF;
+
+class Encoder {
 
 	public $GIF = "GIF89a";            // GIF header 6 bytes
 	public $VER = "GIFEncoder V3.00";  // Encoder version

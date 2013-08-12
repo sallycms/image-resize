@@ -15,7 +15,9 @@
  *
 */
 
-class A2_GIF_Decoder {
+namespace sly\ImageResize\GIF;
+
+class Decoder {
 	private $transparentR = -1;
 	private $transparentG = -1;
 	private $transparentB = -1;

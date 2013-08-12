@@ -1,6 +1,8 @@
 <?php
 
-class A2_GIF_Frame {
+namespace sly\ImageResize\GIF;
+
+class Frame {
 
 	private $disposalMethod   = 0;
 	private $userInputFlag    = 0;
