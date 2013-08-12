@@ -36,7 +36,7 @@ class Resampler {
 		return $newImage;
 	}
 
-	protected function copyImageArea($image, $width, $height, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $imageType, $detroySourceImage = false) {
+	public function copyImageArea($image, $width, $height, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $imageType, $detroySourceImage = false) {
 		$target = $this->getNewImage($width, $height, $image, $imageType);
 
 		// copy layer part of resized image into empty image
