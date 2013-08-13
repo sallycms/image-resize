@@ -289,6 +289,10 @@ class Thumbnail {
 
 			// if layer has an offset relative to gif canvas, set image offsets to zero
 			if ($gifOffset && ($sLWidth < $sizes->origWidth || $sLHeight < $sizes->origHeight)) {
+				// calculate offsets and size of resized layer part
+				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
+				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
+
 				$frame = $resampler->copyImageArea($resampler, $frame,
 					/*   width */ $sLThumbWidth,
 					/*  height */ $sLThumbHeight,
@@ -301,10 +305,6 @@ class Thumbnail {
 
 				// resize layer
 				$frame = $resampler->resample($frame, $sizes, $this->imageType);
-
-				// calculate offsets and size of resized layer part
-				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
-				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
 
 				$gifOffset[0] = (int) round($scalingFactor * $gifOffset[0]);
 				$gifOffset[1] = (int) round($scalingFactor * $gifOffset[1]);
