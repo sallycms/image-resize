@@ -113,11 +113,25 @@ class A2_Util {
 	 */
 	public static function resize($medium, $options = array(), $path = null) {
 		if (!$medium instanceof sly_Model_Medium) {
-			$options = $medium['arguments'][0];
+			$options = (array_key_exists(0, $medium['arguments'])) ? $medium['arguments'][0] : array();
 			$path = (array_key_exists(1, $medium['arguments'])) ? $medium['arguments'][1] : null;
 			$medium = $medium['object'];
 			if (!$medium instanceof sly_Model_Medium) {
 				throw new Exception('wrong arguments');
+			}
+		}
+
+		/* if no width_primary or height_primary option is given, first width or height is primary */
+		if (!array_key_exists('width_primary', $options) && !array_key_exists('height_primary', $options)) {
+			foreach ($options as $key => $value) {
+				switch ($key) {
+					case 'width':
+						$options['width_primary'] = true;
+						break 2;
+					case 'height':
+						$options['height_primary'] = true;
+						break 2;
+				}
 			}
 		}
 
@@ -128,6 +142,7 @@ class A2_Util {
 			'height_crop' => false,
 			'width_primary' => false,
 			'height_primary' => false,
+			'disable_hash' => false,
 			'extra' => ''
 		), $options);
 
@@ -158,7 +173,14 @@ class A2_Util {
 			$params[] = $options['extra'];
 		}
 
-		$result = implode('__', $params) . '__' . $filename;
+		$result = $params ? implode('__', $params) . '__' . $filename : $filename;
+
+		$container = method_exists('sly_Core', 'getContainer') ? sly_Core::getContainer() : null;
+		if ($medium->exists()  && $container && $container->has('sly-filehash') && !$options['disable_hash']) {
+			$filehash = $container->get('sly-filehash'); // comes soon to sally or addon
+			/* @var $filehash sly_Service_Filehash */
+			$result .= '?t=' . $filehash->hash($medium->getFullPath());
+		}
 
 		if ($path === null) {
 			return 'data/mediapool/' . $result;
