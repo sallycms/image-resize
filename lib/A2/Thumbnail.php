@@ -410,7 +410,7 @@ class A2_Thumbnail {
 					case IMAGETYPE_JPEG:
 						imageinterlace($this->imgthumb, true); // set to progressive mode
 						imagejpeg($this->imgthumb, $file, $this->thumbQuality);
-						if ($this->iccProfile) {
+						if ($this->iccProfile && $this->iccProfile->GetProfile()) {
 							$this->iccProfile->SaveToJPEG($file);
 						}
 						break;

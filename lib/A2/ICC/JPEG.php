@@ -4,6 +4,8 @@
  *
  * @author Richard Toth aka risko (risko@risko.org)
  * @version 0.1
+ * @link https://github.com/slavicv/jpeg-icc
+ * @license BSD
  */
 class A2_ICC_JPEG
 {
@@ -156,7 +158,7 @@ class A2_ICC_JPEG
 
     public function SaveToJPEG($fname)
     {
-		if ($this->icc_profile == '') return false;
+		if ($this->icc_profile == '') throw new Exception("No profile loaded.\n");
 
 		if (!file_exists($fname)) throw new Exception("File $fname doesn't exist.\n");
 		if (!is_readable($fname)) throw new Exception("File $fname isn't readable.\n");
