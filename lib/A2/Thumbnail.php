@@ -41,6 +41,8 @@ class A2_Thumbnail {
 	private $gifObject    = null;
 	private $isAnimated   = false;
 
+	private $iccProfile   = null;
+
 	private $thumbWidth        = 0;
 	private $thumbHeight       = 0;
 	private $thumbWidthOffset  = 0;
@@ -79,6 +81,10 @@ class A2_Thumbnail {
 			}
 			// set quality to zero, so that gifs are not recompressed, if not resized or filtered
 			$this->quality = 0;
+		}
+		elseif ($this->imageType === IMAGETYPE_JPEG) {
+			$this->iccProfile = new A2_ICC_JPEG();
+			$this->iccProfile->LoadFromJPEG($this->fileName);
 		}
 
 		$this->imgsrc = imagecreatefromstring($data);
@@ -404,6 +410,9 @@ class A2_Thumbnail {
 					case IMAGETYPE_JPEG:
 						imageinterlace($this->imgthumb, true); // set to progressive mode
 						imagejpeg($this->imgthumb, $file, $this->thumbQuality);
+						if ($this->iccProfile) {
+							$this->iccProfile->SaveToJPEG($file);
+						}
 						break;
 
 					case IMAGETYPE_PNG:
