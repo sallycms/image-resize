@@ -14,7 +14,7 @@
 class A2_Extensions {
 	// c=crop before w=width|h=heigth|a=both followed by o=offset|r=right|l=left|t=top|b=bottom
 	// followed by f=filter followed by u=upscaling
-	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:u[01]?__)?(?:n__)?(?:t[0-9]+__)?)(.*)$@';
+	private static $godRegex = '@((?:c?[0-9]{1,4}[whaxc]__){1,2}(?:\-?[0-9]{1,4}[orltb]?__){0,2}(?:f[a-z0-9]+__)*(?:u[01]?__)?(?:n__)?(?:t[a-z0-9]+__)?)(.*)$@';
 
 	/**
 	 * Try to parse a file as an imageresize request
@@ -115,7 +115,7 @@ class A2_Extensions {
 			}
 			elseif ($prefix == 't') {
 				$imageType = substr($param, 1);
-				if (in_array($imageType, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
+				if (in_array($imageType, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP, A2_Thumbnail::IMAGETYPE_WEBP))) {
 					$type = $imageType;
 				}
 				continue;

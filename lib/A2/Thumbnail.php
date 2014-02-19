@@ -53,6 +53,9 @@ class A2_Thumbnail {
 
 	private $upscalingAllowed = false;
 
+	const IMAGETYPE_WEBP = 'webp';
+
+
 	public function __construct($imgfile) {
 		$this->fileName = $imgfile;
 
@@ -256,7 +259,7 @@ class A2_Thumbnail {
 	 * @throws Exception
 	 */
 	public function setThumbType($type) {
-		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
+		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP, self::IMAGETYPE_WEBP))) {
 			throw new Exception('The Imagetype: '.$type.' is not supported by A2_Thumbnail.', 500);
 		}
 		$this->thumbType = $type;
@@ -399,20 +402,24 @@ class A2_Thumbnail {
 	 */
 	public function generateImage($file) {
 		if ($this->imageGetsModified()) {
-			if ($this->imageType == IMAGETYPE_GIF && $this->isAnimated) {
+			if ($this->thumbType == IMAGETYPE_GIF && $this->isAnimated) {
 				$this->saveAnimatedGIF($file);
 			}
 			else {
 				$this->resampleImage();
 				$this->applyFilters();
 
-				switch ($this->imageType) {
+				switch ($this->thumbType) {
 					case IMAGETYPE_JPEG:
 						imageinterlace($this->imgthumb, true); // set to progressive mode
 						imagejpeg($this->imgthumb, $file, $this->thumbQuality);
 						if ($this->iccProfile && $this->iccProfile->GetProfile()) {
 							$this->iccProfile->SaveToJPEG($file);
 						}
+						break;
+
+					case self::IMAGETYPE_WEBP:
+						imagewebp($this->imgthumb, $file);
 						break;
 
 					case IMAGETYPE_PNG:
