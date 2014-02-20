@@ -90,10 +90,15 @@ class A2_Thumbnail {
 			$this->iccProfile->LoadFromJPEG($this->fileName);
 		}
 
-		$this->imgsrc = imagecreatefromstring($data);
+		if ($this->imageType === self::IMAGETYPE_WEBP) {
+			$this->imgsrc = imagecreatefromwebp($this->fileName);
+		}
+		else {
+			$this->imgsrc = imagecreatefromstring($data);
+		}
 
 		if (!$this->imgsrc) {
-				throw new Exception('Can not create valid Image Source.', 500);
+			throw new Exception('Can not create valid Image Source.', 500);
 		}
 
 		$this->origWidth  = imagesx($this->imgsrc);
@@ -677,6 +682,9 @@ class A2_Thumbnail {
 				$aSupportedTypes[$sImageTypeString] = $iImageTypeBits;
 			}
 		}
+		if (function_exists('imagewebp')) {
+			$aSupportedTypes['WEBP'] = self::IMAGETYPE_WEBP;
+		}
 
 		return $aSupportedTypes;
 	}
@@ -726,10 +734,16 @@ class A2_Thumbnail {
 		}
 
 		$imgInfo = getimagesize($this->fileName);
-		if ($imgInfo === false) return false;
 
-		if (!in_array($imgInfo[2], $allowedTypes)) return false;
-		return $imgInfo[2];
+		if ($imgInfo === false) {
+			$type = pathinfo($this->fileName, PATHINFO_EXTENSION);
+		}
+		else {
+			$type = $imgInfo[2];
+		}
+
+		if (!in_array($type, $allowedTypes)) return false;
+		return $type;
 	}
 
 }
