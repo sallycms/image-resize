@@ -11,7 +11,8 @@
 namespace sly\ImageResize;
 
 use Gaufrette\Adapter\Local;
-use Gaufrette\Filesystem;
+use sly_Filesystem_Filesystem;
+use sly_Filesystem_Service;
 
 /**
  * @author zozi@webvariants.de
@@ -38,7 +39,7 @@ class Service implements \sly_ContainerAwareInterface {
 	 * delete all files in the internal directory
 	 */
 	public function flushCache() {
-		$service = new \sly_Filesystem_Service(new Filesystem(new Local($this->cacheDir)));
+		$service = new sly_Filesystem_Service(new sly_Filesystem_Filesystem(new Local($this->cacheDir)));
 		$service->deleteAllFiles();
 	}
 
