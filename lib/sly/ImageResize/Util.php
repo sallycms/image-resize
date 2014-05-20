@@ -160,6 +160,23 @@ abstract class Util {
 	 * @return string
 	 */
 	public static function resize(sly_Model_Medium $medium, array $options = array(), $path = 'rel') {
+		// if image type is not supported return filepath
+
+		if (self::getSupportedImageType($medium->getFilename()) === false) {
+			$uri = $medium->getFilename();
+			if ($path === 'rel' || $path === 'abs') {
+				$uri = 'mediapool/'.$uri;
+			}
+			if ($path === 'abs') {
+				$request = sly_Core::getContainer()->get('sly-request');
+				$baseUri = $request->getBaseUrl(true);
+				$uri     = $baseUri.$uri;
+			}
+
+			return $uri;
+		}
+
+
 		// if no width_primary or height_primary option is given, first width or height is primary
 
 		if (!array_key_exists('width_primary', $options) && !array_key_exists('height_primary', $options)) {
