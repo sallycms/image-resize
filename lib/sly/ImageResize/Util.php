@@ -162,7 +162,7 @@ abstract class Util {
 	public static function resize(sly_Model_Medium $medium, array $options = array(), $path = 'rel') {
 		// if image type is not supported return filepath
 
-		if (self::getSupportedImageType($medium->getFilename()) === false) {
+		if (self::getSupportedImageType('sly://media/'.$medium->getFilename()) === false) {
 			$uri = $medium->getFilename();
 			if ($path === 'rel' || $path === 'abs') {
 				$uri = 'mediapool/'.$uri;
