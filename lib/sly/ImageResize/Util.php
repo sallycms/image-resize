@@ -212,11 +212,11 @@ abstract class Util {
 		$height = null;
 
 		if ($options['width']) {
-			$width = ($options['width_crop'] ? 'c' : '').$options['width'].'w';
+			$width = (($options['width_crop'] === true) ? 'c' : ($options['width_crop'] !== false ? $options['width_crop'] : '')).$options['width'].'w';
 		}
 
 		if ($options['height']) {
-			$height = ($options['height_crop'] ? 'c' : '').$options['height'].'h';
+			$height = (($options['height_crop'] === true) ? 'c' : ($options['height_crop'] !== false ? $options['height_crop'] : '')).$options['height'].'h';
 		}
 
 		// build filename
