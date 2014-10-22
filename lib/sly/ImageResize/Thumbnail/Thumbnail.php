@@ -240,7 +240,7 @@ class Thumbnail {
 				imagejpeg($thumbnail, $outputFile, $this->thumbQuality);
 
 				if ($this->iccProfile && $this->iccProfile->GetProfile()) {
-					$this->iccProfile->SaveToJPEG($file);
+					$this->iccProfile->SaveToJPEG($outputFile);
 				}
 				break;
 
