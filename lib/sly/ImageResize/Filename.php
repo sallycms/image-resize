@@ -261,7 +261,8 @@ class Filename {
 			'png'  => IMAGETYPE_PNG,
 			'gif'  => IMAGETYPE_GIF,
 			'bmp'  => IMAGETYPE_WBMP,
-			'wbmp' => IMAGETYPE_WBMP
+			'wbmp' => IMAGETYPE_WBMP,
+			'webp' => Thumbnail::IMAGETYPE_WEBP
 		);
 
 		// support imagetype constants as $type
@@ -301,10 +302,11 @@ class Filename {
 
 		if ($this->type !== null) {
 			$types = array(
-				IMAGETYPE_JPEG => 'jpg',
-				IMAGETYPE_PNG  => 'png',
-				IMAGETYPE_GIF  => 'gif',
-				IMAGETYPE_WBMP => 'bmp'
+				IMAGETYPE_JPEG            => 'jpg',
+				IMAGETYPE_PNG             => 'png',
+				IMAGETYPE_GIF             => 'gif',
+				IMAGETYPE_WBMP            => 'bmp',
+				Thumbnail::IMAGETYPE_WEBP => 'webp'
 			);
 
 			$params[] = 't'.$types[$this->type];
@@ -441,7 +443,7 @@ class Filename {
 			/*      offsets */ '(?P<offset>-?[0-9]{1,4}[orltb])',
 			/*    upscaling */ '(?P<upscaling>u[01]?)',
 			/* uncompressed */ '(?P<uncompressed>n)',
-			/*    timestamp */ '(t(?P<timestamp>[0-9]+))',
+			/*    timestamp */ '(t(?P<timestamp>[a-z0-9]+))', // allowing a-z is for more advanced file hashes in the file URL
 			/*   thumb type */ '(t(?P<type>jpg|jpeg|gif|png|bmp|wbmp))'
 		);
 

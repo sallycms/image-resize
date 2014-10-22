@@ -35,9 +35,13 @@ class Thumbnail {
 	protected $compressJPG      = true;
 	protected $upscalingAllowed = false;
 
+	protected $iccProfile = null;
+
 	// thumbnail stuff
 	protected $thumbQuality = 85;
 	protected $thumbType    = null;
+
+	const IMAGETYPE_WEBP = 420; // 1-17 are currently in use for pre-defined image types, so use something *completely random* instead
 
 	public function __construct($imgfile) {
 		$this->fileName = $imgfile;
@@ -110,7 +114,7 @@ class Thumbnail {
 	 * @return Thumbnail  reference to self
 	 */
 	public function setThumbType($type) {
-		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP))) {
+		if (!in_array($type, array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WBMP, self::IMAGETYPE_WEBP))) {
 			throw new Exception('The image type '.$type.' is not supported by this system.', 500);
 		}
 
@@ -168,9 +172,26 @@ class Thumbnail {
 				$imgData = $frames[0];
 			}
 		}
+		elseif ($this->imageType === IMAGETYPE_JPEG) {
+			$this->iccProfile = new \JPEG_ICC();
+			$this->iccProfile->LoadFromJPEG($this->fileName);
+		}
 
-		// open image file and determine dimentions
-		$image  = imagecreatefromstring($imgData);
+		// open image file and determine dimensions
+		// manually handle WEBP because imagecreatefromstring() does not recognize it (as documented,
+		// so probably not a bug)
+		if ($this->imageType === self::IMAGETYPE_WEBP) {
+			$image = imagecreatefromwebp($this->fileName);
+		}
+		else {
+			$image = imagecreatefromstring($imgData);
+		}
+
+		if (!$image) {
+			throw new Exception('Can not create valid Image Source.', 500);
+		}
+
+
 		$width  = imagesx($image);
 		$height = imagesy($image);
 
@@ -217,6 +238,10 @@ class Thumbnail {
 				if ($ext !== 'jpg' && $ext !== 'jpeg') $outputFile .= '.jpg';
 				imageinterlace($thumbnail, true); // set to progressive mode
 				imagejpeg($thumbnail, $outputFile, $this->thumbQuality);
+
+				if ($this->iccProfile && $this->iccProfile->GetProfile()) {
+					$this->iccProfile->SaveToJPEG($file);
+				}
 				break;
 
 			case IMAGETYPE_PNG:
@@ -232,6 +257,11 @@ class Thumbnail {
 			case IMAGETYPE_WBMP:
 				if ($ext !== 'bmp') $outputFile .= '.bmp';
 				imagewbmp($thumbnail, $outputFile);
+				break;
+
+			case self::IMAGETYPE_WEBP:
+				if ($ext !== 'webp') $outputFile .= '.webp';
+				imagewebp($thumbnail, $outputFile);
 				break;
 		}
 
