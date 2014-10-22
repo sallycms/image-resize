@@ -12,6 +12,7 @@ namespace sly\ImageResize;
 
 use sly_Core;
 use sly_Model_Medium;
+use sly\ImageResize\Thumbnail\Thumbnail;
 
 /**
  * @author zozi@webvariants.de
@@ -266,6 +267,10 @@ abstract class Util {
 			if ($types & $bit) {
 				$supported[] = $realType;
 			}
+		}
+
+		if (function_exists('imagewebp')) {
+			$supported[] = Thumbnail::IMAGETYPE_WEBP;
 		}
 
 		return $supported;

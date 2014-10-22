@@ -18,7 +18,8 @@
     "autoload": {
         "psr-0": {
             "sly\\ImageResize\\": "lib/",
-            "sly_Controller_": "lib/"
+            "sly_Controller_": "lib/",
+            "JPEG_": "vendor/"
         }
     },
     "extra": {
