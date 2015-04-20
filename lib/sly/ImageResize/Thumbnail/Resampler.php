@@ -49,11 +49,15 @@ class Resampler {
 	/**
 	 * Execute the resizing based on image params
 	 *
-	 * @param stdClass $sizes  width, height, crop and offset parameters
+	 * @param resource $image      an image resource
+	 * @param stdClass $sizes      width, height, crop and offset parameters
+	 * @param int      $imageType  image type constant
 	 */
 	public function resample($image, \stdClass $sizes, $imageType) {
 		// create a fresh image
 		$output = $this->getNewImage($sizes->thumbWidth, $sizes->thumbHeight, $image, $imageType);
+
+		imagesetinterpolation($output, IMG_HERMITE);
 
 		imagecopyresampled(
 			$output,
@@ -68,7 +72,82 @@ class Resampler {
 			$sizes->height
 		);
 
+		$this->fixColorAfterResampling(
+				$image,
+				$output,
+				$sizes
+		);
+
 		return $output;
+	}
+
+	/**
+	 * Try to fix colors after bad resampling.
+	 * GD poorly handles bright colors when resampling. Here we try to fix it
+	 * by getting the original image detail and match the pixel to the resampled
+	 * image. if the color differs by a small margin replace it with the
+	 * original.
+	 *
+	 * For a deeper view on the problem have a look at
+	 * What GD does
+	 * https://en.wikipedia.org/wiki/Bicubic_interpolation
+	 * What it should do
+	 * https://en.wikipedia.org/wiki/Monotone_cubic_interpolation
+	 *
+	 * In some years we might use imagecrop and imagescale where you can set
+	 * the interpolation method
+	 *
+	 * @param resource $image      an image resource
+	 * @param resource $resampled  an image resource
+	 * @param stdClass $sizes      width, height, crop and offset parameters
+	 */
+	protected function fixColorAfterResampling($image, $resampled, $sizes) {
+		$crop = $this->getNewImage($sizes->width, $sizes->height);
+
+		imagecopy(
+			$crop,
+			$image,
+			$sizes->thumbWidthOffset,
+			$sizes->thumbHeightOffset,
+			$sizes->widthOffset,
+			$sizes->heightOffset,
+			$sizes->width,
+			$sizes->height
+		);
+
+		$f = $sizes->width / $sizes->thumbWidth;
+
+		for($y = 0; $y < $sizes->thumbHeight; $y++) {
+			for($x = 0; $x < $sizes->thumbWidth; $x++) {
+				$cR = imagecolorat($resampled, $x, $y);
+				$cC = imagecolorat($crop, floor($x * $f), floor($y * $f));
+
+				if ($cR !== $cC) {
+					$reColor = false;
+					$cR = imagecolorsforindex($resampled, $cR);
+					$cC = imagecolorsforindex($crop, $cC);
+					extract($cR);
+
+					if (abs($cC['red'] - $red) < 3) {
+						$red = $cC['red'];
+						$reColor = true;
+					}
+					if (abs($cC['green']  - $green) < 3) {
+						$green = $cC['green'];
+						$reColor = true;
+					}
+					if (abs($cC['blue'] - $blue) < 3) {
+						$blue = $cC['blue'];
+						$reColor = true;
+					}
+
+					if ($reColor) {
+						$color = imagecolorallocate($resampled, $red, $green, $blue);
+						imagesetpixel($resampled, $x, $y, $color);
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -78,7 +157,7 @@ class Resampler {
 	 * @param resource $dest       destination image
 	 * @param int      $imageType  image type constant
 	 */
-	public function keepTransparent($source, $dest, $imageType) {
+	protected function keepTransparent($source, $dest, $imageType) {
 		if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_GIF) {
 			if ($imageType === IMAGETYPE_GIF) {
 				imagepalettecopy($source, $dest);
