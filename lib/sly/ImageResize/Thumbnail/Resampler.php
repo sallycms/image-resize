@@ -57,8 +57,6 @@ class Resampler {
 		// create a fresh image
 		$output = $this->getNewImage($sizes->thumbWidth, $sizes->thumbHeight, $image, $imageType);
 
-		imagesetinterpolation($output, IMG_HERMITE);
-
 		imagecopyresampled(
 			$output,
 			$image,
