@@ -70,11 +70,14 @@ class Resampler {
 			$sizes->height
 		);
 
-		$this->fixColorAfterResampling(
-				$image,
-				$output,
-				$sizes
-		);
+		// do only for jpegs because pngs with large white background turn to black
+		if ($imageType === IMAGETYPE_JPEG) {
+			$this->fixColorAfterResampling(
+					$image,
+					$output,
+					$sizes
+			);
+		}
 
 		return $output;
 	}
