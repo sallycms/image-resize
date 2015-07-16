@@ -236,7 +236,7 @@ class Thumbnail {
 		switch ($this->thumbType) {
 			case IMAGETYPE_JPEG:
 				if ($ext !== 'jpg' && $ext !== 'jpeg') $outputFile .= '.jpg';
-				imageinterlace($thumbnail, true); // set to progressive mode
+				imageinterlace($thumbnail, 1); // set to progressive mode
 				imagejpeg($thumbnail, $outputFile, $this->thumbQuality);
 
 				if ($this->iccProfile && $this->iccProfile->GetProfile()) {
