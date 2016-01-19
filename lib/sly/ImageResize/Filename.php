@@ -331,7 +331,7 @@ class Filename {
 	}
 
 	public function getUri($appendHash = null) {
-		return 'mediapool/resize/'.$this->getVirtualFilename($appendHash);
+		return (sly_Core::isBackend() ? '../' : '').'mediapool/resize/'.$this->getVirtualFilename($appendHash);
 	}
 
 	public function getAbsoluteUri($appendHash = null) {
