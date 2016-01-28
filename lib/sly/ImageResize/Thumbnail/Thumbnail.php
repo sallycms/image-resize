@@ -323,7 +323,7 @@ class Thumbnail {
 				$sLThumbWidth  = max(1, (int) round($scalingFactor * $sLWidth));
 				$sLThumbHeight = max(1, (int) round($scalingFactor * $sLHeight));
 
-				$frame = $resampler->copyImageArea($resampler, $frame,
+				$frame = $resampler->copyImageArea($frame,
 					/*   width */ $sLThumbWidth,
 					/*  height */ $sLThumbHeight,
 					/*  destXY */ $gifOffset[0], $gifOffset[1],
@@ -359,7 +359,7 @@ class Thumbnail {
 					$gifOffset[1] = max(0, $gifOffset[1] - $heightOffset);
 				}
 
-				$frame = $resampler->copyImageArea($resampler, $frame,
+				$frame = $resampler->copyImageArea($frame,
 					/*   width */ $sLThumbWidth,
 					/*  height */ $sLThumbHeight,
 					/*  destXY */ 0, 0,
