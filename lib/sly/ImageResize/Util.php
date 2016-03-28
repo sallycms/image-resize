@@ -204,6 +204,7 @@ abstract class Util {
 			'width_primary'  => false,
 			'height_primary' => false,
 			'disable_hash'   => false,
+			'timestamp'      => true,
 			'extra'          => ''
 		), $options);
 
@@ -223,7 +224,7 @@ abstract class Util {
 		// build filename
 
 		$widthFirst = $options['width_primary'] || !$options['height_primary'];
-		$filename   = Filename::fromMedium($medium, true);
+		$filename   = Filename::fromMedium($medium, $options['timestamp']);
 		$resizes    = array_filter($widthFirst ? array($width, $height) : array($height, $width));
 
 		$filename->setResizes($resizes);
