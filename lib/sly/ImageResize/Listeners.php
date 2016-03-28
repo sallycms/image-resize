@@ -137,44 +137,39 @@ class Listeners implements \sly_ContainerAwareInterface {
 	public function processAsset($inputFile, array $params) {
 		error_reporting(E_ALL);
 
-		$filename    = $params['filename'];
-		$service     = $this->container['sly-imageresize-service'];
-		$jsonService = $this->container['sly-service-json'];
-		$controlFile = $service->getControlFile($filename->getFilename());
-		$controlData = file_exists($controlFile) ? $jsonService->load($controlFile, false, true) : array();
+		$filename  = $params['filename'];
+		$service   = $this->container['sly-imageresize-service'];
+		$tmpDir    = $service->getCacheDir();
+		$cacheFile = $tmpDir.'/tmp_'.sha1($filename->getVirtualFilename()).'.'.$filename->getExtension();
 
-		// prepare the thumbnail
+		// process the image if no cachefile exists
+		
+		if (!file_exists($cacheFile)) {
+			$config      = $service->getConfig(null);
+			$jsonService = $this->container['sly-service-json'];
+			$controlFile = $service->getControlFile($filename->getFilename());
+			$controlData = file_exists($controlFile) ? $jsonService->load($controlFile, false, true) : array();
+			$thumbnail   = $filename->getThumbnail($config, $inputFile);
+			$cacheFile   = $thumbnail->generate($cacheFile);
+			
+			// remove old cache files
+			$controlData = $this->removeOutdatedCacheFiles($controlData, $config['max_cachefiles'], $tmpDir);
+			
+			// remember the new file so we can kill it in some next request
+			// make sure the tmp file is added/moved to the last spot in the list,
+			// as it serves as a freshness queue.
 
-		$config    = $service->getConfig(null);
-		$thumbnail = $filename->getThumbnail($config, $inputFile);
-		$realName  = $filename->getFilename();
+			$controlData = $this->addCacheFile($controlData, $cacheFile);
+			$jsonService->dump($controlFile, $controlData);
+		}
 
-		// remove old cache files
-
-		$tmpDir      = $service->getCacheDir();
-		$controlData = $this->removeOutdatedCacheFiles($controlData, $config, $tmpDir);
-
-		// process the image
-
-		$tmpFile = $tmpDir.'/tmp_'.sha1($filename->getVirtualFilename()).'.'.$filename->getExtension();
-		$tmpFile = $thumbnail->generate($tmpFile);
-
-		// remember the new file so we can kill it in some next request
-		// make sure the tmp file is added/moved to the last spot in the list,
-		// as it serves as a freshness queue.
-
-		$controlData = $this->addCacheFile($controlData, $tmpFile);
-		$jsonService->dump($controlFile, $controlData);
-
-		return $tmpFile;
+		return $cacheFile;
 	}
 
-	protected function removeOutdatedCacheFiles(array $controlData, array $config, $tmpDir) {
-		$max = $config['max_cachefiles'];
-
-		if (count($controlData) >= $max) {
-			$max    = $max - 1; // -1 to make room for the requested file's cache file
-			$oldest = array_slice($controlData, 0, -$max);
+	protected function removeOutdatedCacheFiles(array $controlData, $maxFiles, $tmpDir) {
+		if (count($controlData) >= $maxFiles) {
+			$maxFiles = $maxFiles - 1; // -1 to make room for the requested file's cache file
+			$oldest   = array_slice($controlData, 0, -$maxFiles);
 
 			foreach ($oldest as $basename) {
 				$cacheFile = $tmpDir.'/'.$basename;
@@ -184,7 +179,7 @@ class Listeners implements \sly_ContainerAwareInterface {
 				}
 			}
 
-			$controlData = array_slice($controlData, -$max);
+			$controlData = array_slice($controlData, -$maxFiles);
 		}
 
 		return $controlData;
