@@ -205,6 +205,7 @@ abstract class Util {
 			'height_primary' => false,
 			'disable_hash'   => false,
 			'timestamp'      => true,
+			'upscaling'      => false,
 			'extra'          => ''
 		), $options);
 
@@ -232,6 +233,8 @@ abstract class Util {
 		if ($options['extra']) {
 			$filename->addOffset($options['extra']);
 		}
+
+		$filename->setUpscaling($options['upscaling']);
 
 		// get virtual filename
 
