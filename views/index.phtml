@@ -8,31 +8,26 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-$form = new sly_Form($_router->getPlainUrl(null), 'POST', 'Image Resize ('.$version.')');
-$form->addHiddenValue('page', 'imageresize');
-$form->addHiddenValue('func', 'update');
+$form = new sly_Form($_router->getPlainUrl('imageresize', 'update'), 'POST', 'Image Resize ('.$version.')');
 
 $maxCacheFiles = new sly_Form_Input_Number('max_cachefiles', t('iresize_max_cache_files'), $config['max_cachefiles']);
 $maxCacheFiles->setBounds(0, 100, 1);
-$maxCacheFiles->addStyle('width:40px');
 $form->add($maxCacheFiles);
 
 $maxFilters = new sly_Form_Input_Number('max_filters', t('iresize_max_filters'), $config['max_filters']);
 $maxFilters->setBounds(0, 100, 1);
-$maxFilters->addStyle('width:40px');
 $form->add($maxFilters);
 
-$bytes = new sly_Form_Input_Text('max_resizekb', t('iresize_max_resizekb'), $config['max_resizekb']);
+$bytes = new sly_Form_Input_Number('max_resizekb', t('iresize_max_resizekb'), $config['max_resizekb']);
 $bytes->setAnnotation('KB');
 $form->add($bytes);
 
-$pixel = new sly_Form_Input_Text('max_resizepixel', t('iresize_max_resizepx'), $config['max_resizepixel']);
+$pixel = new sly_Form_Input_Number('max_resizepixel', t('iresize_max_resizepx'), $config['max_resizepixel']);
 $pixel->setAnnotation('Pixel');
 $form->add($pixel);
 
 $quality = new sly_Form_Input_Number('jpg_quality', t('iresize_jpg_quality'), $config['jpg_quality']);
 $quality->setBounds(1, 100, 1);
-$quality->addStyle('width:40px');
 $quality->setAnnotation('%');
 $form->add($quality);
 
